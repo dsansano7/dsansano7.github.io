@@ -776,10 +776,7 @@ function initStartMenu() {
         <div class="shutdown-left-bar"></div>
         <div class="shutdown-main">
           <div class="shutdown-logo-row">
-            <div class="xp-flag" aria-hidden="true">
-              <div class="fq tl"></div><div class="fq tr"></div>
-              <div class="fq bl"></div><div class="fq br"></div>
-            </div>
+            <img src="Images/WindowsLogoDS.png" class="shutdown-logo-img" alt="Logo" />
             <div class="shutdown-text-col">
               <div class="shutdown-please-wait">please wait...</div>
               <div class="shutdown-status">DiegoOS is shutting down...</div>

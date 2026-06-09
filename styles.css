@@ -239,13 +239,13 @@ body { font-family:var(--f-ui); font-size:14px; color:var(--txt); background-col
   pointer-events:none;
 }
 #wp-day   {
-  background-image:url('studio_day.png');
+  background-image:url('Images/studio_day.png');
   /* Fallback gradient if file not yet present */
   background-color:#3a6890;
   opacity:1; z-index:0;
 }
 #wp-night {
-  background-image:url('studio_night.png');
+  background-image:url('Images/studio_night.png');
   background-color:#080818;
   opacity:0; z-index:1;
 }
@@ -2152,4 +2152,40 @@ body.dark-mode .xp-sidebar-hdr {
   padding: 4px 10px;
   border-radius: 4px;
   font-family: var(--f-mono);
+}
+
+/* =========================================================================
+   LOGO RESCALING FOR NEW WINDOWS LOGO IMAGE
+   ========================================================================= */
+
+/* Reescalado del Logo en la Pantalla de Carga */
+#boot-screen .boot-logo-row img,
+#boot-screen img[src*="WindowsLogoDS"] {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 0 14px rgba(80,160,255,0.5));
+}
+
+/* Reescalado del Logo en el Botón de Inicio */
+#start-btn {
+  padding: 0 16px 0 8px; /* Adjusted padding to let the 32px logo breathe */
+  gap: 8px;              /* Adjusted gap between logo and start text */
+}
+#start-btn .start-logo-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* Reescalado del Logo en la Pantalla de Apagado (Retro Shutdown) */
+.shutdown-logo-row .shutdown-logo-img {
+  width: 120px !important;
+  height: 120px !important;
+  object-fit: contain;
+  transform: none !important; /* Eliminamos cualquier inclinación de bandera antigua */
+  filter: drop-shadow(3px 4px 8px rgba(0,0,0,0.45)) !important;
 }
