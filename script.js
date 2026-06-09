@@ -13,25 +13,25 @@ const PROJECTS = [
     id: 1, title: 'The Last of Us', category: 'Sound Redesign', catClass: 'cat-sd', icon: '🧟',
     desc: 'A comprehensive audio redesign of a dynamic sequence, featuring seamless acoustic transitions between interior and exterior environments. The project highlights custom Foley artistry, spatialized environmental soundscaping, and a cinematic mix fully orchestrated in REAPER.',
     tags: ['REAPER', 'Foley', 'Soundscaping', 'Mixing'],
-    gameUrl: ''
+    gameUrl: '', cover: '' // No tiene portada dedicada en captura
   },
   {
     id: 2, title: 'Party Drinker', category: 'Audio Programming', catClass: 'cat-ap', icon: '🍻',
     desc: 'A 48-hour Game Jam project set in a lively party environment, featuring a complete audio build developed from scratch. Rapid implementation using FMOD and Unity, focusing on FMOD spatialization to create an immersive atmosphere.',
     tags: ['FMOD', 'Unity', 'Game Jam', 'Spatialization'],
-    gameUrl: ''
+    gameUrl: '', cover: 'Images/Party Drinker.png'
   },
   {
     id: 3, title: 'Cooking Fever', category: 'UI/UX Audio', catClass: 'cat-sd', icon: '🍔',
     desc: 'UI/UX audio design for a fast-paced management game. Crafted tactile interface sounds and rewarding telemetry by blending processed library assets with custom recordings, with all editing and optimization orchestrated natively in REAPER.',
     tags: ['REAPER', 'UI/UX', 'Sound Design', 'Asset Optimization'],
-    gameUrl: ''
+    gameUrl: '', cover: 'Images/Cooking FEVER.png'
   },
   {
     id: 4, title: 'Unwraptal', category: 'Audio Programming', catClass: 'cat-ap', icon: '🎁',
     desc: 'A full-cycle audio production for a month-long Game Jam. The game features Wario Ware-style mini-games. Crafted all custom SFX and an original dynamic soundtrack (Menu, HUB, and End Game), fully implemented in Unity via FMOD.',
     tags: ['FMOD', 'Unity', 'Music Composition', 'SFX'],
-    gameUrl: './games/unwraptal/index.html' // Build local
+    gameUrl: './games/unwraptal/index.html', cover: 'Images/Unwraptal.png'
   }
 ];
 
@@ -406,6 +406,13 @@ function initFileExplorer() {
     <line x1="10" y1="56" x2="30" y2="56" stroke="#999" stroke-width="1.5"/>
   </svg>`;
 
+  const videoSVG = `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="xp-icon-svg">
+    <rect x="6" y="8" width="52" height="48" rx="6" fill="#1a1a1a" stroke="#b30c0c" stroke-width="2"/>
+    <rect x="12" y="14" width="40" height="28" rx="2" fill="#333"/>
+    <polygon points="28,20 28,36 42,28" fill="#b30c0c"/>
+    <rect x="12" y="46" width="40" height="4" rx="2" fill="#555"/>
+  </svg>`;
+
   /* ─ renderRoot ──────────────────────────────────── */
   function renderRoot() {
     currentProj = null;
@@ -446,17 +453,33 @@ function initFileExplorer() {
     const readme = createFileIcon(pdfSVG, 'Project_Details.pdf', 'pdf', () => openReadme(proj));
     folderView.appendChild(readme);
 
-    // EXE
-    const hasGame = Boolean(proj.gameUrl);
-    const exeLabel = hasGame ? 'Demo.exe' : 'Demo.exe (N/A)';
-    const exe = createFileIcon(
-      hasGame ? exeSVG : noExeSVG,
-      exeLabel,
-      'exe',
-      () => openExe(proj)
+    // Dynamic file (Executable or Video)
+    const isVideo = proj.category === 'Sound Redesign' || proj.category === 'UI/UX Audio';
+    const fileType = isVideo ? 'video' : 'exe';
+    const fileLabel = isVideo ? 'Showreel.mp4' : (proj.gameUrl ? 'Demo.exe' : 'Demo.exe (N/A)');
+    
+    let thumbHtml = '';
+    if (proj.cover) {
+      thumbHtml = `<img src="${proj.cover}" class="xp-custom-thumb" alt="${fileLabel}" />`;
+    } else {
+      thumbHtml = isVideo ? videoSVG : (proj.gameUrl ? exeSVG : noExeSVG);
+    }
+
+    const mediaFile = createFileIcon(
+      thumbHtml,
+      fileLabel,
+      fileType,
+      () => {
+        if (isVideo) {
+          WindowManager.open('win-demoreel');
+          AudioEngine.playOpen();
+        } else {
+          openExe(proj);
+        }
+      }
     );
-    if (!hasGame) exe.classList.add('xp-icon-disabled');
-    folderView.appendChild(exe);
+    if (!proj.gameUrl && !isVideo) mediaFile.classList.add('xp-icon-disabled');
+    folderView.appendChild(mediaFile);
   }
 
   /* ─ openReadme ────────────────────────────────── */
@@ -1013,19 +1036,29 @@ function getNearestFreeCell(iconEl, targetLeft, targetTop, maxLeft, maxTop) {
 function makeIconDraggable(el) {
   let dragging = false;
   let startX = 0, startY = 0;
-  let startLeft = 0, startTop = 0;
+  let selectedIcons = [];
 
   const onMouseDown = (e) => {
     if (e.button !== 0) return;
     
-    document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
-    el.classList.add('selected');
+    // If the clicked icon is not selected, select it exclusively
+    if (!el.classList.contains('selected')) {
+      document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+    }
     
     dragging = true;
     startX = e.clientX;
     startY = e.clientY;
-    startLeft = parseInt(el.style.left || '0', 10);
-    startTop = parseInt(el.style.top || '0', 10);
+    
+    // Cache all selected icons and their individual starting left/top values
+    selectedIcons = Array.from(document.querySelectorAll('.desktop-icon.selected')).map(icon => {
+      return {
+        el: icon,
+        startLeft: parseInt(icon.style.left || '0', 10),
+        startTop: parseInt(icon.style.top || '0', 10)
+      };
+    });
     
     document.body.style.userSelect = 'none';
     e.stopPropagation();
@@ -1037,23 +1070,25 @@ function makeIconDraggable(el) {
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     
-    let newLeft = startLeft + dx;
-    let newTop = startTop + dy;
-    
-    const desktop = document.getElementById('desktop');
-    if (desktop) {
-      const db = desktop.getBoundingClientRect();
-      const maxLeft = db.width - 100;
-      const maxTop = db.height - 110 - 52;
+    selectedIcons.forEach(item => {
+      let newLeft = item.startLeft + dx;
+      let newTop = item.startTop + dy;
       
-      if (newLeft < 0) newLeft = 0;
-      if (newLeft > maxLeft) newLeft = maxLeft;
-      if (newTop < 0) newTop = 0;
-      if (newTop > maxTop) newTop = maxTop;
-    }
-    
-    el.style.left = newLeft + 'px';
-    el.style.top = newTop + 'px';
+      const desktop = document.getElementById('desktop');
+      if (desktop) {
+        const db = desktop.getBoundingClientRect();
+        const maxLeft = db.width - 100;
+        const maxTop = db.height - 110 - 52;
+        
+        if (newLeft < 0) newLeft = 0;
+        if (newLeft > maxLeft) newLeft = maxLeft;
+        if (newTop < 0) newTop = 0;
+        if (newTop > maxTop) newTop = maxTop;
+      }
+      
+      item.el.style.left = newLeft + 'px';
+      item.el.style.top = newTop + 'px';
+    });
   };
 
   const onMouseUp = () => {
@@ -1061,32 +1096,36 @@ function makeIconDraggable(el) {
       dragging = false;
       document.body.style.userSelect = '';
 
-      let currentLeft = parseInt(el.style.left || '0', 10);
-      let currentTop = parseInt(el.style.top || '0', 10);
+      selectedIcons.forEach(item => {
+        let currentLeft = parseInt(item.el.style.left || '0', 10);
+        let currentTop = parseInt(item.el.style.top || '0', 10);
 
-      // Snap to 110x120 grid points starting at 20, 20
-      let snapLeft = Math.round((currentLeft - 20) / 110) * 110 + 20;
-      let snapTop = Math.round((currentTop - 20) / 120) * 120 + 20;
+        // Snap to 110x120 grid points starting at 20, 20
+        let snapLeft = Math.round((currentLeft - 20) / 110) * 110 + 20;
+        let snapTop = Math.round((currentTop - 20) / 120) * 120 + 20;
 
-      const desktop = document.getElementById('desktop');
-      let maxLeft = window.innerWidth - 100;
-      let maxTop = window.innerHeight - 110 - 52;
-      if (desktop) {
-        const db = desktop.getBoundingClientRect();
-        maxLeft = db.width - 100;
-        maxTop = db.height - 110 - 52;
-      }
+        const desktop = document.getElementById('desktop');
+        let maxLeft = window.innerWidth - 100;
+        let maxTop = window.innerHeight - 110 - 52;
+        if (desktop) {
+          const db = desktop.getBoundingClientRect();
+          maxLeft = db.width - 100;
+          maxTop = db.height - 110 - 52;
+        }
 
-      if (snapLeft > maxLeft) snapLeft = Math.floor((maxLeft - 20) / 110) * 110 + 20;
-      if (snapTop > maxTop) snapTop = Math.floor((maxTop - 20) / 120) * 120 + 20;
+        if (snapLeft > maxLeft) snapLeft = Math.floor((maxLeft - 20) / 110) * 110 + 20;
+        if (snapTop > maxTop) snapTop = Math.floor((maxTop - 20) / 120) * 120 + 20;
 
-      if (snapLeft < 20) snapLeft = 20;
-      if (snapTop < 20) snapTop = 20;
+        if (snapLeft < 20) snapLeft = 20;
+        if (snapTop < 20) snapTop = 20;
 
-      const freeCell = getNearestFreeCell(el, snapLeft, snapTop, maxLeft, maxTop);
+        const freeCell = getNearestFreeCell(item.el, snapLeft, snapTop, maxLeft, maxTop);
 
-      el.style.left = freeCell.left + 'px';
-      el.style.top = freeCell.top + 'px';
+        item.el.style.left = freeCell.left + 'px';
+        item.el.style.top = freeCell.top + 'px';
+      });
+      
+      selectedIcons = [];
     }
   };
 
@@ -1095,15 +1134,23 @@ function makeIconDraggable(el) {
   document.addEventListener('mouseup', onMouseUp);
 
   const onTouchStart = (e) => {
-    document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
-    el.classList.add('selected');
+    if (!el.classList.contains('selected')) {
+      document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+    }
     
     dragging = true;
     const t = e.touches[0];
     startX = t.clientX;
     startY = t.clientY;
-    startLeft = parseInt(el.style.left || '0', 10);
-    startTop = parseInt(el.style.top || '0', 10);
+    
+    selectedIcons = Array.from(document.querySelectorAll('.desktop-icon.selected')).map(icon => {
+      return {
+        el: icon,
+        startLeft: parseInt(icon.style.left || '0', 10),
+        startTop: parseInt(icon.style.top || '0', 10)
+      };
+    });
     
     e.stopPropagation();
   };
@@ -1114,23 +1161,25 @@ function makeIconDraggable(el) {
     const dx = t.clientX - startX;
     const dy = t.clientY - startY;
     
-    let newLeft = startLeft + dx;
-    let newTop = startTop + dy;
-    
-    const desktop = document.getElementById('desktop');
-    if (desktop) {
-      const db = desktop.getBoundingClientRect();
-      const maxLeft = db.width - 100;
-      const maxTop = db.height - 110 - 52;
+    selectedIcons.forEach(item => {
+      let newLeft = item.startLeft + dx;
+      let newTop = item.startTop + dy;
       
-      if (newLeft < 0) newLeft = 0;
-      if (newLeft > maxLeft) newLeft = maxLeft;
-      if (newTop < 0) newTop = 0;
-      if (newTop > maxTop) newTop = maxTop;
-    }
-    
-    el.style.left = newLeft + 'px';
-    el.style.top = newTop + 'px';
+      const desktop = document.getElementById('desktop');
+      if (desktop) {
+        const db = desktop.getBoundingClientRect();
+        const maxLeft = db.width - 100;
+        const maxTop = db.height - 110 - 52;
+        
+        if (newLeft < 0) newLeft = 0;
+        if (newLeft > maxLeft) newLeft = maxLeft;
+        if (newTop < 0) newTop = 0;
+        if (newTop > maxTop) newTop = maxTop;
+      }
+      
+      item.el.style.left = newLeft + 'px';
+      item.el.style.top = newTop + 'px';
+    });
   };
 
   el.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -1188,7 +1237,7 @@ function initDesktopIcons() {
 
   document.getElementById('desktop').addEventListener('click', e => {
     const tgt = e.target;
-    const isDesktopBg = tgt.id==='desktop' || tgt.classList.contains('wp-layer') || tgt.classList.contains('desktop-overlay');
+    const isDesktopBg = tgt.id==='desktop' || tgt.classList.contains('wp-layer') || tgt.classList.contains('desktop-overlay') || tgt.id === 'icon-grid';
     if (isDesktopBg) {
       document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
       const sm = document.getElementById('start-menu');
