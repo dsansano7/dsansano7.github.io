@@ -2189,3 +2189,16 @@ body.dark-mode .xp-sidebar-hdr {
   transform: none !important; /* Eliminamos cualquier inclinación de bandera antigua */
   filter: drop-shadow(3px 4px 8px rgba(0,0,0,0.45)) !important;
 }
+
+
+
+/* =========================================================================
+   DRAG SELECTION BOX FOR DESKTOP ICONS
+   ========================================================================= */
+#drag-selection-box {
+  position: fixed;
+  background: rgba(49, 106, 197, 0.25); /* Azul de selección clásico */
+  border: 1px dotted rgb(49, 106, 197);
+  z-index: 5; /* Por debajo de las ventanas pero por encima del wallpaper */
+  pointer-events: none; /* Para que no bloquee los eventos del ratón */
+}

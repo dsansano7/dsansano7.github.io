@@ -1692,6 +1692,86 @@ function initMobile() {
   window.matchMedia('(max-width:720px)').addEventListener('change', () => {});
 }
 
+function initDesktopDragSelection() {
+  const desktop = document.getElementById('desktop');
+  const box = document.getElementById('drag-selection-box');
+  if (!desktop || !box) return;
+
+  let dragActive = false;
+  let startX = 0;
+  let startY = 0;
+
+  const onMouseDown = (e) => {
+    const tgt = e.target;
+    const isBg = tgt.id === 'desktop' || tgt.classList.contains('wp-layer') || tgt.classList.contains('desktop-overlay') || tgt.id === 'icon-grid';
+    if (!isBg) return;
+
+    e.preventDefault();
+
+    dragActive = true;
+    startX = e.clientX;
+    startY = e.clientY;
+
+    box.style.left = startX + 'px';
+    box.style.top = startY + 'px';
+    box.style.width = '0px';
+    box.style.height = '0px';
+    box.style.display = 'block';
+
+    document.querySelectorAll('.desktop-icon').forEach(icon => icon.classList.remove('selected'));
+  };
+
+  const onMouseMove = (e) => {
+    if (!dragActive) return;
+
+    const currentX = e.clientX;
+    const currentY = e.clientY;
+
+    const left = Math.min(startX, currentX);
+    const top = Math.min(startY, currentY);
+    const width = Math.abs(startX - currentX);
+    const height = Math.abs(startY - currentY);
+
+    box.style.left = left + 'px';
+    box.style.top = top + 'px';
+    box.style.width = width + 'px';
+    box.style.height = height + 'px';
+
+    const boxRect = {
+      left: left,
+      top: top,
+      right: left + width,
+      bottom: top + height
+    };
+
+    document.querySelectorAll('.desktop-icon').forEach(icon => {
+      const r = icon.getBoundingClientRect();
+      const isOverlapping = !(
+        r.right < boxRect.left ||
+        r.left > boxRect.right ||
+        r.bottom < boxRect.top ||
+        r.top > boxRect.bottom
+      );
+
+      if (isOverlapping) {
+        icon.classList.add('selected');
+      } else {
+        icon.classList.remove('selected');
+      }
+    });
+  };
+
+  const onMouseUp = () => {
+    if (!dragActive) return;
+    dragActive = false;
+    box.style.display = 'none';
+  };
+
+  desktop.addEventListener('mousedown', onMouseDown);
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+}
+
 /* ──────────────────────────────────────────────────────────────
    13. INIT
    ────────────────────────────────────────────────────────────── */
@@ -1713,6 +1793,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSystemTray();
   initPropertiesPanel();
   initDesktopIcons();
+  initDesktopDragSelection();
   initTerminalInteraction();
   initMobile();
   initAudioUnlocker();
