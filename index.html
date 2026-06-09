@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DiegoOS — Game Audio Developer</title>
+  <meta name="description" content="Interactive Windows XP-themed portfolio — Diego Sansano, Game Audio Developer & Sound Designer." />
+  <meta name="author" content="Diego Sansano" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body id="body-root">
+
+  <!-- ═══════════════════════════════════════════
+       CRT TRANSITION OVERLAY
+  ═══════════════════════════════════════════ -->
+  <div id="crt-transition-overlay">
+    <div class="bar-top"></div>
+    <div class="crt-bright-line"></div>
+    <div class="bar-bottom"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       BOOT SCREEN
+  ═══════════════════════════════════════════ -->
+  <div id="boot-screen">
+    <div class="boot-center">
+      <div class="boot-logo-row">
+        <div class="xp-flag" aria-hidden="true">
+          <div class="fq tl"></div><div class="fq tr"></div>
+          <div class="fq bl"></div><div class="fq br"></div>
+        </div>
+        <div class="boot-wordmark">
+          <div class="boot-win">Diego<span class="boot-xp">OS</span></div>
+          <div class="boot-subtitle">loading portfolio</div>
+        </div>
+      </div>
+      <div class="boot-bar-wrap">
+        <div class="boot-bar">
+          <div class="boot-segs">
+            <div class="boot-seg"></div>
+            <div class="boot-seg"></div>
+            <div class="boot-seg"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="boot-footer">
+      <span>Copyright © DiegoOS Corporation</span>
+      <span class="boot-brand-r">DiegoOS</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       DESKTOP
+  ═══════════════════════════════════════════ -->
+  <div id="desktop" style="display:none;" aria-label="DiegoOS Desktop">
+
+    <!-- Wallpaper layers for cross-fade -->
+    <div class="wp-layer" id="wp-day"   aria-hidden="true"></div>
+    <div class="wp-layer" id="wp-night" aria-hidden="true"></div>
+    <!-- Dark overlay -->
+    <div class="desktop-overlay" aria-hidden="true"></div>
+
+    <!-- ── Desktop Icons ─────────────────────────── -->
+    <div id="icon-grid" role="group" aria-label="Desktop Icons">
+
+      <div class="desktop-icon" id="icon-about" data-window="win-about"
+           tabindex="0" role="button" aria-label="About Me — Open window">
+        <div class="icon-img">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="ag1" cx="40%" cy="35%">
+                <stop offset="0%" stop-color="#90d0ff"/>
+                <stop offset="100%" stop-color="#1a6dbd"/>
+              </radialGradient>
+            </defs>
+            <circle cx="32" cy="21" r="14" fill="url(#ag1)" stroke="#0a4a9a" stroke-width="1.5"/>
+            <ellipse cx="32" cy="51" rx="21" ry="13" fill="url(#ag1)" stroke="#0a4a9a" stroke-width="1.5"/>
+            <circle cx="27" cy="18" r="4" fill="white" opacity="0.35"/>
+          </svg>
+        </div>
+        <span class="icon-label">About Me</span>
+      </div>
+
+      <div class="desktop-icon" id="icon-toolkit" data-window="win-toolkit"
+           tabindex="0" role="button" aria-label="Toolkit — Open window">
+        <div class="icon-img">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="6"  width="56" height="14" rx="4" fill="#78e878" stroke="#1a6a1a" stroke-width="1.5"/>
+            <rect x="4" y="24" width="56" height="14" rx="4" fill="#ffb84d" stroke="#a06000" stroke-width="1.5"/>
+            <rect x="4" y="42" width="56" height="14" rx="4" fill="#ff7070" stroke="#aa0000" stroke-width="1.5"/>
+            <circle cx="51" cy="13" r="4" fill="#0a8a0a"/>
+            <circle cx="42" cy="13" r="4" fill="#40cc40"/>
+            <circle cx="51" cy="31" r="4" fill="#aa6000"/>
+            <circle cx="42" cy="31" r="4" fill="#ffcc66"/>
+            <circle cx="51" cy="49" r="4" fill="#cc0000"/>
+            <circle cx="42" cy="49" r="4" fill="#ff5050"/>
+          </svg>
+        </div>
+        <span class="icon-label">Toolkit</span>
+      </div>
+
+      <div class="desktop-icon" id="icon-work" data-window="win-work"
+           tabindex="0" role="button" aria-label="My Work — Open window">
+        <div class="icon-img">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="10" width="56" height="42" rx="4" fill="#3a7acc" stroke="#0a3a8a" stroke-width="1.5"/>
+            <rect x="8" y="14" width="48" height="30" rx="2" fill="#07122a"/>
+            <polygon points="24,18 24,42 50,30" fill="#FFD700"/>
+            <rect x="14" y="47" width="36" height="3" rx="1.5" fill="#7ec8ff" opacity="0.8"/>
+          </svg>
+        </div>
+        <span class="icon-label">My Work</span>
+      </div>
+
+      <div class="desktop-icon" id="icon-contact" data-window="win-contact"
+           tabindex="0" role="button" aria-label="Contact — Open window">
+        <div class="icon-img">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="6" width="56" height="52" rx="4" fill="#0c0c10" stroke="#3a3a4a" stroke-width="1.5"/>
+            <rect x="7" y="9" width="50" height="13" rx="2" fill="#1a1a22"/>
+            <text x="10" y="20" fill="#00e040" font-family="monospace" font-size="9" font-weight="bold">C:\DiegoOS&gt; _</text>
+            <text x="10" y="34" fill="#00b030" font-family="monospace" font-size="7.5">contact --info</text>
+            <text x="10" y="46" fill="#008820" font-family="monospace" font-size="7">EMAIL: dsansano...</text>
+          </svg>
+        </div>
+        <span class="icon-label">Contact</span>
+      </div>
+
+      <div class="desktop-icon" id="icon-demoreel" data-window="win-demoreel"
+           tabindex="0" role="button" aria-label="Demoreels — Open window">
+        <div class="icon-img">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Film reel background -->
+            <circle cx="32" cy="32" r="26" fill="#1a1a1a" stroke="#cc0000" stroke-width="2.5"/>
+            <!-- Reel holes -->
+            <circle cx="32" cy="32" r="7" fill="#cc0000"/>
+            <circle cx="32" cy="32" r="3.5" fill="#111"/>
+            <circle cx="32" cy="14" r="4" fill="#333" stroke="#555" stroke-width="1"/>
+            <circle cx="32" cy="50" r="4" fill="#333" stroke="#555" stroke-width="1"/>
+            <circle cx="14" cy="32" r="4" fill="#333" stroke="#555" stroke-width="1"/>
+            <circle cx="50" cy="32" r="4" fill="#333" stroke="#555" stroke-width="1"/>
+            <circle cx="19" cy="19" r="3.5" fill="#333" stroke="#555" stroke-width="1"/>
+            <circle cx="45" cy="45" r="3.5" fill="#333" stroke="#555" stroke-width="1"/>
+            <circle cx="45" cy="19" r="3.5" fill="#333" stroke="#555" stroke-width="1"/>
+            <circle cx="19" cy="45" r="3.5" fill="#333" stroke="#555" stroke-width="1"/>
+            <!-- Film strip at top -->
+            <rect x="4" y="4" width="56" height="10" rx="2" fill="#222" stroke="#444" stroke-width="1"/>
+            <rect x="8" y="5.5" width="6" height="7" rx="1" fill="#444"/>
+            <rect x="18" y="5.5" width="6" height="7" rx="1" fill="#444"/>
+            <rect x="28" y="5.5" width="6" height="7" rx="1" fill="#cc0000" opacity="0.7"/>
+            <rect x="38" y="5.5" width="6" height="7" rx="1" fill="#444"/>
+            <rect x="48" y="5.5" width="6" height="7" rx="1" fill="#444"/>
+          </svg>
+        </div>
+        <span class="icon-label">Demoreels</span>
+      </div>
+
+    </div><!-- /icon-grid -->
+
+    <!-- ════════════════════════════════════
+         WINDOWS
+    ════════════════════════════════════ -->
+
+    <!-- ── ABOUT ME ──────────────────────────────── -->
+    <div class="os-window" id="win-about"
+         style="display:none; top:50px; left:60px; width:850px; height:650px;">
+      <div class="win-titlebar" data-win="win-about">
+        <div class="win-title-left">
+          <span class="win-title-icon">👤</span>
+          <span class="win-title-text">About Me — Diego Sansano Reboll</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-about">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-about">□</button>
+          <button class="cap-btn cls-btn" data-action="close"    data-win="win-about">✕</button>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span class="menu-item">File</span>
+        <span class="menu-item">View</span>
+        <span class="menu-item">Help</span>
+      </div>
+      <div class="win-body" id="about-body">
+
+        <!-- Profile Header -->
+        <div class="about-hero">
+          <div class="avatar-wrap" id="avatar-box">
+            <div class="avatar-ph">
+              <svg viewBox="0 0 80 90" fill="none" width="54" height="60">
+                <circle cx="40" cy="30" r="20" fill="#5eb8ff" opacity="0.65"/>
+                <ellipse cx="40" cy="68" rx="28" ry="18" fill="#5eb8ff" opacity="0.65"/>
+              </svg>
+              <span class="avatar-ph-label">[ Your Photo ]</span>
+            </div>
+          </div>
+          <div class="about-hero-info">
+            <h1 class="about-name">Diego Sansano Reboll</h1>
+            <div class="about-role">Sound Designer · Game Audio Programmer</div>
+            <div class="about-badges">
+              <span class="badge badge-blue">🎓 Berklee College of Music</span>
+              <span class="badge badge-green">🎮 UJI Graduate</span>
+              <span class="badge badge-gold">🎷 Professional Saxophonist</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Biography Panel -->
+        <div class="win-panel">
+          <div class="win-panel-hdr">📝 Biography</div>
+          <div class="win-panel-body">
+            <p class="body-text">
+              I'm a <strong>Game Audio Developer</strong> passionate about shaping the sonic identity of
+              interactive experiences. My work sits at the intersection of technical audio programming and
+              creative sound design — building the systems that make games feel alive.
+            </p>
+            <p class="body-text" style="margin-top:8px;">
+              I hold a <strong>University Degree in Video Game Design and Development</strong> from
+              <em>Universitat Jaume I (UJI)</em>, am currently completing a
+              <strong>Master's in Game Audio</strong> at <em>Berklee College of Music</em>, and hold a
+              <strong>Professional Music Degree in Saxophone</strong>. That classical foundation gives me
+              a musician's ear that elevates everything from foley to adaptive scores.
+            </p>
+          </div>
+        </div>
+
+        <!-- Education Panel -->
+        <div class="win-panel">
+          <div class="win-panel-hdr">🎓 Education</div>
+          <div class="win-panel-body edu-grid">
+            <div class="edu-card">
+              <div class="edu-degree">Master's in Game Audio</div>
+              <div class="edu-school">Berklee College of Music · Boston, USA</div>
+              <div class="edu-status">In Progress</div>
+            </div>
+            <div class="edu-card">
+              <div class="edu-degree">Degree in Video Game Design &amp; Development</div>
+              <div class="edu-school">Universitat Jaume I (UJI) · Castellón, Spain</div>
+              <div class="edu-status">Graduated</div>
+            </div>
+            <div class="edu-card">
+              <div class="edu-degree">Professional Music Degree — Saxophone</div>
+              <div class="edu-school">Conservatorio Superior de Música</div>
+              <div class="edu-status">Completed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Firescale Studios Panel -->
+        <div class="win-panel">
+          <div class="win-panel-hdr">💼 Professional Experience</div>
+          <div class="win-panel-body">
+            <div class="exp-header-row">
+              <div class="exp-logo-ph">[ Studio Logo ]</div>
+              <div>
+                <div class="exp-studio">Firescale Studios</div>
+                <div class="exp-role-title">Audio Designer &amp; Game Designer</div>
+                <div class="exp-dates">📅 May 2025 — August 2025</div>
+              </div>
+            </div>
+            <ul class="resp-list">
+              <li>✍️ Authored the <strong>Game Design Document (GDD)</strong> — narrative structure, core pillars, and production scope</li>
+              <li>📈 Designed <strong>progression curves</strong> — difficulty scaling, player reward loops, and pacing systems</li>
+              <li>⚙️ Architected <strong>core gameplay mechanics</strong> — movement, interaction, and economy loops</li>
+              <li>🗺️ Led <strong>level layout design</strong> — spatial flow, enemy density mapping, and environmental storytelling</li>
+              <li>🤖 Programmed <strong>enemy AI behaviors</strong> — patrol, detection, and combat state machines</li>
+              <li>🎵 Crafted the complete <strong>sonic palette</strong> — custom SFX libraries and layered environmental ambiances</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Languages -->
+        <div class="win-panel">
+          <div class="win-panel-hdr">🌐 Languages &amp; Info</div>
+          <div class="win-panel-body lang-row">
+            <span class="lang-pill">🇪🇸 Spanish — Native</span>
+            <span class="lang-pill">🇨🇦 Catalan — Native</span>
+            <span class="lang-pill">🇬🇧 English — C1</span>
+            <span class="lang-pill">🚗 Driving Licence B</span>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /win-about -->
+
+    <!-- ── TOOLKIT ─────────────────────────────────── -->
+    <div class="os-window" id="win-toolkit"
+         style="display:none; top:45px; left:100px; width:850px; height:650px;">
+      <div class="win-titlebar" data-win="win-toolkit">
+        <div class="win-title-left">
+          <span class="win-title-icon">🎛️</span>
+          <span class="win-title-text">Toolkit — Audio &amp; Development Stack</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-toolkit">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-toolkit">□</button>
+          <button class="cap-btn cls-btn" data-action="close"    data-win="win-toolkit">✕</button>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span class="menu-item">File</span>
+        <span class="menu-item">View</span>
+        <span class="menu-item">Help</span>
+      </div>
+      <div class="win-body" id="toolkit-body">
+
+        <!-- Game Engines -->
+        <div class="toolkit-card">
+          <div class="toolkit-card-hdr">
+            <span class="toolkit-icon-badge">🎮</span>
+            <div>
+              <div class="toolkit-section-title">Game Engines</div>
+              <div class="toolkit-tool-pills">
+                <span class="tool-pill tp-unity">Unity</span>
+                <span class="tool-pill tp-unreal">Unreal Engine</span>
+              </div>
+            </div>
+          </div>
+          <div class="toolkit-card-body">
+            <p class="body-text">
+              Full technical architecture, <strong>C# scripting</strong>, and
+              <strong>Blueprint visual programming</strong> for interactive game mechanics,
+              physics-driven systems, and precision audio triggers. Experienced in profiling,
+              build optimisation, and platform-specific audio configurations for both engines.
+              Developed custom audio managers, event-driven trigger systems, and
+              reactive game logic tied directly to adaptive audio pipelines.
+            </p>
+          </div>
+        </div>
+
+        <!-- Audio Middleware -->
+        <div class="toolkit-card">
+          <div class="toolkit-card-hdr">
+            <span class="toolkit-icon-badge">🔊</span>
+            <div>
+              <div class="toolkit-section-title">Audio Middleware</div>
+              <div class="toolkit-tool-pills">
+                <span class="tool-pill tp-fmod">FMOD Studio</span>
+                <span class="tool-pill tp-wwise">Audiokinetic Wwise</span>
+              </div>
+            </div>
+          </div>
+          <div class="toolkit-card-body">
+            <p class="body-text">
+              Full architectural design of <strong>adaptive audio systems</strong> — from event
+              routing and mixer hierarchy to real-time parameter control (<strong>RTPCs</strong>),
+              mixer snapshots, and effect chain design. Proficient in scripting game-side
+              integration via the FMOD and Wwise <strong>SDKs in C# and C++</strong>. Experience
+              optimising memory budgets, audio pools, and streaming strategies for performance
+              across PC and console platforms.
+            </p>
+          </div>
+        </div>
+
+        <!-- DAW & Composition -->
+        <div class="toolkit-card">
+          <div class="toolkit-card-hdr">
+            <span class="toolkit-icon-badge">🎹</span>
+            <div>
+              <div class="toolkit-section-title">DAW &amp; Composition</div>
+              <div class="toolkit-tool-pills">
+                <span class="tool-pill tp-reaper">REAPER</span>
+                <span class="tool-pill tp-musescore">MuseScore</span>
+              </div>
+            </div>
+          </div>
+          <div class="toolkit-card-body">
+            <p class="body-text">
+              Advanced <strong>REAPER</strong> workflow for high-tier audio editing, field recording
+              curation, SFX processing chains, and foley production. Deep experience with custom
+              routing, scripting with ReaScript, and real-time monitoring setups.
+              <strong>MuseScore</strong> for professional orchestral notation, adaptive score
+              authoring, and structuring layered stems ready for middleware integration.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /win-toolkit -->
+
+    <!-- ── MY WORK ────────────────────────────────── -->
+    <div class="os-window" id="win-work"
+         style="display:none; top:60px; left:140px; width:850px; height:650px;">
+      <div class="win-titlebar" data-win="win-work">
+        <div class="win-title-left">
+          <span class="win-title-icon">🎬</span>
+          <span class="win-title-text">My Work — Audio Projects Showcase</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-work">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-work">□</button>
+          <button class="cap-btn cls-btn" data-action="close"    data-win="win-work">✕</button>
+        </div>
+      </div>
+      <!-- XP Explorer Menubar -->
+      <div class="win-menubar">
+        <span class="menu-item">File</span>
+        <span class="menu-item">Edit</span>
+        <span class="menu-item">View</span>
+        <span class="menu-item">Favorites</span>
+        <span class="menu-item">Help</span>
+      </div>
+      <!-- XP Explorer Toolbar -->
+      <div class="xp-toolbar">
+        <button class="xp-tb-btn" id="xp-btn-back" title="Back" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Back</span>
+        </button>
+        <button class="xp-tb-btn" id="xp-btn-fwd" title="Forward" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="xp-tb-btn" id="xp-btn-up" title="Up" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="xp-tb-sep"></div>
+        <div class="xp-address-row">
+          <span class="xp-addr-label">Address</span>
+          <input class="xp-address-bar" id="xp-address-bar" type="text" value="C:\DiegoOS\My Work" aria-label="Address bar" />
+          <button class="xp-addr-go">Go</button>
+        </div>
+      </div>
+      <!-- XP Main Layout -->
+      <div class="xp-explorer-layout">
+        <!-- Left sidebar -->
+        <div class="xp-sidebar">
+          <div class="xp-sidebar-box">
+            <div class="xp-sidebar-hdr">📁 File and Folder Tasks</div>
+            <div class="xp-sidebar-body">
+              <div class="xp-sidebar-link">📄 Make a new folder</div>
+              <div class="xp-sidebar-link">📤 Publish to the Web</div>
+              <div class="xp-sidebar-link">📧 Share this folder</div>
+            </div>
+          </div>
+          <div class="xp-sidebar-box">
+            <div class="xp-sidebar-hdr">🗂 Other Places</div>
+            <div class="xp-sidebar-body">
+              <div class="xp-sidebar-link">🖥 My Computer</div>
+              <div class="xp-sidebar-link">📂 My Documents</div>
+              <div class="xp-sidebar-link">🌐 Network Places</div>
+            </div>
+          </div>
+          <div class="xp-sidebar-box" id="xp-details-box">
+            <div class="xp-sidebar-hdr">ℹ️ Details</div>
+            <div class="xp-sidebar-body">
+              <div class="xp-detail-icon">📁</div>
+              <div class="xp-detail-name" id="xp-details-name">My Work</div>
+              <div class="xp-detail-type" id="xp-details-type">Folder</div>
+              <hr class="xp-detail-hr"/>
+              <div class="xp-detail-stat" id="xp-details-size">6 items</div>
+            </div>
+          </div>
+        </div>
+        <!-- Right folder view -->
+        <div class="xp-folder-view" id="xp-folder-view" role="list" aria-label="Folder contents">
+          <!-- Injected by initFileExplorer() -->
+        </div>
+      </div>
+    </div><!-- /win-work -->
+
+    <!-- ── CONTACT ────────────────────────────────── -->
+    <div class="os-window" id="win-contact"
+         style="display:none; top:70px; left:180px; width:850px; height:650px;">
+      <div class="win-titlebar" data-win="win-contact">
+        <div class="win-title-left">
+          <span class="win-title-icon">💻</span>
+          <span class="win-title-text">Command Prompt — contact.exe</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-contact">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-contact">□</button>
+          <button class="cap-btn cls-btn" data-action="close"    data-win="win-contact">✕</button>
+        </div>
+      </div>
+      <div class="win-body terminal-body" id="contact-body">
+        <div class="terminal-screen">
+          <div id="terminal-history"></div>
+          <div class="terminal-prompt-row">
+            <span class="tp">C:\DiegoOS&gt;</span>
+            <input type="text" id="terminal-input" autocomplete="off" aria-label="Terminal input" />
+          </div>
+        </div>
+      </div>
+    </div><!-- /win-contact -->
+
+    <!-- ── DISPLAY PROPERTIES ──────────────────────── -->
+    <div class="os-window" id="win-properties"
+         style="display:none; top:120px; left:200px; width:450px; height:380px;">
+      <div class="win-titlebar" data-win="win-properties">
+        <div class="win-title-left">
+          <span class="win-title-icon">⚙️</span>
+          <span class="win-title-text">Display Properties</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-properties">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-properties">□</button>
+          <button class="cap-btn cls-btn" data-action="close"    data-win="win-properties">✕</button>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span class="menu-item">File</span>
+        <span class="menu-item">View</span>
+        <span class="menu-item">Help</span>
+      </div>
+      <div class="win-body" id="properties-body">
+        <div class="win-panel" style="height: 100%; display: flex; flex-direction: column; margin-bottom: 0;">
+          <div class="win-panel-hdr">⚙️ DiegoOS Settings Manager</div>
+          <div class="win-panel-body" style="flex: 1; display: flex; flex-direction: column; gap: 20px; justify-content: center;">
+            
+            <!-- Day/Night Toggle -->
+            <div class="prop-control-row">
+              <label class="prop-label">Theme Mode:</label>
+              <div class="prop-control-field">
+                <button class="prop-toggle-btn" id="prop-theme-toggle">
+                  <span id="prop-theme-status">Day Mode</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Volume Slider -->
+            <div class="prop-control-row">
+              <label class="prop-label">Master Volume:</label>
+              <div class="prop-control-field">
+                <div class="prop-vol-container">
+                  <span class="prop-vol-icon">🔊</span>
+                  <input type="range" id="prop-vol-slider" min="0" max="100" value="70" aria-label="Properties master volume" />
+                  <span id="prop-vol-val">70%</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div><!-- /win-properties -->
+
+    <!-- ── NOTEPAD ────────────────────────────────── -->
+        <!-- 🗂️ PDF CONTEXT VIEWER ────────────────────────────────────────────────────────── -->
+    <div class="os-window" id="win-pdf-viewer"
+         style="display:none; top:70px; left:140px; width:850px; height:680px;">
+      <div class="win-titlebar" data-win="win-pdf-viewer">
+        <div class="win-title-left">
+          <span class="win-title-icon">📄</span>
+          <span class="win-title-text">Adobe Reader - Project Details</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-pdf-viewer">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-pdf-viewer">□</button>
+          <button class="cap-btn cls-btn" data-action="close"    data-win="win-pdf-viewer">✕</button>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span class="menu-item">File</span>
+        <span class="menu-item">View</span>
+        <span class="menu-item">Document</span>
+        <span class="menu-item">Tools</span>
+        <span class="menu-item">Help</span>
+      </div>
+      <div class="win-body pdf-viewer-body" style="padding:0; display:flex; flex-direction:column; overflow:hidden; background:#333;">
+        <div class="pdf-toolbar">
+          <div class="pdf-toolbar-group">
+            <button class="pdf-btn" id="pdf-btn-print" title="Print Document">🖨️</button>
+            <button class="pdf-btn" id="pdf-btn-save" title="Save Copy">💾</button>
+          </div>
+          <div class="pdf-toolbar-group">
+            <button class="pdf-btn" id="pdf-btn-zoom-out" title="Zoom Out">➖</button>
+            <span class="pdf-zoom-level">100%</span>
+            <button class="pdf-btn" id="pdf-btn-zoom-in" title="Zoom In">➕</button>
+          </div>
+          <div class="pdf-toolbar-group">
+            <span class="pdf-page-indicator">Page 1 of 1</span>
+          </div>
+        </div>
+        <div class="pdf-content-area" style="flex:1; overflow-y:auto; padding:20px; background:#525659;">
+          <div class="pdf-page-sheet" id="pdf-page-sheet">
+            <!-- Injected dynamically by openReadme(proj) -->
+          </div>
+        </div>
+      </div>
+    </div><!-- /win-pdf-viewer -->
+
+    <div class="os-window" id="win-notepad"
+         style="display:none; top:90px; left:120px; width:850px; height:650px;">
+      <div class="win-titlebar" data-win="win-notepad">
+        <div class="win-title-left">
+          <span class="win-title-icon">📝</span>
+          <span class="win-title-text">Notepad - Nuevo Documento</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-notepad">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-notepad">□</button>
+          <button class="cap-btn cls-btn" data-action="close"    data-win="win-notepad">✕</button>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span class="menu-item">File</span>
+        <span class="menu-item">Edit</span>
+        <span class="menu-item">Help</span>
+      </div>
+      <div class="win-body notepad-body" style="padding:0;">
+        <textarea class="notepad-textarea" id="notepad-textarea" placeholder="Type your notes here..." aria-label="Notepad text area"></textarea>
+      </div>
+    </div><!-- /win-notepad -->
+
+    <!-- ── GAME RUNNER ───────────────────────────────── -->
+    <div class="os-window" id="win-game-runner"
+         style="display:none; top:50px; left:150px; width:900px; height:650px;">
+      <div class="win-titlebar" data-win="win-game-runner">
+        <div class="win-title-left">
+          <span class="win-title-icon">🎮</span>
+          <span class="win-title-text" id="game-runner-title">DiegoOS Executable Engine</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-game-runner">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-game-runner">□</button>
+          <button class="cap-btn cls-btn" data-action="close"    data-win="win-game-runner">✕</button>
+        </div>
+      </div>
+      <div class="win-body" id="game-runner-body" style="padding:0; overflow:hidden; background:#000;">
+        <!-- iframe injected by initFileExplorer() -->
+      </div>
+    </div><!-- /win-game-runner -->
+
+    <!-- ── DEMOREEL / DIEGOTUBE ─────────────────────────── -->
+    <div class="os-window" id="win-demoreel"
+         style="display:none; top:55px; left:120px; width:880px; height:660px;">
+      <div class="win-titlebar" data-win="win-demoreel">
+        <div class="win-title-left">
+          <span class="win-title-icon">📼</span>
+          <span class="win-title-text">DiegoTube — Audio Demoreels</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-demoreel">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-demoreel">□</button>
+          <button class="cap-btn cls-btn" data-action="close"    data-win="win-demoreel">✕</button>
+        </div>
+      </div>
+      <!-- Browser-bar mimicking a URL bar -->
+      <div class="dt-urlbar">
+        <span class="dt-url-ico">🔒</span>
+        <div class="dt-url-input">diegotube.com/channel/diegosansano</div>
+        <button class="dt-url-go">Go</button>
+      </div>
+      <div class="win-body dt-body">
+
+        <!-- ── DiegoTube Header ── -->
+        <div class="dt-header">
+          <div class="dt-logo">
+            <span class="dt-logo-diego">Diego</span><span class="dt-logo-tube">Tube</span>
+          </div>
+          <div class="dt-header-search">
+            <input type="text" class="dt-search-inp" placeholder="Search audio reels..." aria-label="DiegoTube search" />
+            <button class="dt-search-btn" aria-label="Search">🔍</button>
+          </div>
+          <div class="dt-header-right">
+            <button class="dt-header-btn">Upload</button>
+            <button class="dt-header-btn dt-signin-btn">Sign In</button>
+          </div>
+        </div>
+
+        <!-- ── Main layout: sidebar + content ── -->
+        <div class="dt-layout">
+
+          <!-- Sidebar -->
+          <nav class="dt-sidebar" aria-label="DiegoTube navigation">
+            <div class="dt-nav-item dt-nav-active">🏠 Home</div>
+            <div class="dt-nav-item">🔥 Trending Audio</div>
+            <div class="dt-nav-item">📻 Subscriptions</div>
+            <div class="dt-nav-item">📂 Library</div>
+            <div class="dt-nav-sep"></div>
+            <div class="dt-nav-label">SUBSCRIPTIONS</div>
+            <div class="dt-nav-item">🎮 GameAudioPros</div>
+            <div class="dt-nav-item">🎵 SoundDesignHub</div>
+            <div class="dt-nav-item">🔊 FMODOfficial</div>
+            <div class="dt-nav-sep"></div>
+            <div class="dt-nav-label">EXPLORE</div>
+            <div class="dt-nav-item">🎶 Music</div>
+            <div class="dt-nav-item">🎙️ Podcasts</div>
+          </nav>
+
+          <!-- Main content -->
+          <main class="dt-main">
+            <div class="dt-section-title">🎬 Featured Reels</div>
+
+            <div class="dt-video-grid">
+
+              <!-- Card 1 -->
+              <div class="dt-video-card">
+                <div class="dt-thumb" style="background:linear-gradient(135deg,#1a0a2e,#3d1a6e,#1e0a3a);">
+                  <div class="dt-thumb-overlay">
+                    <div class="dt-play-btn" aria-label="Play video">▶</div>
+                  </div>
+                  <div class="dt-thumb-icons">
+                    <span class="dt-thumb-icon">🎮</span>
+                    <span class="dt-thumb-icon">🔊</span>
+                  </div>
+                  <span class="dt-duration">03:42</span>
+                </div>
+                <div class="dt-card-info">
+                  <div class="dt-video-title">Game Audio Showreel 2025 — Dynamic Combat &amp; Ambiance Systems</div>
+                  <div class="dt-video-meta">Diego Sansano</div>
+                  <div class="dt-video-stats">1.2M views &bull; 3 days ago</div>
+                </div>
+              </div>
+
+              <!-- Card 2 -->
+              <div class="dt-video-card">
+                <div class="dt-thumb" style="background:linear-gradient(135deg,#0a1a2e,#1a3a6e,#0a2040);">
+                  <div class="dt-thumb-overlay">
+                    <div class="dt-play-btn" aria-label="Play video">▶</div>
+                  </div>
+                  <div class="dt-thumb-icons">
+                    <span class="dt-thumb-icon">🌊</span>
+                    <span class="dt-thumb-icon">🎵</span>
+                  </div>
+                  <span class="dt-duration">05:18</span>
+                </div>
+                <div class="dt-card-info">
+                  <div class="dt-video-title">FMOD Integration — Adaptive Music &amp; Real-Time Parameter Demo</div>
+                  <div class="dt-video-meta">Diego Sansano</div>
+                  <div class="dt-video-stats">847K views &bull; 1 week ago</div>
+                </div>
+              </div>
+
+              <!-- Card 3 -->
+              <div class="dt-video-card">
+                <div class="dt-thumb" style="background:linear-gradient(135deg,#1a0e08,#4a2a10,#2a1a08);">
+                  <div class="dt-thumb-overlay">
+                    <div class="dt-play-btn" aria-label="Play video">▶</div>
+                  </div>
+                  <div class="dt-thumb-icons">
+                    <span class="dt-thumb-icon">🏰</span>
+                    <span class="dt-thumb-icon">🎼</span>
+                  </div>
+                  <span class="dt-duration">02:55</span>
+                </div>
+                <div class="dt-card-info">
+                  <div class="dt-video-title">Orchestral Score — Adaptive Combat Music for Castle Siege</div>
+                  <div class="dt-video-meta">Diego Sansano</div>
+                  <div class="dt-video-stats">562K views &bull; 2 weeks ago</div>
+                </div>
+              </div>
+
+              <!-- Card 4 -->
+              <div class="dt-video-card">
+                <div class="dt-thumb" style="background:linear-gradient(135deg,#001a10,#003a20,#001a10);">
+                  <div class="dt-thumb-overlay">
+                    <div class="dt-play-btn" aria-label="Play video">▶</div>
+                  </div>
+                  <div class="dt-thumb-icons">
+                    <span class="dt-thumb-icon">🌲</span>
+                    <span class="dt-thumb-icon">🌧️</span>
+                  </div>
+                  <span class="dt-duration">07:03</span>
+                </div>
+                <div class="dt-card-info">
+                  <div class="dt-video-title">Enchanted Forest — Procedural Weather &amp; Wildlife Audio System</div>
+                  <div class="dt-video-meta">Diego Sansano</div>
+                  <div class="dt-video-stats">320K views &bull; 1 month ago</div>
+                </div>
+              </div>
+
+              <!-- Card 5 -->
+              <div class="dt-video-card">
+                <div class="dt-thumb" style="background:linear-gradient(135deg,#0a0818,#201840,#0a0818);">
+                  <div class="dt-thumb-overlay">
+                    <div class="dt-play-btn" aria-label="Play video">▶</div>
+                  </div>
+                  <div class="dt-thumb-icons">
+                    <span class="dt-thumb-icon">🛸</span>
+                    <span class="dt-thumb-icon">⚡</span>
+                  </div>
+                  <span class="dt-duration">04:21</span>
+                </div>
+                <div class="dt-card-info">
+                  <div class="dt-video-title">Zero-G Audio — Orbital Station Hull Stress &amp; Comm Systems</div>
+                  <div class="dt-video-meta">Diego Sansano</div>
+                  <div class="dt-video-stats">198K views &bull; 1 month ago</div>
+                </div>
+              </div>
+
+              <!-- Card 6 -->
+              <div class="dt-video-card">
+                <div class="dt-thumb" style="background:linear-gradient(135deg,#1a1008,#3a2808,#1a1008);">
+                  <div class="dt-thumb-overlay">
+                    <div class="dt-play-btn" aria-label="Play video">▶</div>
+                  </div>
+                  <div class="dt-thumb-icons">
+                    <span class="dt-thumb-icon">🏜️</span>
+                    <span class="dt-thumb-icon">💨</span>
+                  </div>
+                  <span class="dt-duration">06:10</span>
+                </div>
+                <div class="dt-card-info">
+                  <div class="dt-video-title">Wasteland Echo — Post-Apocalyptic Environmental Sound Design</div>
+                  <div class="dt-video-meta">Diego Sansano</div>
+                  <div class="dt-video-stats">145K views &bull; 2 months ago</div>
+                </div>
+              </div>
+
+            </div><!-- /dt-video-grid -->
+
+            <div class="dt-section-title" style="margin-top:20px;">🔴 Live Now</div>
+            <div class="dt-live-banner">
+              <span class="dt-live-dot"></span>
+              <strong>LIVE:</strong> Wwise Integration Workshop — Real-Time Audio Programming Q&amp;A
+              <button class="dt-live-join">Join Stream</button>
+            </div>
+
+          </main>
+        </div><!-- /dt-layout -->
+      </div><!-- /dt-body -->
+    </div><!-- /win-demoreel -->
+
+    <!-- ════════════════════════════════════
+         START MENU
+    ════════════════════════ -->
+    <div id="start-menu" style="display:none;" aria-label="Start Menu">
+      <div class="sm-header">
+        <div class="sm-avatar">
+          <svg viewBox="0 0 48 48" fill="none" width="44" height="44">
+            <circle cx="24" cy="18" r="11" fill="#5eb8ff" stroke="#2080cc" stroke-width="1.5"/>
+            <ellipse cx="24" cy="40" rx="18" ry="11" fill="#5eb8ff" stroke="#2080cc" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="sm-userinfo">
+          <div class="sm-username">Diego Sansano</div>
+          <div class="sm-usertag">Sound Designer · Game Audio</div>
+        </div>
+      </div>
+      <div class="sm-cols">
+        <div class="sm-col sm-left">
+          <div class="sm-search-wrap">
+            <div class="sm-search-box">
+              <span class="sm-search-ico" aria-hidden="true">
+                <svg class="retro-search-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="10" cy="10" r="6" fill="#7ec8ff" stroke="#1a3b8a" stroke-width="1.8" opacity="0.9"/>
+                  <path d="M7 8 C8 7, 9.5 7, 10.5 8" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
+                  <line x1="14.5" y1="14.5" x2="20.5" y2="20.5" stroke="#7040e0" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="14.5" y1="14.5" x2="20.5" y2="20.5" stroke="#200080" stroke-width="1" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <input type="text" id="taskbar-search"
+                     placeholder="Search programs..."
+                     aria-label="Search programs" autocomplete="off" />
+            </div>
+          </div>
+          <div class="sm-col-label">Programs</div>
+          <div class="sm-item" data-window="win-about">
+            <span class="sm-item-icon">👤</span>
+            <div class="sm-item-text"><strong>About Me</strong><small>Bio &amp; Experience</small></div>
+          </div>
+          <div class="sm-item" data-window="win-toolkit">
+            <span class="sm-item-icon">🎛️</span>
+            <div class="sm-item-text"><strong>Toolkit</strong><small>FMOD · Wwise · Unity · Unreal</small></div>
+          </div>
+          <div class="sm-item" data-window="win-work">
+            <span class="sm-item-icon">🎬</span>
+            <div class="sm-item-text"><strong>My Work</strong><small>6 Audio Projects</small></div>
+          </div>
+          <div class="sm-item" data-window="win-contact">
+            <span class="sm-item-icon">💻</span>
+            <div class="sm-item-text"><strong>Contact</strong><small>dsansano070403@gmail.com</small></div>
+          </div>
+          <div class="sm-item" data-window="win-demoreel">
+            <span class="sm-item-icon">📼</span>
+            <div class="sm-item-text"><strong>Demoreels</strong><small>DiegoTube · Audio Reels</small></div>
+          </div>
+          <hr class="sm-hr"/>
+          <div class="sm-item sm-nowin" id="sm-portfolio-link">
+            <span class="sm-item-icon">🌐</span>
+            <div class="sm-item-text"><strong>Live Portfolio</strong><small>Open in browser</small></div>
+          </div>
+        </div>
+        <div class="sm-col sm-right">
+          <div class="sm-col-label">System</div>
+          <div class="sm-item sm-nowin"><span class="sm-item-icon">📂</span> My Documents</div>
+          <div class="sm-item sm-nowin"><span class="sm-item-icon">🖥️</span> My Computer</div>
+          <div class="sm-item sm-nowin"><span class="sm-item-icon">⚙️</span> Control Panel</div>
+          <hr class="sm-hr"/>
+          <div class="sm-item sm-nowin" id="sm-shutdown"><span class="sm-item-icon">⏻</span> Shut Down...</div>
+        </div>
+      </div>
+      <div class="sm-footer">
+        <button class="sm-foot-btn" id="sm-logoff-btn">Log Off</button>
+        <button class="sm-foot-btn" id="sm-shutdown-btn">Shut Down</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════
+         TASKBAR
+    ════════════════════════ -->
+    <div id="taskbar" role="navigation" aria-label="Taskbar">
+
+      <!-- Left: Start + Search -->
+      <div class="tb-left">
+        <button id="start-btn" aria-label="Open Start Menu" aria-expanded="false">
+          <span class="start-flag" aria-hidden="true">
+            <b class="sf-tl"></b><b class="sf-tr"></b>
+            <b class="sf-bl"></b><b class="sf-br"></b>
+          </span>
+          <span class="start-txt">start</span>
+        </button>
+      </div>
+
+      <!-- Center: Window Tabs -->
+      <div class="tb-center" id="taskbar-tabs" role="group" aria-label="Open windows"></div>
+
+      <!-- Right: System Tray -->
+      <div class="tb-right" id="system-tray">
+        <!-- Balloon Tooltip (Modern XP Style) -->
+        <div id="balloon-tip" aria-live="polite" role="status" style="display:none;">
+          <button id="balloon-close" aria-label="Close notification">✕</button>
+          <div class="balloon-title">Welcome to DiegoOS!</div>
+          <div class="balloon-body">Double-click the icons on the desktop or use the Start menu to explore my portfolio and audio work.</div>
+          <div class="balloon-arrow" aria-hidden="true"></div>
+        </div>
+
+        <button class="tray-btn" id="dark-mode-btn" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+          <span id="dark-icon">☀️</span>
+        </button>
+        <div class="tray-vol-wrap" title="Volume">
+          <button class="tray-vol-btn" id="mute-btn" title="Toggle Mute" aria-label="Toggle mute">
+            <span id="mute-icon">🔉</span>
+          </button>
+          <input type="range" id="vol-slider"
+                 min="0" max="100" value="70"
+                 aria-label="Master volume" />
+        </div>
+        <div class="tray-sep"></div>
+        <div class="tray-clock" id="tray-clock" aria-live="polite" aria-label="Clock">12:00</div>
+      </div>
+
+    </div><!-- /taskbar -->
+
+  </div><!-- /desktop -->
+
+  <script src="script.js"></script>
+</body>
+</html>
