@@ -2213,6 +2213,10 @@ body.dark-mode .xp-sidebar-hdr {
   flex-shrink: 0;
   display: inline-block;
 }
+/* Resplandor de contraste para el logo personalizado en modo claro */
+body:not(.dark-mode) #start-btn .start-logo-img {
+  filter: drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.95)) drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.35)) !important;
+}
 
 /* Reescalado del Logo en la Pantalla de Apagado (Retro Shutdown) */
 .shutdown-logo-row .shutdown-logo-img {
@@ -2252,12 +2256,180 @@ body.dark-mode .xp-sidebar-hdr {
   border: 1px solid rgba(255,255,255,0.4);
 }
 
+/* Ajuste del contenedor de imágenes para dar más holgura */
+.xp-icon-img {
+  width: 60px !important;
+  height: 56px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Incremento de escala masivo para las portadas de los juegos/videos */
 .xp-custom-thumb {
-  width: 48px; height: 48px;
-  object-fit: cover; border-radius: 4px;
-  border: 1px solid #7f9db9; background: #000;
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+  width: 56px !important; 
+  height: 54px !important;
+  object-fit: cover; 
+  border-radius: 4px;
+  border: 1px solid #7f9db9; 
+  background: #000;
+  box-shadow: 1px 2px 4px rgba(0,0,0,0.25) !important;
 }
 .xp-type-video .xp-custom-thumb {
   border-color: #b30c0c; /* Detalle rojo sutil para los videos en vez de azul exe */
+}
+
+/* --- DIEGOBOOK PARODY (ABOUT ME) --- */
+.fb-body { background: #f7f7f7 !important; padding: 0 !important; font-family: 'lucida grande', tahoma, verdana, arial, sans-serif !important; color: #333; }
+.fb-header { background: #3b5998; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+.fb-logo { font-size: 20px; font-weight: bold; letter-spacing: -0.5px; }
+.fb-logo-box { background: #fff; color: #3b5998; padding: 0 4px; border-radius: 2px; margin-left: 2px; }
+.fb-search input { padding: 3px 6px; border: 1px solid #1d2a5b; border-radius: 2px; font-size: 11px; }
+.fb-nav { font-size: 12px; font-weight: bold; }
+.fb-layout { display: flex; gap: 16px; padding: 16px; max-width: 850px; margin: 0 auto; }
+.fb-left { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+.fb-profile-pic { width: 100%; border: 1px solid #ccc; padding: 2px; background: #fff; }
+.fb-actions { background: #f2f2f2; border: 1px solid #d8d8d8; padding: 6px; }
+.fb-action-link { font-size: 11px; color: #3b5998; margin-bottom: 5px; cursor: pointer; }
+.fb-action-link:hover { text-decoration: underline; }
+.fb-info-box { border: 1px solid #d8d8d8; background: #fff; }
+.fb-box-title { background: #f2f2f2; color: #333; font-weight: bold; font-size: 11px; padding: 6px; border-bottom: 1px solid #d8d8d8; }
+.fb-box-content { padding: 8px; font-size: 11px; line-height: 1.5; color: #555; }
+.fb-friends-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.fb-friend { background: #e0e6f8; color: #3b5998; padding: 8px 4px; text-align: center; font-weight: bold; font-size: 10px; border: 1px solid #c0d0f0; }
+.fb-right { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+.fb-wall-title { font-size: 16px; font-weight: bold; color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+.fb-post { border-bottom: 1px solid #e5e5e5; padding-bottom: 12px; }
+.fb-post-header { font-size: 12px; margin-bottom: 8px; color: #555; }
+.fb-author { color: #3b5998; font-weight: bold; cursor: pointer; }
+.fb-author:hover { text-decoration: underline; }
+.fb-post-content { font-size: 13px; line-height: 1.5; color: #111; margin-bottom: 8px; }
+.fb-post-meta { font-size: 11px; color: #777; }
+
+/* --- ADD/REMOVE PROGRAMS (TOOLKIT) --- */
+.ar-body { background: #fff !important; padding: 0 !important; display: flex; font-family: 'Tahoma', sans-serif !important; color: #000; }
+.ar-sidebar { width: 170px; background: #849EC6; display: flex; flex-direction: column; padding: 10px 5px; gap: 5px; flex-shrink: 0; }
+.ar-side-btn { display: flex; align-items: center; gap: 10px; padding: 8px; color: #000; font-size: 11px; cursor: pointer; border-radius: 3px; }
+.ar-side-btn.active { background: #fff; }
+.ar-side-btn:not(.active):hover { background: rgba(255,255,255,0.3); }
+.ar-icon { font-size: 24px; }
+.ar-content { flex: 1; display: flex; flex-direction: column; background: #ece9d8; }
+.ar-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #ECE9D8; border-bottom: 1px solid #aca899; }
+.ar-header-text { font-size: 11px; font-weight: bold; }
+.ar-sort { font-size: 11px; }
+.ar-list { flex: 1; background: #fff; overflow-y: auto; padding: 0; border: 2px inset #ddd; margin: 0 10px 10px; }
+.ar-item { border-bottom: 1px solid #eee; }
+.ar-item-header { display: flex; align-items: center; padding: 10px 14px; cursor: pointer; transition: background 0.1s; }
+.ar-item-header:hover { background: #f4f4f4; }
+.ar-item.expanded .ar-item-header { background: #D1E4FA; }
+.ar-item-icon { font-size: 28px; width: 40px; text-align: center; }
+.ar-item-title { flex: 1; font-size: 12px; font-weight: bold; margin-left: 10px; }
+.ar-item-size { font-size: 11px; color: #555; }
+.ar-item-details { display: none; background: #D1E4FA; padding: 0 14px 14px 64px; }
+.ar-item.expanded .ar-item-details { display: block; }
+.ar-item-details p { font-size: 11px; line-height: 1.5; color: #222; margin-bottom: 10px; max-width: 550px; }
+.ar-item-meta { font-size: 10px; color: #555; margin-bottom: 10px; display: flex; gap: 20px; }
+.ar-item-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.ar-item-actions button { font-family: 'Tahoma'; font-size: 11px; padding: 3px 12px; border: 1px solid #7f9db9; background: #f3f3f3; border-radius: 2px; cursor: pointer; }
+.ar-item-actions button:hover { background: #e0e0e0; }
+
+.ar-item-logo {
+  width: 32px; height: 32px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 20px; border: 1px solid rgba(0,0,0,0.5);
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.2);
+}
+
+/* --- Incremento de Legibilidad en las Publicaciones del Muro (DiegoBook) --- */
+.fb-post-content {
+  font-size: 15px !important;    /* Letra más grande y clara */
+  line-height: 1.7 !important;   /* Interlineado amplio estilo editorial */
+  color: #1c1e21 !important;     /* Color negro de alto contraste original de FB */
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+.fb-post-content strong {
+  color: #3b5998 !important;     /* Resaltados importantes en azul corporativo */
+  font-weight: 700;
+}
+.fb-box-content {
+  font-size: 12.5px !important;  /* Datos de información lateral más legibles */
+  line-height: 1.6;
+}
+
+/* --- Incremento de Legibilidad en las Descripciones de Skills (Toolkit) --- */
+.ar-item-details p {
+  font-size: 14px !important;    /* Texto de habilidades grande y nítido */
+  line-height: 1.6 !important;
+  color: #111111 !important;     /* Máximo contraste sobre el fondo azul claro */
+  max-width: 680px !important;   /* Caja más ancha para evitar saltos de línea molestos */
+}
+.ar-item-title {
+  font-size: 13.5px !important;  /* Títulos de programas más vistosos */
+}
+.ar-item-meta span {
+  font-size: 11.5px !important;  /* Metadatos inferiores legibles */
+  font-weight: 600;
+}
+
+/* --- NATIVE OS ALERT BOX (HELP SYSTEM) --- */
+.os-alert-overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.25);
+  z-index: 10000; display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.15s ease;
+}
+.os-alert-box {
+  width: 420px; background: var(--win-bg);
+  border: 2px solid var(--win-border); border-radius: 6px 6px 4px 4px;
+  box-shadow: var(--w-shadow-focus); display: flex; flex-direction: column;
+  animation: alert-pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes alert-pop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.os-alert-body { padding: 20px; display: flex; gap: 16px; align-items: flex-start; }
+.os-alert-icon { font-size: 32px; line-height: 1; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2)); }
+.os-alert-text { font-family: var(--f-ui); font-size: 13.5px; color: var(--txt); white-space: pre-wrap; line-height: 1.6; }
+.os-alert-footer { display: flex; justify-content: center; padding: 12px; background: var(--menubar-bg); border-top: 1px solid var(--menubar-bdr); }
+.os-alert-btn {
+  padding: 4px 28px; font-family: var(--f-ui); font-size: 12px; color: #000;
+  border: 1px solid #7f9db9; border-radius: 3px; background: linear-gradient(180deg, #f3f3f3, #e1e1e1);
+  cursor: pointer; box-shadow: inset 1px 1px 0 #fff, 0 1px 2px rgba(0,0,0,0.1);
+}
+.os-alert-btn:hover { background: #e0e0e0; border-color: #003c74; }
+body.dark-mode .os-alert-btn { background: #333; color: #fff; border-color: #555; }
+
+/* --- DIEGOSTEAM PARODY SKIN --- */
+.steam-window { border-color: #2a475e !important; }
+.st-body { background: #1b2838 !important; padding: 0 !important; display: flex; font-family: 'Arial', sans-serif !important; color: #c6d4df; }
+.st-sidebar { width: 220px; background: #222b35; border-right: 1px solid #171a21; padding: 14px 0; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+.st-sidebar-title { font-size: 11px; font-weight: 800; color: #8f98a0; padding: 0 16px 8px; letter-spacing: 1px; }
+.st-sidebar-row { padding: 8px 16px; font-size: 13px; color: #b8b6b4; cursor: pointer; transition: background 0.1s; }
+.st-sidebar-row:hover { background: #2b3542; color: #fff; }
+.st-sidebar-row.active { background: #384353; color: #66c0f4; font-weight: 700; }
+.st-main-panel { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #1b2838; }
+.st-empty-state { margin: auto; font-size: 14px; color: #8f98a0; }
+.st-game-hero { height: 220px; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding: 20px 24px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.st-game-title { font-size: 32px; font-weight: 800; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+.st-game-dev { font-size: 12px; color: #66c0f4; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); margin-top: 2px; }
+.st-play-bar { background: #283442; padding: 16px 24px; display: flex; align-items: center; gap: 24px; border-bottom: 1px solid #171a21; }
+.st-play-btn { background: linear-gradient(90deg, #a4d007 0%, #799a05 100%); border: none; border-radius: 2px; color: #fff; font-size: 20px; font-weight: 800; padding: 12px 64px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); letter-spacing: 1px; }
+.st-play-btn:hover { filter: brightness(1.15); }
+.st-play-btn:active { transform: scale(0.98); }
+.st-stats-box { display: flex; gap: 24px; }
+.st-stat { display: flex; flex-direction: column; }
+.st-stat small { font-size: 9px; font-weight: 700; color: #8f98a0; letter-spacing: 0.5px; }
+.st-stat span { font-size: 13px; color: #fff; font-weight: 600; margin-top: 2px; }
+.st-game-desc-panel { padding: 24px; }
+.st-game-desc-panel h3 { font-size: 14px; text-transform: uppercase; color: #fff; border-bottom: 1px solid #2a475e; padding-bottom: 6px; margin-bottom: 12px; letter-spacing: 0.5px; }
+.st-game-desc-panel p { font-size: 14px; line-height: 1.6; color: #acb2b8; text-align: justify; }
+
+/* --- ESCALADO PARA ICONOS PNG EN EL ESCRITORIO --- */
+.desktop-icon-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(1px 2px 5px rgba(0,0,0,0.6));
 }

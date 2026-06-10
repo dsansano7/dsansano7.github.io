@@ -45,7 +45,7 @@
       </div>
     </div>
     <div class="boot-footer">
-      <span>Copyright © DiegoOS Corporation</span>
+      <span>Copyright © Diego Sansano Reboll</span>
       <span class="boot-brand-r">DiegoOS</span>
     </div>
   </div>
@@ -70,17 +70,7 @@
       <div class="desktop-icon" id="icon-about" data-window="win-about"
            tabindex="0" role="button" aria-label="About Me — Open window">
         <div class="icon-img">
-          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="ag1" cx="40%" cy="35%">
-                <stop offset="0%" stop-color="#90d0ff"/>
-                <stop offset="100%" stop-color="#1a6dbd"/>
-              </radialGradient>
-            </defs>
-            <circle cx="32" cy="21" r="14" fill="url(#ag1)" stroke="#0a4a9a" stroke-width="1.5"/>
-            <ellipse cx="32" cy="51" rx="21" ry="13" fill="url(#ag1)" stroke="#0a4a9a" stroke-width="1.5"/>
-            <circle cx="27" cy="18" r="4" fill="white" opacity="0.35"/>
-          </svg>
+          <img src="Images/Diegobook.png" class="desktop-icon-img" alt="DiegoBook">
         </div>
         <span class="icon-label">About Me</span>
       </div>
@@ -88,17 +78,7 @@
       <div class="desktop-icon" id="icon-toolkit" data-window="win-toolkit"
            tabindex="0" role="button" aria-label="Toolkit — Open window">
         <div class="icon-img">
-          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="6"  width="56" height="14" rx="4" fill="#78e878" stroke="#1a6a1a" stroke-width="1.5"/>
-            <rect x="4" y="24" width="56" height="14" rx="4" fill="#ffb84d" stroke="#a06000" stroke-width="1.5"/>
-            <rect x="4" y="42" width="56" height="14" rx="4" fill="#ff7070" stroke="#aa0000" stroke-width="1.5"/>
-            <circle cx="51" cy="13" r="4" fill="#0a8a0a"/>
-            <circle cx="42" cy="13" r="4" fill="#40cc40"/>
-            <circle cx="51" cy="31" r="4" fill="#aa6000"/>
-            <circle cx="42" cy="31" r="4" fill="#ffcc66"/>
-            <circle cx="51" cy="49" r="4" fill="#cc0000"/>
-            <circle cx="42" cy="49" r="4" fill="#ff5050"/>
-          </svg>
+          <img src="Images/Toolkit icon.png" class="desktop-icon-img" alt="Toolkit">
         </div>
         <span class="icon-label">Toolkit</span>
       </div>
@@ -133,30 +113,21 @@
       <div class="desktop-icon" id="icon-demoreel" data-window="win-demoreel"
            tabindex="0" role="button" aria-label="Demoreels — Open window">
         <div class="icon-img">
-          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Film reel background -->
-            <circle cx="32" cy="32" r="26" fill="#1a1a1a" stroke="#cc0000" stroke-width="2.5"/>
-            <!-- Reel holes -->
-            <circle cx="32" cy="32" r="7" fill="#cc0000"/>
-            <circle cx="32" cy="32" r="3.5" fill="#111"/>
-            <circle cx="32" cy="14" r="4" fill="#333" stroke="#555" stroke-width="1"/>
-            <circle cx="32" cy="50" r="4" fill="#333" stroke="#555" stroke-width="1"/>
-            <circle cx="14" cy="32" r="4" fill="#333" stroke="#555" stroke-width="1"/>
-            <circle cx="50" cy="32" r="4" fill="#333" stroke="#555" stroke-width="1"/>
-            <circle cx="19" cy="19" r="3.5" fill="#333" stroke="#555" stroke-width="1"/>
-            <circle cx="45" cy="45" r="3.5" fill="#333" stroke="#555" stroke-width="1"/>
-            <circle cx="45" cy="19" r="3.5" fill="#333" stroke="#555" stroke-width="1"/>
-            <circle cx="19" cy="45" r="3.5" fill="#333" stroke="#555" stroke-width="1"/>
-            <!-- Film strip at top -->
-            <rect x="4" y="4" width="56" height="10" rx="2" fill="#222" stroke="#444" stroke-width="1"/>
-            <rect x="8" y="5.5" width="6" height="7" rx="1" fill="#444"/>
-            <rect x="18" y="5.5" width="6" height="7" rx="1" fill="#444"/>
-            <rect x="28" y="5.5" width="6" height="7" rx="1" fill="#cc0000" opacity="0.7"/>
-            <rect x="38" y="5.5" width="6" height="7" rx="1" fill="#444"/>
-            <rect x="48" y="5.5" width="6" height="7" rx="1" fill="#444"/>
-          </svg>
+          <img src="Images/DiegoTube.png" class="desktop-icon-img" alt="DiegoTube">
         </div>
         <span class="icon-label">Demoreels</span>
+      </div>
+
+      <div class="desktop-icon" id="icon-steam" data-window="win-steam" tabindex="0" role="button" aria-label="DiegoSteam — Open library">
+        <div class="icon-img">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="28" fill="#171a21" stroke="#66c0f4" stroke-width="2"/>
+            <path d="M22 42 L30 32 L36 36 L26 46 Z" fill="#2a475e" stroke="#66c0f4" stroke-width="1.5"/>
+            <circle cx="34" cy="24" r="10" fill="#66c0f4"/>
+            <circle cx="24" cy="44" r="4" fill="#171a21" stroke="#66c0f4"/>
+          </svg>
+        </div>
+        <span class="icon-label">DiegoSteam</span>
       </div>
 
     </div><!-- /icon-grid -->
@@ -184,99 +155,74 @@
         <span class="menu-item">View</span>
         <span class="menu-item">Help</span>
       </div>
-      <div class="win-body" id="about-body">
-
-        <!-- Profile Header -->
-        <div class="about-hero">
-          <div class="avatar-wrap" id="avatar-box">
-            <img src="Images/Perfil.png" class="about-avatar-img" alt="Diego Sansano" />
-          </div>
-          <div class="about-hero-info">
-            <h1 class="about-name">Diego Sansano Reboll</h1>
-            <div class="about-role">Sound Designer · Game Audio Programmer</div>
-            <div class="about-badges">
-              <span class="badge badge-blue">🎓 Berklee College of Music</span>
-              <span class="badge badge-green">🎮 UJI Graduate</span>
-              <span class="badge badge-gold">🎷 Professional Saxophonist</span>
-            </div>
-          </div>
+      <div class="win-body fb-body" id="about-body">
+        <div class="fb-header">
+          <div class="fb-logo">diego<span class="fb-logo-box">book</span></div>
+          <div class="fb-search"><input type="text" placeholder="Search" aria-label="Search"></div>
+          <div class="fb-nav">Profile | Friends | Inbox</div>
         </div>
-
-        <!-- Biography Panel -->
-        <div class="win-panel">
-          <div class="win-panel-hdr">📝 Biography</div>
-          <div class="win-panel-body">
-            <p class="body-text">
-              I'm a <strong>Game Audio Developer</strong> passionate about shaping the sonic identity of
-              interactive experiences. My work sits at the intersection of technical audio programming and
-              creative sound design — building the systems that make games feel alive.
-            </p>
-            <p class="body-text" style="margin-top:8px;">
-              I hold a <strong>University Degree in Video Game Design and Development</strong> from
-              <em>Universitat Jaume I (UJI)</em>, am currently completing a
-              <strong>Master's in Game Audio</strong> at <em>Berklee College of Music</em>, and hold a
-              <strong>Professional Music Degree in Saxophone</strong>. That classical foundation gives me
-              a musician's ear that elevates everything from foley to adaptive scores.
-            </p>
-          </div>
-        </div>
-
-        <!-- Education Panel -->
-        <div class="win-panel">
-          <div class="win-panel-hdr">🎓 Education</div>
-          <div class="win-panel-body edu-grid">
-            <div class="edu-card">
-              <div class="edu-degree">Master's in Game Audio</div>
-              <div class="edu-school">Berklee College of Music · Boston, USA</div>
-              <div class="edu-status">In Progress</div>
+        
+        <div class="fb-layout">
+          <div class="fb-left">
+            <img src="Images/Perfil.png" alt="Diego" class="fb-profile-pic">
+            <div class="fb-actions">
+              <div class="fb-action-link">View Photos of Diego (5)</div>
+              <div class="fb-action-link" onclick="WindowManager.open('win-contact')">Send Diego a Message</div>
             </div>
-            <div class="edu-card">
-              <div class="edu-degree">Degree in Video Game Design &amp; Development</div>
-              <div class="edu-school">Universitat Jaume I (UJI) · Castellón, Spain</div>
-              <div class="edu-status">Graduated</div>
-            </div>
-            <div class="edu-card">
-              <div class="edu-degree">Professional Music Degree — Saxophone</div>
-              <div class="edu-school">Conservatorio Superior de Música</div>
-              <div class="edu-status">Completed</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Firescale Studios Panel -->
-        <div class="win-panel">
-          <div class="win-panel-hdr">💼 Professional Experience</div>
-          <div class="win-panel-body">
-            <div class="exp-header-row">
-              <div class="exp-logo-ph">[ Studio Logo ]</div>
-              <div>
-                <div class="exp-studio">Firescale Studios</div>
-                <div class="exp-role-title">Audio Designer &amp; Game Designer</div>
-                <div class="exp-dates">📅 May 2025 — August 2025</div>
+            <div class="fb-info-box">
+              <div class="fb-box-title">Information</div>
+              <div class="fb-box-content">
+                <strong>Networks:</strong> Spain<br>
+                <strong>Status:</strong> Online<br>
+                <strong>Location:</strong> Valencia, Spain<br>
+                <strong>College:</strong> Berklee College
               </div>
             </div>
-            <ul class="resp-list">
-              <li>✍️ Authored the <strong>Game Design Document (GDD)</strong> — narrative structure, core pillars, and production scope</li>
-              <li>📈 Designed <strong>progression curves</strong> — difficulty scaling, player reward loops, and pacing systems</li>
-              <li>⚙️ Architected <strong>core gameplay mechanics</strong> — movement, interaction, and economy loops</li>
-              <li>🗺️ Led <strong>level layout design</strong> — spatial flow, enemy density mapping, and environmental storytelling</li>
-              <li>🤖 Programmed <strong>enemy AI behaviors</strong> — patrol, detection, and combat state machines</li>
-              <li>🎵 Crafted the complete <strong>sonic palette</strong> — custom SFX libraries and layered environmental ambiances</li>
-            </ul>
+            <div class="fb-info-box">
+              <div class="fb-box-title">Friends</div>
+              <div class="fb-box-content fb-friends-grid">
+                <div class="fb-friend"><span>FMOD</span></div>
+                <div class="fb-friend"><span>Wwise</span></div>
+                <div class="fb-friend"><span>Unity</span></div>
+                <div class="fb-friend"><span>Unreal</span></div>
+                <div class="fb-friend"><span>REAPER</span></div>
+                <div class="fb-friend"><span>C#</span></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="fb-right">
+            <div class="fb-wall-title">Diego's Wall</div>
+            
+            <div class="fb-post">
+              <div class="fb-post-header"><span class="fb-author">Diego Sansano Reboll</span> updated his bio.</div>
+              <div class="fb-post-content">
+                I am a Game Audio Developer and Sound Designer based in Valencia, Spain. I hold a degree in Game Design and Development (UJI) and now, I'm taking a Master’s in Game Audio from Berklee College of Music.<br><br>
+                My technical expertise is rooted in a strong musical foundation as a Professional Conservatory Graduate in Saxophone. This background allows me to approach game audio with a "musician’s ear", bringing a unique sensitivity to rhythm, timbre, and emotional pacing to interactive worlds.
+              </div>
+              <div class="fb-post-meta">Just now · Comment · Like</div>
+            </div>
+            
+            <div class="fb-post">
+              <div class="fb-post-header"><span class="fb-author">Diego Sansano Reboll</span> graduated!</div>
+              <div class="fb-post-content">
+                Degree in Video Game Design &amp; Development from Universitat Jaume I (UJI) and a Professional Music Degree in Saxophone.
+              </div>
+              <div class="fb-post-meta">July 2024 · Comment · Like</div>
+            </div>
+
+            <div class="fb-post">
+              <div class="fb-post-header"><span class="fb-author">Diego Sansano Reboll</span> worked at Firescale Studios.</div>
+              <div class="fb-post-content">
+                Audio &amp; Game Designer at <strong>Firescale Studios</strong> (May 2025 - Aug 2025).<br><br>
+                • Authored the Game Design Document (GDD) and progression curves.<br>
+                • Programmed enemy AI behaviors (patrol, combat state machines).<br>
+                • Crafted the complete sonic palette and environmental ambiances.
+              </div>
+              <div class="fb-post-meta">May 2025 · Comment · Like</div>
+            </div>
           </div>
         </div>
-
-        <!-- Languages -->
-        <div class="win-panel">
-          <div class="win-panel-hdr">🌐 Languages &amp; Info</div>
-          <div class="win-panel-body lang-row">
-            <span class="lang-pill">🇪🇸 Spanish — Native</span>
-            <span class="lang-pill">🇨🇦 Catalan — Native</span>
-            <span class="lang-pill">🇬🇧 English — C1</span>
-            <span class="lang-pill">🚗 Driving Licence B</span>
-          </div>
-        </div>
-
       </div>
     </div><!-- /win-about -->
 
@@ -299,79 +245,126 @@
         <span class="menu-item">View</span>
         <span class="menu-item">Help</span>
       </div>
-      <div class="win-body" id="toolkit-body">
-
-        <!-- Game Engines -->
-        <div class="toolkit-card">
-          <div class="toolkit-card-hdr">
-            <span class="toolkit-icon-badge">🎮</span>
-            <div>
-              <div class="toolkit-section-title">Game Engines</div>
-              <div class="toolkit-tool-pills">
-                <span class="tool-pill tp-unity">Unity</span>
-                <span class="tool-pill tp-unreal">Unreal Engine</span>
-              </div>
-            </div>
+      <div class="win-body ar-body" id="toolkit-body">
+        <div class="ar-sidebar">
+          <div class="ar-side-btn active" id="btn-ar-list">
+            <div class="ar-icon">📦</div>
+            <span>Change or<br>Remove<br>Programs</span>
           </div>
-          <div class="toolkit-card-body">
-            <p class="body-text">
-              Full technical architecture, <strong>C# scripting</strong>, and
-              <strong>Blueprint visual programming</strong> for interactive game mechanics,
-              physics-driven systems, and precision audio triggers. Experienced in profiling,
-              build optimisation, and platform-specific audio configurations for both engines.
-              Developed custom audio managers, event-driven trigger systems, and
-              reactive game logic tied directly to adaptive audio pipelines.
-            </p>
+          <div class="ar-side-btn" id="btn-ar-install">
+            <div class="ar-icon">💿</div>
+            <span>Add New<br>Programs</span>
           </div>
         </div>
-
-        <!-- Audio Middleware -->
-        <div class="toolkit-card">
-          <div class="toolkit-card-hdr">
-            <span class="toolkit-icon-badge">🔊</span>
-            <div>
-              <div class="toolkit-section-title">Audio Middleware</div>
-              <div class="toolkit-tool-pills">
-                <span class="tool-pill tp-fmod">FMOD Studio</span>
-                <span class="tool-pill tp-wwise">Audiokinetic Wwise</span>
+        
+        <div class="ar-content">
+          <div id="ar-view-list" style="display:flex; flex-direction:column; height:100%;">
+            <div class="ar-header">
+              <span class="ar-header-text">Currently installed programs:</span>
+              <span class="ar-sort">Sort by: <select><option>Size</option></select></span>
+            </div>
+            <div class="ar-list" id="ar-list">
+              
+              <div class="ar-item">
+                <div class="ar-item-header">
+                  <div class="ar-item-logo" style="background:#003050;color:#00e0ff;">F</div>
+                  <div class="ar-item-title">FMOD Studio</div>
+                  <div class="ar-item-size">Size: <strong>1.2 GB</strong></div>
+                </div>
+                <div class="ar-item-details">
+                  <p>Through FMOD Studio I create highly interactive sonic ecosystems. I utilize dynamic parameters and Snapshots to build mixes that evolve in real-time based on the game state.</p>
+                  <div class="ar-item-actions"><button class="ar-btn-remove">Remove</button></div>
+                </div>
               </div>
+
+              <div class="ar-item">
+                <div class="ar-item-header">
+                  <div class="ar-item-logo" style="background:#300808;color:#ff8080;">W</div>
+                  <div class="ar-item-title">Audiokinetic Wwise</div>
+                  <div class="ar-item-size">Size: <strong>1.5 GB</strong></div>
+                </div>
+                <div class="ar-item-details">
+                  <p>Working with Audiokinetic Wwise allows me to design complex, data-driven sonic ecosystems. I specialize in managing interactive music hierarchy and using RTPCs.</p>
+                  <div class="ar-item-actions"><button class="ar-btn-remove">Remove</button></div>
+                </div>
+              </div>
+
+              <div class="ar-item">
+                <div class="ar-item-header">
+                  <div class="ar-item-logo" style="background:#222;color:#fff;">U</div>
+                  <div class="ar-item-title">Unity 3D</div>
+                  <div class="ar-item-size">Size: <strong>4.8 GB</strong></div>
+                </div>
+                <div class="ar-item-details">
+                  <p>My Unity mastery focuses on architecting adaptive audio systems through C# scripting. I design systems that react dynamically to gameplay and manage complex AudioMixer hierarchies.</p>
+                  <div class="ar-item-actions"><button class="ar-btn-remove">Remove</button></div>
+                </div>
+              </div>
+
+              <div class="ar-item">
+                <div class="ar-item-header">
+                  <div class="ar-item-logo" style="background:#0020e8;color:#fff;">U</div>
+                  <div class="ar-item-title">Unreal Engine</div>
+                  <div class="ar-item-size">Size: <strong>15.2 GB</strong></div>
+                </div>
+                <div class="ar-item-details">
+                  <p>My work in Unreal Engine focuses on seamless audio integration using Blueprints. I utilize modern tools like MetaSounds to create dynamic sound sources.</p>
+                  <div class="ar-item-actions"><button class="ar-btn-remove">Remove</button></div>
+                </div>
+              </div>
+
+              <div class="ar-item">
+                <div class="ar-item-header">
+                  <div class="ar-item-logo" style="background:#1a1000;color:#ffaa30;">R</div>
+                  <div class="ar-item-title">REAPER</div>
+                  <div class="ar-item-size">Size: <strong>120 MB</strong></div>
+                </div>
+                <div class="ar-item-details">
+                  <p>Regarding asset production, REAPER is my primary workstation due to its flexibility and automation capabilities. My workflow is optimized through custom scripts.</p>
+                  <div class="ar-item-actions"><button class="ar-btn-remove">Remove</button></div>
+                </div>
+              </div>
+
+              <div class="ar-item">
+                <div class="ar-item-header">
+                  <div class="ar-item-logo" style="background:#100020;color:#c090ff;">M</div>
+                  <div class="ar-item-title">MuseScore</div>
+                  <div class="ar-item-size">Size: <strong>350 MB</strong></div>
+                </div>
+                <div class="ar-item-details">
+                  <p>For composition and orchestration, MuseScore is my key tool for professional engraving. I prepare immaculate materials for session musicians.</p>
+                  <div class="ar-item-actions"><button class="ar-btn-remove">Remove</button></div>
+                </div>
+              </div>
+
             </div>
           </div>
-          <div class="toolkit-card-body">
-            <p class="body-text">
-              Full architectural design of <strong>adaptive audio systems</strong> — from event
-              routing and mixer hierarchy to real-time parameter control (<strong>RTPCs</strong>),
-              mixer snapshots, and effect chain design. Proficient in scripting game-side
-              integration via the FMOD and Wwise <strong>SDKs in C# and C++</strong>. Experience
-              optimising memory budgets, audio pools, and streaming strategies for performance
-              across PC and console platforms.
-            </p>
-          </div>
-        </div>
 
-        <!-- DAW & Composition -->
-        <div class="toolkit-card">
-          <div class="toolkit-card-hdr">
-            <span class="toolkit-icon-badge">🎹</span>
-            <div>
-              <div class="toolkit-section-title">DAW &amp; Composition</div>
-              <div class="toolkit-tool-pills">
-                <span class="tool-pill tp-reaper">REAPER</span>
-                <span class="tool-pill tp-musescore">MuseScore</span>
+          <div id="ar-view-install" class="wizard-body" style="display:none; height:100%;">
+            <div class="wizard-main" id="wizard-step-1">
+              <div class="wizard-sidebar">
+                <div class="wizard-side-title">DiegoOS<br>Skill<br>Installer</div>
+              </div>
+              <div class="wizard-content">
+                <h3 class="wizard-h3">Add New Audio Skills</h3>
+                <p class="wizard-p">Click Next to download and integrate new audio development capabilities into your system.</p>
+                <div style="flex:1;"></div>
+                <div class="wizard-footer">
+                  <button class="wizard-btn" id="wizard-next-btn">Next &gt;</button>
+                </div>
               </div>
             </div>
+            <div class="wizard-main" id="wizard-step-2" style="display:none; padding:20px; flex-direction:column;">
+              <h3 class="wizard-h3">Installing Components...</h3>
+              <p class="wizard-p">Please wait while Setup configures Diego's audio systems.</p>
+              <div class="wizard-progress-wrap">
+                <div class="wizard-progress-bar" id="wizard-bar"></div>
+              </div>
+              <p class="wizard-status" id="wizard-status-txt">Connecting to server...</p>
+            </div>
           </div>
-          <div class="toolkit-card-body">
-            <p class="body-text">
-              Advanced <strong>REAPER</strong> workflow for high-tier audio editing, field recording
-              curation, SFX processing chains, and foley production. Deep experience with custom
-              routing, scripting with ReaScript, and real-time monitoring setups.
-              <strong>MuseScore</strong> for professional orchestral notation, adaptive score
-              authoring, and structuring layered stems ready for middleware integration.
-            </p>
-          </div>
-        </div>
 
+        </div>
       </div>
     </div><!-- /win-toolkit -->
 
@@ -807,6 +800,32 @@
         </div><!-- /dt-layout -->
       </div><!-- /dt-body -->
     </div><!-- /win-demoreel -->
+
+    <div class="os-window steam-window" id="win-steam" style="display:none; top:40px; left:80px; width:920px; height:660px;">
+      <div class="win-titlebar" data-win="win-steam" style="background: #171a21; border-bottom: none;">
+        <div class="win-title-left">
+          <span class="win-title-icon">🎮</span>
+          <span class="win-title-text" style="color: #c7d5e0;">DiegoSteam — Games Library</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-steam">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-steam">□</button>
+          <button class="cap-btn cls-btn" data-action="close" data-win="win-steam">✕</button>
+        </div>
+      </div>
+      <div class="win-menubar" style="background: #171a21; border-bottom: 1px solid #2a475e; color: #c7d5e0;">
+        <span class="menu-item" style="color:#c7d5e0;">Store</span>
+        <span class="menu-item" style="color:#c7d5e0;">Library</span>
+        <span class="menu-item" style="color:#c7d5e0;">Community</span>
+        <span class="menu-item" style="color:#c7d5e0;">Help</span>
+      </div>
+      <div class="win-body st-body" id="steam-body">
+        <div class="st-sidebar" id="st-game-list"></div>
+        <div class="st-main-panel" id="st-main-view">
+          <div class="st-empty-state">Select a game from your Library to play.</div>
+        </div>
+      </div>
+    </div>
 
     <!-- ════════════════════════════════════
          START MENU

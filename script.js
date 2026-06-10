@@ -13,7 +13,7 @@ const PROJECTS = [
     id: 1, title: 'The Last of Us', category: 'Sound Redesign', catClass: 'cat-sd', icon: '🧟',
     desc: 'A comprehensive audio redesign of a dynamic sequence, featuring seamless acoustic transitions between interior and exterior environments. The project highlights custom Foley artistry, spatialized environmental soundscaping, and a cinematic mix fully orchestrated in REAPER.',
     tags: ['REAPER', 'Foley', 'Soundscaping', 'Mixing'],
-    gameUrl: '', cover: '' // No tiene portada dedicada en captura
+    gameUrl: '', cover: 'Images/The Last Of Us.png'
   },
   {
     id: 2, title: 'Party Drinker', category: 'Audio Programming', catClass: 'cat-ap', icon: '🍻',
@@ -57,12 +57,12 @@ const AudioEngine = (() => {
   }
 
   function tone({ freq = 440, type = 'sine', gain = 0.15, start = 0,
-                  dur = 0.18, attack = 0.01, release = 0.1 }) {
+    dur = 0.18, attack = 0.01, release = 0.1 }) {
     if (muted) return;
-    const c   = getCtx();
+    const c = getCtx();
     const osc = c.createOscillator();
     const env = c.createGain();
-    const hp  = c.createBiquadFilter();
+    const hp = c.createBiquadFilter();
     hp.type = 'highpass'; hp.frequency.value = 180;
     osc.type = type; osc.frequency.value = freq;
     env.gain.setValueAtTime(0, c.currentTime + start);
@@ -76,19 +76,19 @@ const AudioEngine = (() => {
   function playBootChime() {
     if (muted) return;
     [
-      { freq: 329.63, start: 0,    dur: 1.05, gain: 0.11, type: 'sine'     },
-      { freq: 415.30, start: 0.09, dur: 0.95, gain: 0.09, type: 'sine'     },
-      { freq: 493.88, start: 0.18, dur: 0.88, gain: 0.08, type: 'sine'     },
-      { freq: 659.26, start: 0.27, dur: 0.80, gain: 0.07, type: 'sine'     },
-      { freq: 329.63, start: 0,    dur: 1.3,  gain: 0.05, type: 'triangle' },
-      { freq: 164.81, start: 0,    dur: 1.5,  gain: 0.06, type: 'sine'     },
+      { freq: 329.63, start: 0, dur: 1.05, gain: 0.11, type: 'sine' },
+      { freq: 415.30, start: 0.09, dur: 0.95, gain: 0.09, type: 'sine' },
+      { freq: 493.88, start: 0.18, dur: 0.88, gain: 0.08, type: 'sine' },
+      { freq: 659.26, start: 0.27, dur: 0.80, gain: 0.07, type: 'sine' },
+      { freq: 329.63, start: 0, dur: 1.3, gain: 0.05, type: 'triangle' },
+      { freq: 164.81, start: 0, dur: 1.5, gain: 0.06, type: 'sine' },
     ].forEach(n => tone({ ...n, attack: 0.02, release: 0.4 }));
   }
 
   function playClick() {
     if (muted) return;
     tone({ freq: 1200, type: 'square', gain: 0.035, dur: 0.05, attack: 0.002, release: 0.025 });
-    tone({ freq: 880,  type: 'sine',   gain: 0.025, dur: 0.07, attack: 0.003, release: 0.035 });
+    tone({ freq: 880, type: 'sine', gain: 0.025, dur: 0.07, attack: 0.003, release: 0.035 });
   }
 
   function playHover() {
@@ -98,7 +98,7 @@ const AudioEngine = (() => {
 
   function playOpen() {
     if (muted) return;
-    tone({ freq: 880,  type: 'sine', gain: 0.065, dur: 0.09, attack: 0.005, release: 0.055 });
+    tone({ freq: 880, type: 'sine', gain: 0.065, dur: 0.09, attack: 0.005, release: 0.055 });
     tone({ freq: 1046, type: 'sine', gain: 0.050, start: 0.06, dur: 0.09, attack: 0.004, release: 0.055 });
   }
 
@@ -109,7 +109,7 @@ const AudioEngine = (() => {
   }
 
   function setMuted(val) { muted = Boolean(val); }
-  function isMuted()     { return muted; }
+  function isMuted() { return muted; }
 
   function setVolume(vol) {
     masterVol = Math.max(0, Math.min(1, vol));
@@ -119,26 +119,28 @@ const AudioEngine = (() => {
   }
   function getVolume() { return masterVol; }
 
-  return { playBootChime, playClick, playHover, playOpen, playClose,
-           setMuted, isMuted, setVolume, getVolume };
+  return {
+    playBootChime, playClick, playHover, playOpen, playClose,
+    setMuted, isMuted, setVolume, getVolume
+  };
 })();
 
 /* ──────────────────────────────────────────────────────────────
    2. WINDOW MANAGER
    ────────────────────────────────────────────────────────────── */
 const WindowManager = (() => {
-  let topZ   = 100;
+  let topZ = 100;
   const wins = {};   // id → { el, minimized, maximized, prevRect }
   const tabs = {};   // id → <button>
   const meta = {     // id → { icon, label }  — extensible at runtime
-    'win-about':      { icon:'👤', label:'About Me'          },
-    'win-toolkit':    { icon:'🎛️', label:'Toolkit'           },
-    'win-work':       { icon:'🎬', label:'My Work'           },
-    'win-contact':    { icon:'💻', label:'Contact'           },
-    'win-properties': { icon:'⚙️', label:'Display Properties' },
-    'win-notepad':    { icon:'📝', label:'Notepad'           },
-    'win-pdf-viewer': { icon:'📄', label:'Adobe Reader'      },
-    'win-demoreel':   { icon:'📼', label:'Demoreels'         },
+    'win-about': { icon: '👤', label: 'About Me' },
+    'win-toolkit': { icon: '🎛️', label: 'Toolkit' },
+    'win-work': { icon: '🎬', label: 'My Work' },
+    'win-contact': { icon: '💻', label: 'Contact' },
+    'win-properties': { icon: '⚙️', label: 'Display Properties' },
+    'win-notepad': { icon: '📝', label: 'Notepad' },
+    'win-pdf-viewer': { icon: '📄', label: 'Adobe Reader' },
+    'win-demoreel': { icon: '📼', label: 'Demoreels' },
   };
 
   const tabsEl = document.getElementById('taskbar-tabs');
@@ -147,7 +149,7 @@ const WindowManager = (() => {
   function register(id, extraMeta) {
     const el = document.getElementById(id);
     if (!el) return;
-    wins[id] = { el, minimized:false, maximized:false, prevRect:null };
+    wins[id] = { el, minimized: false, maximized: false, prevRect: null };
     if (extraMeta) meta[id] = extraMeta;
     _initDrag(id, el);
     _initResize(el);
@@ -177,7 +179,7 @@ const WindowManager = (() => {
       return;
     }
     if (w.el.style.display === 'flex') { focus(id); return; }
-    
+
     // Set display flex first so we can compute actual offsetWidth/offsetHeight
     w.el.style.display = 'flex';
 
@@ -186,12 +188,12 @@ const WindowManager = (() => {
     const viewportHeight = window.innerHeight;
     const winWidth = w.el.offsetWidth || parseInt(w.el.style.width, 10) || 850;
     const winHeight = w.el.offsetHeight || parseInt(w.el.style.height, 10) || 650;
-    
+
     let left = (viewportWidth - winWidth) / 2;
     let top = (viewportHeight - 52 - winHeight) / 2;
     if (left < 0) left = 0;
     if (top < 0) top = 0;
-    
+
     w.el.style.left = left + 'px';
     w.el.style.top = top + 'px';
 
@@ -218,7 +220,7 @@ const WindowManager = (() => {
     if (!w) return;
     w.minimized = true;
     w.el.classList.add('minimized-snap');
-    setTimeout(() => { w.el.style.display='none'; w.el.classList.remove('minimized-snap'); }, 220);
+    setTimeout(() => { w.el.style.display = 'none'; w.el.classList.remove('minimized-snap'); }, 220);
     AudioEngine.playClick();
     if (tabs[id]) tabs[id].classList.remove('active');
   }
@@ -231,13 +233,15 @@ const WindowManager = (() => {
       w.el.classList.remove('maximized');
       if (w.prevRect) {
         const r = w.prevRect;
-        w.el.style.top = r.top; w.el.style.left  = r.left;
+        w.el.style.top = r.top; w.el.style.left = r.left;
         w.el.style.width = r.width; w.el.style.height = r.height;
       }
       w.maximized = false;
     } else {
-      w.prevRect = { top:w.el.style.top, left:w.el.style.left,
-                     width:w.el.style.width, height:w.el.style.height };
+      w.prevRect = {
+        top: w.el.style.top, left: w.el.style.left,
+        width: w.el.style.width, height: w.el.style.height
+      };
       w.el.classList.add('maximized');
       w.maximized = true;
     }
@@ -248,16 +252,16 @@ const WindowManager = (() => {
   /* ─ tabs ─────────────────────────────────────────────────── */
   function _createTab(id) {
     if (tabs[id]) return;
-    const m   = meta[id] || { icon:'🪟', label: id };
+    const m = meta[id] || { icon: '🪟', label: id };
     const btn = document.createElement('button');
     btn.className = 'tb-tab'; btn.id = `tab-${id}`;
     btn.textContent = `${m.icon} ${m.label}`;
     btn.addEventListener('click', () => {
       const w = wins[id];
       if (!w) return;
-      if (w.minimized)                           open(id);
+      if (w.minimized) open(id);
       else if (tabs[id].classList.contains('active')) minimize(id);
-      else                                       focus(id);
+      else focus(id);
     });
     tabsEl.appendChild(btn);
     tabs[id] = btn;
@@ -283,16 +287,16 @@ const WindowManager = (() => {
     const move = (cx, cy) => {
       if (!dragging) return;
       el.style.left = Math.max(0, cx - ox) + 'px';
-      el.style.top  = Math.max(0, cy - oy) + 'px';
+      el.style.top = Math.max(0, cy - oy) + 'px';
     };
     const up = () => { dragging = false; document.body.style.userSelect = ''; };
 
-    tb.addEventListener('mousedown',  e => down(e.clientX, e.clientY));
-    document.addEventListener('mousemove',  e => move(e.clientX, e.clientY));
-    document.addEventListener('mouseup',    up);
-    tb.addEventListener('touchstart', e => { const t=e.touches[0]; down(t.clientX,t.clientY); }, {passive:true});
-    document.addEventListener('touchmove',  e => { const t=e.touches[0]; move(t.clientX,t.clientY); }, {passive:true});
-    document.addEventListener('touchend',   up);
+    tb.addEventListener('mousedown', e => down(e.clientX, e.clientY));
+    document.addEventListener('mousemove', e => move(e.clientX, e.clientY));
+    document.addEventListener('mouseup', up);
+    tb.addEventListener('touchstart', e => { const t = e.touches[0]; down(t.clientX, t.clientY); }, { passive: true });
+    document.addEventListener('touchmove', e => { const t = e.touches[0]; move(t.clientX, t.clientY); }, { passive: true });
+    document.addEventListener('touchend', up);
     el.addEventListener('mousedown', () => focus(id));
   }
 
@@ -301,17 +305,17 @@ const WindowManager = (() => {
     const h = document.createElement('div');
     h.style.cssText = 'position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;z-index:10;';
     el.appendChild(h);
-    let on=false, sx=0, sy=0, sw=0, sh=0;
+    let on = false, sx = 0, sy = 0, sw = 0, sh = 0;
     h.addEventListener('mousedown', e => {
-      on=true; sx=e.clientX; sy=e.clientY; sw=el.offsetWidth; sh=el.offsetHeight;
-      e.stopPropagation(); document.body.style.userSelect='none';
+      on = true; sx = e.clientX; sy = e.clientY; sw = el.offsetWidth; sh = el.offsetHeight;
+      e.stopPropagation(); document.body.style.userSelect = 'none';
     });
     document.addEventListener('mousemove', e => {
       if (!on) return;
-      el.style.width  = Math.max(340, sw + e.clientX - sx) + 'px';
+      el.style.width = Math.max(340, sw + e.clientX - sx) + 'px';
       el.style.height = Math.max(240, sh + e.clientY - sy) + 'px';
     });
-    document.addEventListener('mouseup', () => { on=false; document.body.style.userSelect=''; });
+    document.addEventListener('mouseup', () => { on = false; document.body.style.userSelect = ''; });
   }
 
   /* ─ terminal animation ───────────────────────────────────── */
@@ -333,11 +337,11 @@ function wireCapBtns(root = document) {
     if (btn.dataset.wired) return;
     btn.dataset.wired = '1';
     const action = btn.dataset.action;
-    const winId  = btn.dataset.win;
+    const winId = btn.dataset.win;
     btn.addEventListener('click', e => {
       e.stopPropagation();
       switch (action) {
-        case 'close':    WindowManager.close(winId);    break;
+        case 'close': WindowManager.close(winId); break;
         case 'minimize': WindowManager.minimize(winId); break;
         case 'maximize': WindowManager.maximize(winId); break;
       }
@@ -350,14 +354,14 @@ function wireCapBtns(root = document) {
    4. XP FILE EXPLORER — My Work navigation engine
    ────────────────────────────────────────────────────────────── */
 function initFileExplorer() {
-  const folderView  = document.getElementById('xp-folder-view');
-  const addrBar     = document.getElementById('xp-address-bar');
-  const backBtn     = document.getElementById('xp-btn-back');
-  const upBtn       = document.getElementById('xp-btn-up');
+  const folderView = document.getElementById('xp-folder-view');
+  const addrBar = document.getElementById('xp-address-bar');
+  const backBtn = document.getElementById('xp-btn-back');
+  const upBtn = document.getElementById('xp-btn-up');
   const detailsName = document.getElementById('xp-details-name');
   const detailsType = document.getElementById('xp-details-type');
   const detailsSize = document.getElementById('xp-details-size');
-  const detailIcon  = document.querySelector('#xp-details-box .xp-detail-icon');
+  const detailIcon = document.querySelector('#xp-details-box .xp-detail-icon');
 
   if (!folderView) return;
 
@@ -417,13 +421,13 @@ function initFileExplorer() {
   function renderRoot() {
     currentProj = null;
     folderView.innerHTML = '';
-    if (addrBar)     addrBar.value        = 'C:\\DiegoOS\\My Work';
-    if (backBtn)     backBtn.disabled     = true;
-    if (upBtn)       upBtn.disabled       = true;
+    if (addrBar) addrBar.value = 'C:\\DiegoOS\\My Work';
+    if (backBtn) backBtn.disabled = true;
+    if (upBtn) upBtn.disabled = true;
     if (detailsName) detailsName.textContent = 'My Work';
     if (detailsType) detailsType.textContent = 'File Folder';
     if (detailsSize) detailsSize.textContent = `${PROJECTS.length} objects`;
-    if (detailIcon)  detailIcon.textContent  = '📁';
+    if (detailIcon) detailIcon.textContent = '📁';
 
     PROJECTS.forEach(proj => {
       const item = createFileIcon(
@@ -440,46 +444,39 @@ function initFileExplorer() {
   function navigateInto(proj) {
     currentProj = proj;
     folderView.innerHTML = '';
-    if (addrBar)     addrBar.value           = `C:\\DiegoOS\\My Work\\${proj.title}`;
-    if (backBtn)     backBtn.disabled        = false;
-    if (upBtn)       upBtn.disabled          = false;
+    if (addrBar) addrBar.value = `C:\\DiegoOS\\My Work\\${proj.title}`;
+    if (backBtn) backBtn.disabled = false;
+    if (upBtn) upBtn.disabled = false;
     if (detailsName) detailsName.textContent = proj.title;
     if (detailsType) detailsType.textContent = proj.category;
     if (detailsSize) detailsSize.textContent = '2 objects';
-    if (detailIcon)  detailIcon.textContent  = proj.icon;
+    if (detailIcon) detailIcon.textContent = proj.icon;
     AudioEngine.playOpen();
 
     // PDF Details
     const readme = createFileIcon(pdfSVG, 'Project_Details.pdf', 'pdf', () => openReadme(proj));
     folderView.appendChild(readme);
 
-    // Dynamic file (Executable or Video)
+    // Dynamic file (Video)
     const isVideo = proj.category === 'Sound Redesign' || proj.category === 'UI/UX Audio';
-    const fileType = isVideo ? 'video' : 'exe';
-    const fileLabel = isVideo ? 'Showreel.mp4' : (proj.gameUrl ? 'Demo.exe' : 'Demo.exe (N/A)');
-    
-    let thumbHtml = '';
-    if (proj.cover) {
-      thumbHtml = `<img src="${proj.cover}" class="xp-custom-thumb" alt="${fileLabel}" />`;
-    } else {
-      thumbHtml = isVideo ? videoSVG : (proj.gameUrl ? exeSVG : noExeSVG);
+    if (isVideo) {
+      const thumbHtml = `<img src="Images/Video icono.png" style="width:52px; height:52px; object-fit:contain; filter:drop-shadow(1px 2px 3px rgba(0,0,0,0.4));" alt="Showreel.mp4" />`;
+      const mediaFile = createFileIcon(thumbHtml, 'Showreel.mp4', 'video', () => {
+        WindowManager.open('win-demoreel');
+        AudioEngine.playOpen();
+      });
+      folderView.appendChild(mediaFile);
     }
 
-    const mediaFile = createFileIcon(
-      thumbHtml,
-      fileLabel,
-      fileType,
-      () => {
-        if (isVideo) {
-          WindowManager.open('win-demoreel');
-          AudioEngine.playOpen();
-        } else {
-          openExe(proj);
-        }
-      }
-    );
-    if (!proj.gameUrl && !isVideo) mediaFile.classList.add('xp-icon-disabled');
-    folderView.appendChild(mediaFile);
+    // Link directo a DiegoSteam si el proyecto es jugable
+    if (proj.gameUrl) {
+      const thumbHtml = proj.cover ? `<img src="${proj.cover}" class="xp-custom-thumb" alt="Play on Steam" />` : exeSVG;
+      const steamLink = createFileIcon(thumbHtml, 'Play_on_Steam.url', 'exe', () => {
+        WindowManager.open('win-steam');
+        AudioEngine.playOpen();
+      });
+      folderView.appendChild(steamLink);
+    }
   }
 
   /* ─ openReadme ────────────────────────────────── */
@@ -513,7 +510,7 @@ function initFileExplorer() {
       AudioEngine.playClose();
       return;
     }
-    const body    = document.getElementById('game-runner-body');
+    const body = document.getElementById('game-runner-body');
     const titleEl = document.getElementById('game-runner-title');
     if (body) {
       body.innerHTML = `<iframe src="${proj.gameUrl}" width="100%" height="100%"
@@ -565,13 +562,13 @@ function initFileExplorer() {
 
   /* ─ toolbar buttons ─────────────────────────────── */
   if (backBtn) backBtn.addEventListener('click', () => { if (currentProj) { renderRoot(); AudioEngine.playClick(); } });
-  if (upBtn)   upBtn.addEventListener('click',   () => { if (currentProj) { renderRoot(); AudioEngine.playClick(); } });
+  if (upBtn) upBtn.addEventListener('click', () => { if (currentProj) { renderRoot(); AudioEngine.playClick(); } });
 
   /* ─ initial render ──────────────────────────────── */
   renderRoot();
 }
 
-  
+
 
 const isMobileDevice = () => {
   return window.matchMedia('(max-width: 720px)').matches || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
@@ -639,7 +636,7 @@ function initAudioUnlocker() {
 }
 
 function runBoot() {
-  const boot    = document.getElementById('boot-screen');
+  const boot = document.getElementById('boot-screen');
   const desktop = document.getElementById('desktop');
   const startTime = Date.now();
   const bootDuration = 2500;
@@ -652,7 +649,7 @@ function runBoot() {
     if (!booted && elapsed >= bootDuration) {
       booted = true;
       clearInterval(bootInterval);
-      
+
       boot.classList.add('boot-fade-out');
       desktop.style.display = 'block';
 
@@ -738,7 +735,7 @@ function startClock() {
     try {
       el.textContent = n.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     } catch (e) {
-      el.textContent = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+      el.textContent = `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
     }
   };
   tick();
@@ -751,7 +748,7 @@ function startClock() {
    7. START MENU
    ────────────────────────────────────────────────────────────── */
 function initStartMenu() {
-  const btn  = document.getElementById('start-btn');
+  const btn = document.getElementById('start-btn');
   const menu = document.getElementById('start-menu');
   let open = false;
 
@@ -765,16 +762,16 @@ function initStartMenu() {
   btn.addEventListener('click', e => { e.stopPropagation(); cancelInactivityTimer(); toggle(); });
   document.addEventListener('click', e => {
     if (open && !menu.contains(e.target) && e.target !== btn) {
-      open = false; menu.style.display='none';
-      btn.setAttribute('aria-expanded','false');
+      open = false; menu.style.display = 'none';
+      btn.setAttribute('aria-expanded', 'false');
     }
   });
 
   document.querySelectorAll('#start-menu .sm-item[data-window]').forEach(item => {
     item.addEventListener('click', () => {
       WindowManager.open(item.dataset.window);
-      menu.style.display='none'; open=false;
-      btn.setAttribute('aria-expanded','false');
+      menu.style.display = 'none'; open = false;
+      btn.setAttribute('aria-expanded', 'false');
       AudioEngine.playClick();
     });
   });
@@ -788,7 +785,7 @@ function initStartMenu() {
   }
 
   // Shut down easter egg
-  ['sm-shutdown-btn','sm-shutdown'].forEach(id => {
+  ['sm-shutdown-btn', 'sm-shutdown'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('click', () => {
@@ -825,10 +822,10 @@ function initSearch() {
   if (!inp) return;
 
   const map = [
-    { terms:['about','me','diego','bio','saxophone','berklee','uji','firescale','gdd'],  win:'win-about'   },
-    { terms:['toolkit','fmod','wwise','unity','unreal','reaper','musescore','audio','middleware'], win:'win-toolkit' },
-    { terms:['work','project','enchanted','neon','castle','abyss','orbital','wasteland'], win:'win-work'    },
-    { terms:['contact','email','phone','mail','call','languages','terminal'],             win:'win-contact'  },
+    { terms: ['about', 'me', 'diego', 'bio', 'saxophone', 'berklee', 'uji', 'firescale', 'gdd'], win: 'win-about' },
+    { terms: ['toolkit', 'fmod', 'wwise', 'unity', 'unreal', 'reaper', 'musescore', 'audio', 'middleware'], win: 'win-toolkit' },
+    { terms: ['work', 'project', 'enchanted', 'neon', 'castle', 'abyss', 'orbital', 'wasteland'], win: 'win-work' },
+    { terms: ['contact', 'email', 'phone', 'mail', 'call', 'languages', 'terminal'], win: 'win-contact' },
   ];
 
   inp.addEventListener('keydown', e => {
@@ -848,8 +845,8 @@ function initSearch() {
       const btn = document.getElementById('start-btn');
       if (btn) btn.setAttribute('aria-expanded', 'false');
     } else {
-      inp.style.color='#ff6060';
-      setTimeout(()=>inp.style.color='',800);
+      inp.style.color = '#ff6060';
+      setTimeout(() => inp.style.color = '', 800);
     }
     inp.value = ''; inp.blur();
   });
@@ -870,7 +867,7 @@ function setDarkModeState(state) {
   if (body) body.classList.toggle('dark-mode', isDarkModeGlobal);
   if (darkIcon) darkIcon.textContent = isDarkModeGlobal ? '🌙' : '☀️';
   if (darkBtn) darkBtn.title = isDarkModeGlobal ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-  
+
   if (propThemeStatus) propThemeStatus.textContent = isDarkModeGlobal ? 'Night Mode' : 'Day Mode';
   if (propThemeToggle) {
     if (isDarkModeGlobal) {
@@ -920,9 +917,9 @@ function setVolumeState(percent) {
 }
 
 function initSystemTray() {
-  const darkBtn   = document.getElementById('dark-mode-btn');
-  const muteBtn   = document.getElementById('mute-btn');
-  const muteIcon  = document.getElementById('mute-icon');
+  const darkBtn = document.getElementById('dark-mode-btn');
+  const muteBtn = document.getElementById('mute-btn');
+  const muteIcon = document.getElementById('mute-icon');
   const volSlider = document.getElementById('vol-slider');
 
   // ── Dark Mode ───────────────────────────────────────────
@@ -936,7 +933,7 @@ function initSystemTray() {
   // Initialize UI
   if (volSlider) {
     volSlider.style.setProperty('--vpct', volSlider.value + '%');
-    
+
     // ── Volume Slider ────────────────────────────────────────
     volSlider.addEventListener('input', () => {
       setVolumeState(parseInt(volSlider.value, 10));
@@ -1015,13 +1012,13 @@ function getNearestFreeCell(iconEl, targetLeft, targetTop, maxLeft, maxTop) {
       for (let dx = -layer; dx <= layer; dx++) {
         for (let dy = -layer; dy <= layer; dy++) {
           if (Math.max(Math.abs(dx), Math.abs(dy)) !== layer) continue;
-          
+
           const candidateLeft = targetLeft + dx * 110;
           const candidateTop = targetTop + dy * 120;
-          
+
           if (candidateLeft < 20 || candidateLeft > maxLeft) continue;
           if (candidateTop < 20 || candidateTop > maxTop) continue;
-          
+
           if (!isCellOccupied(iconEl, candidateLeft, candidateTop)) {
             return { left: candidateLeft, top: candidateTop };
           }
@@ -1040,17 +1037,17 @@ function makeIconDraggable(el) {
 
   const onMouseDown = (e) => {
     if (e.button !== 0) return;
-    
+
     // If the clicked icon is not selected, select it exclusively
     if (!el.classList.contains('selected')) {
       document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
       el.classList.add('selected');
     }
-    
+
     dragging = true;
     startX = e.clientX;
     startY = e.clientY;
-    
+
     // Cache all selected icons and their individual starting left/top values
     selectedIcons = Array.from(document.querySelectorAll('.desktop-icon.selected')).map(icon => {
       return {
@@ -1059,33 +1056,33 @@ function makeIconDraggable(el) {
         startTop: parseInt(icon.style.top || '0', 10)
       };
     });
-    
+
     document.body.style.userSelect = 'none';
     e.stopPropagation();
   };
 
   const onMouseMove = (e) => {
     if (!dragging) return;
-    
+
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    
+
     selectedIcons.forEach(item => {
       let newLeft = item.startLeft + dx;
       let newTop = item.startTop + dy;
-      
+
       const desktop = document.getElementById('desktop');
       if (desktop) {
         const db = desktop.getBoundingClientRect();
         const maxLeft = db.width - 100;
         const maxTop = db.height - 110 - 52;
-        
+
         if (newLeft < 0) newLeft = 0;
         if (newLeft > maxLeft) newLeft = maxLeft;
         if (newTop < 0) newTop = 0;
         if (newTop > maxTop) newTop = maxTop;
       }
-      
+
       item.el.style.left = newLeft + 'px';
       item.el.style.top = newTop + 'px';
     });
@@ -1124,7 +1121,7 @@ function makeIconDraggable(el) {
         item.el.style.left = freeCell.left + 'px';
         item.el.style.top = freeCell.top + 'px';
       });
-      
+
       selectedIcons = [];
     }
   };
@@ -1138,12 +1135,12 @@ function makeIconDraggable(el) {
       document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
       el.classList.add('selected');
     }
-    
+
     dragging = true;
     const t = e.touches[0];
     startX = t.clientX;
     startY = t.clientY;
-    
+
     selectedIcons = Array.from(document.querySelectorAll('.desktop-icon.selected')).map(icon => {
       return {
         el: icon,
@@ -1151,7 +1148,7 @@ function makeIconDraggable(el) {
         startTop: parseInt(icon.style.top || '0', 10)
       };
     });
-    
+
     e.stopPropagation();
   };
 
@@ -1160,23 +1157,23 @@ function makeIconDraggable(el) {
     const t = e.touches[0];
     const dx = t.clientX - startX;
     const dy = t.clientY - startY;
-    
+
     selectedIcons.forEach(item => {
       let newLeft = item.startLeft + dx;
       let newTop = item.startTop + dy;
-      
+
       const desktop = document.getElementById('desktop');
       if (desktop) {
         const db = desktop.getBoundingClientRect();
         const maxLeft = db.width - 100;
         const maxTop = db.height - 110 - 52;
-        
+
         if (newLeft < 0) newLeft = 0;
         if (newLeft > maxLeft) newLeft = maxLeft;
         if (newTop < 0) newTop = 0;
         if (newTop > maxTop) newTop = maxTop;
       }
-      
+
       item.el.style.left = newLeft + 'px';
       item.el.style.top = newTop + 'px';
     });
@@ -1237,12 +1234,12 @@ function initDesktopIcons() {
 
   document.getElementById('desktop').addEventListener('click', e => {
     const tgt = e.target;
-    const isDesktopBg = tgt.id==='desktop' || tgt.classList.contains('wp-layer') || tgt.classList.contains('desktop-overlay') || tgt.id === 'icon-grid';
+    const isDesktopBg = tgt.id === 'desktop' || tgt.classList.contains('wp-layer') || tgt.classList.contains('desktop-overlay') || tgt.id === 'icon-grid';
     if (isDesktopBg) {
       document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
       const sm = document.getElementById('start-menu');
       if (sm) sm.style.display = 'none';
-      document.getElementById('start-btn').setAttribute('aria-expanded','false');
+      document.getElementById('start-btn').setAttribute('aria-expanded', 'false');
     }
   });
 }
@@ -1251,19 +1248,19 @@ function startInlineRename(iconEl) {
   if (!labelEl || labelEl.querySelector('input')) return;
 
   const originalText = labelEl.textContent;
-  
+
   labelEl.textContent = '';
   const input = document.createElement('input');
   input.type = 'text';
   input.value = originalText;
   input.className = 'rename-input';
-  
+
   labelEl.appendChild(input);
   input.focus();
   input.select();
-  
+
   let finished = false;
-  
+
   const saveRename = () => {
     if (finished) return;
     finished = true;
@@ -1275,13 +1272,13 @@ function startInlineRename(iconEl) {
       labelEl.textContent = originalText;
     }
   };
-  
+
   const cancelRename = () => {
     if (finished) return;
     finished = true;
     labelEl.textContent = originalText;
   };
-  
+
   input.addEventListener('blur', saveRename);
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
@@ -1292,7 +1289,7 @@ function startInlineRename(iconEl) {
       cancelRename();
     }
   });
-  
+
   input.addEventListener('click', e => e.stopPropagation());
   input.addEventListener('mousedown', e => e.stopPropagation());
 }
@@ -1303,17 +1300,17 @@ function createNewTextFile(x, y) {
 
   const icon = document.createElement('div');
   icon.className = 'desktop-icon text-file-icon';
-  
+
   let left = x - 50;
   let top = y - 40;
-  
+
   if (left < 10) left = 10;
   if (top < 10) top = 10;
   const maxLeft = window.innerWidth - 110;
   const maxTop = window.innerHeight - 150;
   if (left > maxLeft) left = maxLeft;
   if (top > maxTop) top = maxTop;
-  
+
   icon.style.left = left + 'px';
   icon.style.top = top + 'px';
   icon.setAttribute('tabindex', '0');
@@ -1375,12 +1372,14 @@ function createNewTextFile(x, y) {
     e.stopPropagation();
 
     showContextMenu(e, [
-      { l: '✏️ Renombrar', fn: () => {
+      {
+        l: '✏️ Renombrar', fn: () => {
           startInlineRename(icon);
         }
       },
       { sep: true },
-      { l: '🗑️ Eliminar', fn: () => {
+      {
+        l: '🗑️ Eliminar', fn: () => {
           icon.remove();
         }
       }
@@ -1396,12 +1395,12 @@ function showContextMenu(e, items) {
   const m = document.createElement('div');
   m.id = '_ctx';
   m.className = 'os-context-menu';
-  
+
   const menuWidth = 180;
   const menuHeight = items.length * 30 + 10;
   const leftPos = Math.min(e.clientX, window.innerWidth - menuWidth);
   const topPos = Math.min(e.clientY, window.innerHeight - menuHeight);
-  
+
   m.style.left = leftPos + 'px';
   m.style.top = topPos + 'px';
 
@@ -1430,7 +1429,7 @@ function showContextMenu(e, items) {
 
   document.body.appendChild(m);
   AudioEngine.playHover();
-  
+
   setTimeout(() => {
     const closeMenu = () => {
       m.remove();
@@ -1451,7 +1450,7 @@ document.addEventListener('contextmenu', e => {
   showContextMenu(e, [
     { l: '📝 Nuevo Documento de Texto', fn: () => createNewTextFile(e.clientX, e.clientY) },
     { sep: true },
-    { l: '⚙️ Properties',            fn: () => WindowManager.open('win-properties') }
+    { l: '⚙️ Properties', fn: () => WindowManager.open('win-properties') }
   ]);
 });
 
@@ -1483,7 +1482,7 @@ function initTerminalInteraction() {
   const showMenuBanner = () => {
     const history = document.getElementById('terminal-history');
     if (!history) return;
-    
+
     printLine('==================================================', 'th');
     printLine('  DiegoOS Contact & Mail Portal - Version 3.0', 'tp');
     printLine('==================================================', 'th');
@@ -1514,12 +1513,12 @@ function initTerminalInteraction() {
   };
 
   window._initTerminalInstance = initTerminal;
-  
+
   window._animateTerminalInstance = () => {
     initTerminal();
     const inputRow = document.querySelector('.terminal-prompt-row');
     if (inputRow) inputRow.style.opacity = '0';
-    
+
     const history = document.getElementById('terminal-history');
     if (!history) return;
     const lines = history.querySelectorAll('.tl');
@@ -1530,7 +1529,7 @@ function initTerminalInteraction() {
         ln.style.opacity = '1';
       }, i * 30);
     });
-    
+
     setTimeout(() => {
       if (inputRow) {
         inputRow.style.transition = 'opacity 0.1s ease';
@@ -1667,17 +1666,17 @@ function initTerminalInteraction() {
         if (tpSpan) tpSpan.textContent = 'Sending... ';
         printLine('');
         printLine('Connecting to SMTP server...');
-        
+
         setTimeout(() => {
           printLine('Sending message data to dsansano070403@gmail.com...');
-          
+
           setTimeout(() => {
             printLine('[OK] Email composed successfully!', 'tp');
             printLine('Opening local mail client to finalize sending...', 'th');
-            
+
             const mailtoUrl = `mailto:dsansano070403@gmail.com?subject=${encodeURIComponent(mailData.subject)}&body=${encodeURIComponent("From: " + mailData.email + "\n\n" + mailData.body)}`;
             window.location.href = mailtoUrl;
-            
+
             printLine('');
             resetToCommandPrompt();
           }, 800);
@@ -1738,7 +1737,7 @@ function initTaskbarAutoHide() {
 }
 
 function initMobile() {
-  window.matchMedia('(max-width:720px)').addEventListener('change', () => {});
+  window.matchMedia('(max-width:720px)').addEventListener('change', () => { });
 }
 
 function initDesktopDragSelection() {
@@ -1821,14 +1820,161 @@ function initDesktopDragSelection() {
   document.addEventListener('mouseup', onMouseUp);
 }
 
+function initToolkitApp() {
+  const btnList = document.getElementById('btn-ar-list');
+  const btnInstall = document.getElementById('btn-ar-install');
+  const viewList = document.getElementById('ar-view-list');
+  const viewInstall = document.getElementById('ar-view-install');
+  const items = document.querySelectorAll('.ar-item');
+
+  // 1. Acordeón de la lista
+  items.forEach(item => {
+    const header = item.querySelector('.ar-item-header');
+    const rmBtn = item.querySelector('.ar-btn-remove');
+    header.addEventListener('click', () => {
+      items.forEach(otherItem => { if (otherItem !== item) otherItem.classList.remove('expanded'); });
+      item.classList.toggle('expanded');
+      if (item.classList.contains('expanded') && window.AudioEngine) AudioEngine.playClick();
+    });
+    if (rmBtn) {
+      rmBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.AudioEngine) AudioEngine.playClose();
+        item.style.transition = "opacity 0.3s";
+        item.style.opacity = "0";
+        setTimeout(() => item.style.display = "none", 300);
+      });
+    }
+  });
+
+  // 2. Cambio de pestañas en la barra lateral
+  const resetWizard = () => {
+    document.getElementById('wizard-step-1').style.display = 'flex';
+    document.getElementById('wizard-step-2').style.display = 'none';
+    document.getElementById('wizard-bar').style.width = '0%';
+    document.getElementById('wizard-next-btn').textContent = 'Next >';
+    document.getElementById('wizard-next-btn').disabled = false;
+  };
+
+  btnList.addEventListener('click', () => {
+    btnList.classList.add('active'); btnInstall.classList.remove('active');
+    viewList.style.display = 'flex'; viewInstall.style.display = 'none';
+    if (window.AudioEngine) AudioEngine.playClick();
+  });
+
+  btnInstall.addEventListener('click', () => {
+    btnInstall.classList.add('active'); btnList.classList.remove('active');
+    viewInstall.style.display = 'flex'; viewList.style.display = 'none';
+    resetWizard(); // Se resetea cada vez que entras a esta pestaña
+    if (window.AudioEngine) AudioEngine.playClick();
+  });
+
+  // 3. Lógica del Instalador
+  const nextBtn = document.getElementById('wizard-next-btn');
+  nextBtn.addEventListener('click', () => {
+    if (nextBtn.textContent === "Finish") {
+      btnList.click(); // Vuelve a la lista al terminar
+      return;
+    }
+    document.getElementById('wizard-step-1').style.display = 'none';
+    document.getElementById('wizard-step-2').style.display = 'flex';
+    nextBtn.disabled = true;
+
+    let progress = 0;
+    const files = ["Initializing...", "Extracting: fmod_api.dll", "Linking: wwise.lib", "Compiling: C# Scripts", "Finalizing Setup..."];
+    const bar = document.getElementById('wizard-bar');
+    const statusTxt = document.getElementById('wizard-status-txt');
+
+    const interval = setInterval(() => {
+      progress += Math.floor(Math.random() * 8) + 4;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        statusTxt.textContent = "Installation Complete! All audio tools successfully deployed.";
+        nextBtn.textContent = "Finish";
+        nextBtn.disabled = false;
+        if (window.AudioEngine) AudioEngine.playBootChime();
+
+        // --- NUEVA LÓGICA DE RESTAURACIÓN TOTAL ---
+        // Recupera todas las herramientas que hayan sido borradas con "Remove"
+        items.forEach(item => {
+          item.style.display = "block";
+          item.style.opacity = "1";
+          item.classList.remove('expanded'); // Las resetea cerradas
+        });
+      }
+      bar.style.width = progress + '%';
+      const fileIndex = Math.floor((progress / 100) * files.length);
+      if (files[fileIndex]) statusTxt.textContent = files[fileIndex];
+    }, 150);
+  });
+}
+
 /* ──────────────────────────────────────────────────────────────
    13. INIT
    ────────────────────────────────────────────────────────────── */
+
+function initDiegoSteam() {
+  const gameListEl = document.getElementById('st-game-list');
+  const mainViewEl = document.getElementById('st-main-view');
+  if (!gameListEl || !mainViewEl) return;
+
+  const playableGames = PROJECTS.filter(p => p.gameUrl && p.gameUrl !== '');
+  gameListEl.innerHTML = '<div class="st-sidebar-title">GAMES (' + playableGames.length + ')</div>';
+
+  playableGames.forEach((game, idx) => {
+    const row = document.createElement('div');
+    row.className = 'st-sidebar-row';
+    row.textContent = '🕹️ ' + game.title;
+
+    row.addEventListener('click', () => {
+      document.querySelectorAll('.st-sidebar-row').forEach(r => r.classList.remove('active'));
+      row.classList.add('active');
+      if (window.AudioEngine) AudioEngine.playClick();
+
+      mainViewEl.innerHTML = `
+        <div class="st-game-hero" style="background-image: linear-gradient(180deg, rgba(27,40,56,0.2) 0%, #1b2838 100%), url('${game.cover}');">
+          <div class="st-hero-details">
+            <h2 class="st-game-title">${game.title}</h2>
+            <div class="st-game-dev">Developer: Diego Sansano Reboll</div>
+          </div>
+        </div>
+        <div class="st-play-bar">
+          <button class="st-play-btn" id="st-launch-game">PLAY</button>
+          <div class="st-stats-box">
+            <div class="st-stat"><small>LAST PLAYED</small><span>Today</span></div>
+            <div class="st-stat"><small>PLAY TIME</small><span>124 hours</span></div>
+            <div class="st-stat"><small>ACHIEVEMENTS</small><span>100%</span></div>
+          </div>
+        </div>
+        <div class="st-game-desc-panel">
+          <h3>About the Game</h3>
+          <p>${game.desc}</p>
+        </div>
+      `;
+
+      document.getElementById('st-launch-game').addEventListener('click', () => {
+        const body = document.getElementById('game-runner-body');
+        const titleEl = document.getElementById('game-runner-title');
+        if (body) {
+          body.innerHTML = `<iframe src="${game.gameUrl}" width="100%" height="100%" style="border:none;display:block;" title="${game.title} Demo" allow="autoplay; fullscreen"></iframe>`;
+        }
+        if (titleEl) titleEl.textContent = `${game.title} — DiegoOS Executable Engine`;
+        WindowManager.open('win-game-runner');
+      });
+    });
+
+    gameListEl.appendChild(row);
+    if(idx === 0) row.click();
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Register static windows
   ['win-about','win-toolkit','win-work','win-contact','win-properties','win-notepad','win-demoreel','win-game-runner','win-pdf-viewer'].forEach(id => {
     WindowManager.register(id);
   });
+  WindowManager.register('win-steam', { icon: '🎮', label: 'DiegoSteam' });
 
   // Wire caption buttons for static windows
   wireCapBtns();
@@ -1846,6 +1992,78 @@ document.addEventListener('DOMContentLoaded', () => {
   initTerminalInteraction();
   initMobile();
   initAudioUnlocker();
+  initToolkitApp();
+  initDiegoSteam();
+
+  // 1. Función constructora de Alertas del Sistema
+  function showOSAlert(title, message) {
+    if (window.AudioEngine) AudioEngine.playOpen();
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'os-alert-overlay';
+    overlay.innerHTML = `
+      <div class="os-alert-box">
+        <div class="win-titlebar">
+          <div class="win-title-left">
+            <span class="win-title-icon">ℹ️</span>
+            <span class="win-title-text">${title}</span>
+          </div>
+          <div class="win-caption-btns">
+            <button class="cap-btn cls-btn">✕</button>
+          </div>
+        </div>
+        <div class="os-alert-body">
+          <div class="os-alert-icon">💡</div>
+          <div class="os-alert-text">${message}</div>
+        </div>
+        <div class="os-alert-footer">
+          <button class="os-alert-btn">OK</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(overlay);
+
+    const closeAlert = () => {
+      if (window.AudioEngine) AudioEngine.playClose();
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 150);
+    };
+
+    overlay.querySelector('.cls-btn').addEventListener('click', closeAlert);
+    overlay.querySelector('.os-alert-btn').addEventListener('click', closeAlert);
+  }
+
+  // Sistema de Ayuda Global para las Ventanas de DiegoOS
+  const helpMap = {
+    'win-about': "🔹 DiegoBook (About Me):\nParodia de la red social Facebook (versión 2008). Explora las publicaciones del muro central para leer la biografía detallada de Diego, su formación musical avanzada y sus logros de desarrollo de videojuegos en Firescale Studios.",
+    'win-toolkit': "🔹 Add or Remove Programs (Toolkit):\nHaz clic sobre cualquier fila de software para expandir sus detalles técnicos y ver el nivel de dominio. Si usas 'Remove' para ocultar un programa, puedes ir a 'Add New Programs' en la barra lateral para ejecutar el asistente de instalación y restaurarlos todos juntos.",
+    'win-work': "🔹 File Explorer (My Work):\nExplorador de archivos clásico de Windows XP. Haz clic en las carpetas para seleccionarlas y doble clic para entrar en ellas. Dentro de cada proyecto verás un PDF corporativo con la ficha técnica técnica y un ejecutable (.exe o .mp4) para lanzar la simulación de la demo.",
+    'win-pdf-viewer': "🔹 Adobe Reader (Project Details):\nVisor de especificaciones técnicas. Aquí puedes leer con tipografía limpia y maquetación premium los resúmenes editoriales de cada proyecto de sonido, la descripción del flujo de trabajo en REAPER/FMOD y el Tech Stack utilizado.",
+    'win-notepad': "🔹 Notepad (Bloc de Notas):\nEditor de texto plano completamente funcional. Úsalo para escribir recordatorios, notas rápidas de código o comentarios temporales durante tu sesión en el sistema operativo.",
+    'win-properties': "🔹 Control Panel (Display Properties):\nConsola central de configuración. Úsala para regular el mezclador de volumen general de DiegoOS o cambiar el fondo de pantalla alternando entre el modo Día y el modo Noche.",
+    'win-demoreel': "🔹 DiegoTube (Demoreels):\nClon interactivo de YouTube. Explora los reproductores y haz clic en las miniaturas multimedia para cargar y reproducir los demoreels de diseño de sonido y programación de audio de Diego."
+  };
+
+  // 2. Modificación del evento de Ayuda (reemplazando alert)
+  document.querySelectorAll('.menu-item').forEach(item => {
+    if (item.textContent.trim() === 'Help') {
+      // Evitamos duplicar eventos si ya estaba asignado
+      const newClone = item.cloneNode(true);
+      item.parentNode.replaceChild(newClone, item);
+      
+      newClone.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const parentWin = newClone.closest('.os-window');
+        if (parentWin) {
+          const winId = parentWin.id;
+          const helpText = helpMap[winId] || "Asistente de Ayuda de DiegoOS: Utiliza los controles de la ventana para explorar el portfolio interactivo.";
+          // Llamada a la nueva alerta nativa
+          showOSAlert('DiegoOS Help', helpText);
+        }
+      });
+    }
+  });
 
   // Start clock immediately so it doesn't show default 12:00 placeholder
   startClock();
