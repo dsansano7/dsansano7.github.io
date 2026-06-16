@@ -418,18 +418,60 @@ function initFileExplorer() {
   </svg>`;
 
   /* ─ renderRoot ──────────────────────────────────── */
+  // Virtual category definitions
+  const CATEGORIES = [
+    {
+      name: 'Audio Redesign',
+      icon: '🎧',
+      projectIds: [1, 3]   // The Last of Us, Cooking Fever
+    },
+    {
+      name: 'Audio Implementation',
+      icon: '🎮',
+      projectIds: [2, 4]   // Party Drinker, Unwraptal
+    }
+  ];
+
+  let currentCategory = null; // null = root, object = inside a category
+
   function renderRoot() {
     currentProj = null;
+    currentCategory = null;
     folderView.innerHTML = '';
-    if (addrBar) addrBar.value = 'C:\\DiegoOS\\My Work';
-    if (backBtn) backBtn.disabled = true;
-    if (upBtn) upBtn.disabled = true;
+    if (addrBar)     addrBar.value           = 'C:\\DiegoOS\\My Work';
+    if (backBtn)     backBtn.disabled        = true;
+    if (upBtn)       upBtn.disabled          = true;
     if (detailsName) detailsName.textContent = 'My Work';
     if (detailsType) detailsType.textContent = 'File Folder';
-    if (detailsSize) detailsSize.textContent = `${PROJECTS.length} objects`;
-    if (detailIcon) detailIcon.textContent = '📁';
+    if (detailsSize) detailsSize.textContent = `${CATEGORIES.length} folders`;
+    if (detailIcon)  detailIcon.textContent  = '📁';
 
-    PROJECTS.forEach(proj => {
+    CATEGORIES.forEach(cat => {
+      const item = createFileIcon(
+        folderSVG,
+        cat.name,
+        'folder',
+        () => renderCategory(cat)
+      );
+      folderView.appendChild(item);
+    });
+  }
+
+  function renderCategory(cat) {
+    currentProj = null;
+    currentCategory = cat;
+    folderView.innerHTML = '';
+    if (addrBar)     addrBar.value           = `C:\\DiegoOS\\My Work\\${cat.name}`;
+    if (backBtn)     backBtn.disabled        = false;
+    if (upBtn)       upBtn.disabled          = false;
+    if (detailsName) detailsName.textContent = cat.name;
+    if (detailsType) detailsType.textContent = 'File Folder';
+    const projs = PROJECTS.filter(p => cat.projectIds.includes(p.id));
+    if (detailsSize) detailsSize.textContent = `${projs.length} objects`;
+    if (detailIcon)  detailIcon.textContent  = cat.icon;
+    AudioEngine.playOpen();
+
+    projs.forEach(proj => {
       const item = createFileIcon(
         folderSVG,
         proj.title,
@@ -561,8 +603,19 @@ function initFileExplorer() {
   }
 
   /* ─ toolbar buttons ─────────────────────────────── */
-  if (backBtn) backBtn.addEventListener('click', () => { if (currentProj) { renderRoot(); AudioEngine.playClick(); } });
-  if (upBtn) upBtn.addEventListener('click', () => { if (currentProj) { renderRoot(); AudioEngine.playClick(); } });
+  const goBack = () => {
+    AudioEngine.playClick();
+    if (currentProj) {
+      // Inside a project file view → go back to the category
+      if (currentCategory) renderCategory(currentCategory);
+      else renderRoot();
+    } else if (currentCategory) {
+      // Inside a category folder → go back to root
+      renderRoot();
+    }
+  };
+  if (backBtn) backBtn.addEventListener('click', goBack);
+  if (upBtn)   upBtn.addEventListener('click', goBack);
 
   /* ─ initial render ──────────────────────────────── */
   renderRoot();
