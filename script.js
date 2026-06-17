@@ -13,25 +13,25 @@ const PROJECTS = [
     id: 1, title: 'The Last of Us', category: 'Sound Redesign', catClass: 'cat-sd', icon: '🧟',
     desc: 'A comprehensive audio redesign of a dynamic sequence, featuring seamless acoustic transitions between interior and exterior environments. The project highlights custom Foley artistry, spatialized environmental soundscaping, and a cinematic mix fully orchestrated in REAPER.',
     tags: ['REAPER', 'Foley', 'Soundscaping', 'Mixing'],
-    gameUrl: '', cover: 'Images/The Last Of Us.png'
+    gameUrl: '', videoUrl: 'videos/TLOU-Sound-Redesign.mp4', cover: 'Images/The Last Of Us.png'
   },
   {
-    id: 2, title: 'Party Drinker', category: 'Audio Programming', catClass: 'cat-ap', icon: '🍻',
+    id: 2, title: 'Party Drinker', category: 'Audio Implementation', catClass: 'cat-ap', icon: '🍻',
     desc: 'A 48-hour Game Jam project set in a lively party environment, featuring a complete audio build developed from scratch. Rapid implementation using FMOD and Unity, focusing on FMOD spatialization to create an immersive atmosphere.',
     tags: ['FMOD', 'Unity', 'Game Jam', 'Spatialization'],
-    gameUrl: '', cover: 'Images/Party Drinker.png'
+    gameUrl: '', videoUrl: 'videos/Party-Drinker.mp4', cover: 'Images/Party Drinker.png'
   },
   {
-    id: 3, title: 'Cooking Fever', category: 'UI/UX Audio', catClass: 'cat-sd', icon: '🍔',
+    id: 3, title: 'Cooking Fever', category: 'Sound Redesign', catClass: 'cat-sd', icon: '🍔',
     desc: 'UI/UX audio design for a fast-paced management game. Crafted tactile interface sounds and rewarding telemetry by blending processed library assets with custom recordings, with all editing and optimization orchestrated natively in REAPER.',
     tags: ['REAPER', 'UI/UX', 'Sound Design', 'Asset Optimization'],
-    gameUrl: '', cover: 'Images/Cooking FEVER.png'
+    gameUrl: '', videoUrl: 'videos/Cooking-fever-sound-Redesign.mp4', cover: 'Images/Cooking FEVER.png'
   },
   {
-    id: 4, title: 'Unwraptal', category: 'Audio Programming', catClass: 'cat-ap', icon: '🎁',
+    id: 4, title: 'Unwraptal', category: 'Audio Implementation', catClass: 'cat-ap', icon: '🎁',
     desc: 'A full-cycle audio production for a month-long Game Jam. The game features Wario Ware-style mini-games. Crafted all custom SFX and an original dynamic soundtrack (Menu, HUB, and End Game), fully implemented in Unity via FMOD.',
     tags: ['FMOD', 'Unity', 'Music Composition', 'SFX'],
-    gameUrl: './games/unwraptal/index.html', cover: 'Images/Unwraptal.png'
+    gameUrl: './games/unwraptal/index.html', videoUrl: 'videos/Unwraptal.mp4', cover: 'Images/Unwraptal.png'
   }
 ];
 
@@ -207,6 +207,11 @@ const WindowManager = (() => {
   function close(id) {
     const w = wins[id];
     if (!w) return;
+    // Pause video when Media Player is closed
+    if (id === 'win-media-player') {
+      const vid = document.getElementById('os-video-player');
+      if (vid) vid.pause();
+    }
     w.el.style.display = 'none';
     w.minimized = w.maximized = false;
     w.el.classList.remove('maximized', 'minimized-snap');
@@ -354,50 +359,27 @@ function wireCapBtns(root = document) {
    4. XP FILE EXPLORER — My Work navigation engine
    ────────────────────────────────────────────────────────────── */
 function initFileExplorer() {
-  const folderView = document.getElementById('xp-folder-view');
-  const addrBar = document.getElementById('xp-address-bar');
-  const backBtn = document.getElementById('xp-btn-back');
-  const upBtn = document.getElementById('xp-btn-up');
+  const folderView  = document.getElementById('xp-folder-view');
+  const addrBar     = document.getElementById('xp-address-bar');
+  const backBtn     = document.getElementById('xp-btn-back');
+  const upBtn       = document.getElementById('xp-btn-up');
   const detailsName = document.getElementById('xp-details-name');
   const detailsType = document.getElementById('xp-details-type');
   const detailsSize = document.getElementById('xp-details-size');
-  const detailIcon = document.querySelector('#xp-details-box .xp-detail-icon');
+  const detailIcon  = document.querySelector('#xp-details-box .xp-detail-icon');
 
   if (!folderView) return;
 
-  let currentProj = null; // null = root view
+  let viewState   = 'root'; // 'root' | 'category' | 'project'
+  let currentCat  = null;
+  let currentProj = null;
 
-  /* ─ SVG templates ────────────────────────────────────── */
+  /* ─ SVG templates ──────────────────────────────────── */
   const folderSVG = `<svg viewBox="0 0 64 52" fill="none" xmlns="http://www.w3.org/2000/svg" class="xp-icon-svg">
     <path d="M2 10 Q2 6 6 6 L24 6 L30 2 L58 2 Q62 2 62 6 L62 46 Q62 50 58 50 L6 50 Q2 50 2 46 Z" fill="#FFC83D" stroke="#CC8800" stroke-width="1.5"/>
     <path d="M2 16 L62 16 L62 46 Q62 50 58 50 L6 50 Q2 50 2 46 Z" fill="#FFD966" stroke="#CC8800" stroke-width="1.5"/>
     <line x1="14" y1="28" x2="50" y2="28" stroke="#CC8800" stroke-width="1.5" opacity="0.4"/>
     <line x1="14" y1="36" x2="40" y2="36" stroke="#CC8800" stroke-width="1.5" opacity="0.3"/>
-  </svg>`;
-
-  const txtSVG = `<svg viewBox="0 0 54 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="xp-icon-svg">
-    <rect x="2" y="2" width="42" height="60" rx="3" fill="#ffffff" stroke="#3060cc" stroke-width="2"/>
-    <path d="M34 2 L34 14 L46 14" fill="#c8d8f8" stroke="#3060cc" stroke-width="1.5"/>
-    <path d="M34 2 L46 14" fill="none" stroke="#3060cc" stroke-width="2"/>
-    <line x1="9" y1="22" x2="37" y2="22" stroke="#3060cc" stroke-width="1.8"/>
-    <line x1="9" y1="30" x2="37" y2="30" stroke="#aaa" stroke-width="1.5"/>
-    <line x1="9" y1="38" x2="37" y2="38" stroke="#aaa" stroke-width="1.5"/>
-    <line x1="9" y1="46" x2="28" y2="46" stroke="#aaa" stroke-width="1.5"/>
-  </svg>`;
-
-  const exeSVG = `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="xp-icon-svg">
-    <defs><linearGradient id="eg" x1="20" y1="14" x2="52" y2="50" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00ff88"/><stop offset="100%" stop-color="#00aa44"/></linearGradient></defs>
-    <rect x="4" y="4" width="56" height="56" rx="6" fill="#0d1a2e" stroke="#2a5acc" stroke-width="2"/>
-    <polygon points="20,14 20,50 52,32" fill="url(#eg)"/>
-    <circle cx="48" cy="48" r="10" fill="#1a3a6a" stroke="#2a5acc" stroke-width="1.5"/>
-    <text x="48" y="52" text-anchor="middle" fill="#7ec8ff" font-size="9" font-family="monospace" font-weight="bold">.exe</text>
-  </svg>`;
-
-  const noExeSVG = `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="xp-icon-svg">
-    <rect x="4" y="4" width="56" height="56" rx="6" fill="#1a1a2e" stroke="#444" stroke-width="2"/>
-    <polygon points="20,14 20,50 52,32" fill="#444"/>
-    <line x1="14" y1="14" x2="50" y2="50" stroke="#cc2222" stroke-width="3" stroke-linecap="round"/>
-    <line x1="50" y1="14" x2="14" y2="50" stroke="#cc2222" stroke-width="3" stroke-linecap="round"/>
   </svg>`;
 
   const pdfSVG = `<svg viewBox="0 0 54 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="xp-icon-svg">
@@ -410,162 +392,109 @@ function initFileExplorer() {
     <line x1="10" y1="56" x2="30" y2="56" stroke="#999" stroke-width="1.5"/>
   </svg>`;
 
-  const videoSVG = `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="xp-icon-svg">
-    <rect x="6" y="8" width="52" height="48" rx="6" fill="#1a1a1a" stroke="#b30c0c" stroke-width="2"/>
-    <rect x="12" y="14" width="40" height="28" rx="2" fill="#333"/>
-    <polygon points="28,20 28,36 42,28" fill="#b30c0c"/>
-    <rect x="12" y="46" width="40" height="4" rx="2" fill="#555"/>
+  const exeSVG = `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="xp-icon-svg">
+    <defs><linearGradient id="eg" x1="20" y1="14" x2="52" y2="50" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00ff88"/><stop offset="100%" stop-color="#00aa44"/></linearGradient></defs>
+    <rect x="4" y="4" width="56" height="56" rx="6" fill="#0d1a2e" stroke="#2a5acc" stroke-width="2"/>
+    <polygon points="20,14 20,50 52,32" fill="url(#eg)"/>
+    <circle cx="48" cy="48" r="10" fill="#1a3a6a" stroke="#2a5acc" stroke-width="1.5"/>
+    <text x="48" y="52" text-anchor="middle" fill="#7ec8ff" font-size="9" font-family="monospace" font-weight="bold">.exe</text>
   </svg>`;
 
-  /* ─ renderRoot ──────────────────────────────────── */
-  // Virtual category definitions
-  const CATEGORIES = [
-    {
-      name: 'Audio Redesign',
-      icon: '🎧',
-      projectIds: [1, 3]   // The Last of Us, Cooking Fever
-    },
-    {
-      name: 'Audio Implementation',
-      icon: '🎮',
-      projectIds: [2, 4]   // Party Drinker, Unwraptal
-    }
-  ];
-
-  let currentCategory = null; // null = root, object = inside a category
-
+  /* ─ renderRoot ─────────────────────────────────────── */
   function renderRoot() {
-    currentProj = null;
-    currentCategory = null;
+    viewState = 'root'; currentCat = null; currentProj = null;
     folderView.innerHTML = '';
     if (addrBar)     addrBar.value           = 'C:\\DiegoOS\\My Work';
     if (backBtn)     backBtn.disabled        = true;
     if (upBtn)       upBtn.disabled          = true;
     if (detailsName) detailsName.textContent = 'My Work';
-    if (detailsType) detailsType.textContent = 'File Folder';
-    if (detailsSize) detailsSize.textContent = `${CATEGORIES.length} folders`;
+    if (detailsType) detailsType.textContent = 'System Folder';
+    if (detailsSize) detailsSize.textContent = '2 folders';
     if (detailIcon)  detailIcon.textContent  = '📁';
 
-    CATEGORIES.forEach(cat => {
-      const item = createFileIcon(
-        folderSVG,
-        cat.name,
-        'folder',
-        () => renderCategory(cat)
-      );
-      folderView.appendChild(item);
-    });
+    folderView.appendChild(createFileIcon(folderSVG, 'Audio Redesign',       'folder', () => renderCategory('Sound Redesign')));
+    folderView.appendChild(createFileIcon(folderSVG, 'Audio Implementation',  'folder', () => renderCategory('Audio Implementation')));
   }
 
-  function renderCategory(cat) {
-    currentProj = null;
-    currentCategory = cat;
+  /* ─ renderCategory ─────────────────────────────────── */
+  function renderCategory(catName) {
+    viewState = 'category'; currentCat = catName; currentProj = null;
     folderView.innerHTML = '';
-    if (addrBar)     addrBar.value           = `C:\\DiegoOS\\My Work\\${cat.name}`;
+    if (addrBar)     addrBar.value           = `C:\\DiegoOS\\My Work\\${catName}`;
     if (backBtn)     backBtn.disabled        = false;
     if (upBtn)       upBtn.disabled          = false;
-    if (detailsName) detailsName.textContent = cat.name;
+    if (detailsName) detailsName.textContent = catName;
     if (detailsType) detailsType.textContent = 'File Folder';
-    const projs = PROJECTS.filter(p => cat.projectIds.includes(p.id));
+    const projs = PROJECTS.filter(p => p.category === catName);
     if (detailsSize) detailsSize.textContent = `${projs.length} objects`;
-    if (detailIcon)  detailIcon.textContent  = cat.icon;
+    if (detailIcon)  detailIcon.textContent  = '📂';
     AudioEngine.playOpen();
-
     projs.forEach(proj => {
-      const item = createFileIcon(
-        folderSVG,
-        proj.title,
-        'folder',
-        () => navigateInto(proj)
-      );
-      folderView.appendChild(item);
+      folderView.appendChild(createFileIcon(folderSVG, proj.title, 'folder', () => navigateInto(proj)));
     });
   }
 
-  /* ─ navigateInto ───────────────────────────────── */
+  /* ─ navigateInto ───────────────────────────────────── */
   function navigateInto(proj) {
-    currentProj = proj;
+    viewState = 'project'; currentProj = proj;
     folderView.innerHTML = '';
-    if (addrBar) addrBar.value = `C:\\DiegoOS\\My Work\\${proj.title}`;
-    if (backBtn) backBtn.disabled = false;
-    if (upBtn) upBtn.disabled = false;
+    if (addrBar)     addrBar.value           = `C:\\DiegoOS\\My Work\\${currentCat}\\${proj.title}`;
+    if (backBtn)     backBtn.disabled        = false;
+    if (upBtn)       upBtn.disabled          = false;
     if (detailsName) detailsName.textContent = proj.title;
     if (detailsType) detailsType.textContent = proj.category;
-    if (detailsSize) detailsSize.textContent = '2 objects';
-    if (detailIcon) detailIcon.textContent = proj.icon;
+    if (detailsSize) detailsSize.textContent = (proj.videoUrl ? 2 : 1) + (proj.gameUrl ? ' + 1' : '') + ' objects';
+    if (detailIcon)  detailIcon.textContent  = proj.icon;
     AudioEngine.playOpen();
 
-    // PDF Details
-    const readme = createFileIcon(pdfSVG, 'Project_Details.pdf', 'pdf', () => openReadme(proj));
-    folderView.appendChild(readme);
+    // PDF
+    folderView.appendChild(createFileIcon(pdfSVG, 'Project_Details.pdf', 'pdf', () => openReadme(proj)));
 
-    // Dynamic file (Video)
-    const isVideo = proj.category === 'Sound Redesign' || proj.category === 'UI/UX Audio';
-    if (isVideo) {
-      const thumbHtml = `<img src="Images/Video icono.png" style="width:52px; height:52px; object-fit:contain; filter:drop-shadow(1px 2px 3px rgba(0,0,0,0.4));" alt="Showreel.mp4" />`;
-      const mediaFile = createFileIcon(thumbHtml, 'Showreel.mp4', 'video', () => {
-        WindowManager.open('win-demoreel');
-        AudioEngine.playOpen();
-      });
-      folderView.appendChild(mediaFile);
+    // Video file → opens native Media Player
+    if (proj.videoUrl) {
+      const thumbHtml = `<img src="Images/Video icono.png" style="width:52px;height:52px;object-fit:contain;filter:drop-shadow(1px 2px 3px rgba(0,0,0,0.4));" alt="Showreel.mp4" />`;
+      folderView.appendChild(createFileIcon(thumbHtml, 'Showreel.mp4', 'video', () => openVideo(proj)));
     }
 
-    // Link directo a DiegoSteam si el proyecto es jugable
+    // Steam link
     if (proj.gameUrl) {
       const thumbHtml = proj.cover ? `<img src="${proj.cover}" class="xp-custom-thumb" alt="Play on Steam" />` : exeSVG;
-      const steamLink = createFileIcon(thumbHtml, 'Play_on_Steam.url', 'exe', () => {
-        WindowManager.open('win-steam');
-        AudioEngine.playOpen();
-      });
-      folderView.appendChild(steamLink);
+      folderView.appendChild(createFileIcon(thumbHtml, 'Play_on_Steam.url', 'exe', () => {
+        WindowManager.open('win-steam'); AudioEngine.playOpen();
+      }));
     }
   }
 
-  /* ─ openReadme ────────────────────────────────── */
+  /* ─ openReadme ─────────────────────────────────────── */
   function openReadme(proj) {
     const sheet = document.getElementById('pdf-page-sheet');
     if (sheet) {
-      const tagHTML = proj.tags.map(t => `<li class="pdf-sheet-tag">${t}</li>`).join('');
+      const tagHTML    = proj.tags.map(t => `<li class="pdf-sheet-tag">${t}</li>`).join('');
       const paragraphs = proj.desc.split('\n\n').map(p => `<p class="pdf-sheet-desc">${p}</p>`).join('');
       sheet.innerHTML = `
         <div class="pdf-sheet-title">${proj.title}</div>
         <div class="pdf-sheet-category">${proj.category}</div>
-        
         <div class="pdf-sheet-section-title">Description</div>
-        <div class="pdf-sheet-desc-container">
-          ${paragraphs}
-        </div>
-        
+        <div class="pdf-sheet-desc-container">${paragraphs}</div>
         <div class="pdf-sheet-section-title">Tech Stack</div>
-        <ul class="pdf-sheet-tag-list">
-          ${tagHTML}
-        </ul>
+        <ul class="pdf-sheet-tag-list">${tagHTML}</ul>
       `;
     }
     WindowManager.open('win-pdf-viewer');
     AudioEngine.playOpen();
   }
 
-  /* ─ openExe ───────────────────────────────────── */
-  function openExe(proj) {
-    if (!proj.gameUrl) {
-      AudioEngine.playClose();
-      return;
-    }
-    const body = document.getElementById('game-runner-body');
-    const titleEl = document.getElementById('game-runner-title');
-    if (body) {
-      body.innerHTML = `<iframe src="${proj.gameUrl}" width="100%" height="100%"
-        style="border:none;display:block;"
-        title="${proj.title} Demo"
-        allow="autoplay; fullscreen"></iframe>`;
-    }
-    if (titleEl) titleEl.textContent = `${proj.title} — DiegoOS Executable Engine`;
-    WindowManager.open('win-game-runner');
-    AudioEngine.playOpen();
+  /* ─ openVideo ──────────────────────────────────────── */
+  function openVideo(proj) {
+    const vidEl   = document.getElementById('os-video-player');
+    const titleEl = document.getElementById('media-player-title');
+    if (vidEl)   vidEl.src = proj.videoUrl;
+    if (titleEl) titleEl.textContent = `${proj.title} — Windows Media Player`;
+    WindowManager.open('win-media-player');
+    if (vidEl) vidEl.play().catch(() => {});
   }
 
-  /* ─ createFileIcon ─────────────────────────────── */
+  /* ─ createFileIcon ─────────────────────────────────── */
   function createFileIcon(svgHtml, label, type, onDblClick) {
     const item = document.createElement('div');
     item.className = `xp-file-icon xp-type-${type}`;
@@ -576,7 +505,6 @@ function initFileExplorer() {
       <div class="xp-icon-img">${svgHtml}</div>
       <div class="xp-icon-label">${label}</div>
     `;
-
     let clickTimer = null;
     item.addEventListener('click', e => {
       e.stopPropagation();
@@ -587,12 +515,8 @@ function initFileExplorer() {
       if (isMobileDevice()) {
         onDblClick();
       } else {
-        if (clickTimer) {
-          clearTimeout(clickTimer); clickTimer = null;
-          onDblClick();
-        } else {
-          clickTimer = setTimeout(() => { clickTimer = null; }, 380);
-        }
+        if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; onDblClick(); }
+        else clickTimer = setTimeout(() => { clickTimer = null; }, 380);
       }
     });
     item.addEventListener('keydown', e => {
@@ -602,25 +526,18 @@ function initFileExplorer() {
     return item;
   }
 
-  /* ─ toolbar buttons ─────────────────────────────── */
+  /* ─ toolbar buttons ────────────────────────────────── */
   const goBack = () => {
     AudioEngine.playClick();
-    if (currentProj) {
-      // Inside a project file view → go back to the category
-      if (currentCategory) renderCategory(currentCategory);
-      else renderRoot();
-    } else if (currentCategory) {
-      // Inside a category folder → go back to root
-      renderRoot();
-    }
+    if (viewState === 'project')        renderCategory(currentCat);
+    else if (viewState === 'category')  renderRoot();
   };
   if (backBtn) backBtn.addEventListener('click', goBack);
   if (upBtn)   upBtn.addEventListener('click', goBack);
 
-  /* ─ initial render ──────────────────────────────── */
+  /* ─ initial render ─────────────────────────────────── */
   renderRoot();
 }
-
 
 
 const isMobileDevice = () => {
@@ -2024,7 +1941,7 @@ function initDiegoSteam() {
 
 document.addEventListener('DOMContentLoaded', () => {
   // Register static windows
-  ['win-about','win-toolkit','win-work','win-contact','win-properties','win-notepad','win-demoreel','win-game-runner','win-pdf-viewer'].forEach(id => {
+  ['win-about','win-toolkit','win-work','win-contact','win-properties','win-notepad','win-demoreel','win-game-runner','win-pdf-viewer','win-media-player'].forEach(id => {
     WindowManager.register(id);
   });
   WindowManager.register('win-steam', { icon: '🎮', label: 'DiegoSteam' });
@@ -2047,6 +1964,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAudioUnlocker();
   initToolkitApp();
   initDiegoSteam();
+  initDiegoReel();
 
   // 1. Función constructora de Alertas del Sistema
   function showOSAlert(title, message) {
@@ -2124,3 +2042,78 @@ document.addEventListener('DOMContentLoaded', () => {
   // Boot
   runBoot();
 });
+
+/* ══════════════════════════════════════════════════════════════
+   DIEGOREEL — Dynamic video grid driven by PROJECTS data
+   ══════════════════════════════════════════════════════════════ */
+function initDiegoReel() {
+  const grid      = document.getElementById('dr-video-grid');
+  const searchInp = document.getElementById('dr-search');
+  const searchBtn = document.getElementById('dr-search-btn');
+  const navItems  = document.querySelectorAll('#dr-sidebar .dt-nav-item');
+  const titleEl   = document.getElementById('dr-section-title');
+  if (!grid) return;
+
+  let activeCat = 'All';
+
+  function renderReels(filterCat, query) {
+    filterCat = filterCat || activeCat;
+    query     = query     || '';
+    grid.innerHTML = '';
+
+    let filtered = PROJECTS.filter(p => p.videoUrl);
+    if (filterCat !== 'All') filtered = filtered.filter(p => p.category === filterCat);
+    if (query) filtered = filtered.filter(p => p.title.toLowerCase().includes(query.toLowerCase()));
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div style="color:#888;padding:24px;font-size:13px;">No reels found.</div>';
+      return;
+    }
+
+    filtered.forEach(proj => {
+      const dur = proj.category === 'Sound Redesign' ? '02:45' : '04:12';
+      const card = document.createElement('div');
+      card.className = 'dt-video-card';
+      card.innerHTML = `
+        <div class="dt-thumb" style="background-image:url('${proj.cover}'); background-size:cover; background-position:center;">
+          <div class="dt-thumb-overlay"><div class="dt-play-btn" aria-label="Play">▶</div></div>
+          <span class="dt-duration">${dur}</span>
+        </div>
+        <div class="dt-card-info">
+          <div class="dt-video-title">${proj.title} — ${proj.category} Showcase</div>
+          <div class="dt-video-meta">Diego Sansano Reboll</div>
+        </div>
+      `;
+      card.addEventListener('click', () => {
+        const vidEl   = document.getElementById('os-video-player');
+        const titleBar = document.getElementById('media-player-title');
+        if (vidEl)   vidEl.src = proj.videoUrl;
+        if (titleBar) titleBar.textContent = `${proj.title} — Windows Media Player`;
+        WindowManager.open('win-media-player');
+        if (vidEl) vidEl.play().catch(() => {});
+        if (window.AudioEngine) AudioEngine.playOpen();
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      navItems.forEach(n => n.classList.remove('dt-nav-active'));
+      item.classList.add('dt-nav-active');
+      activeCat = item.dataset.cat;
+      if (titleEl) titleEl.textContent = `🎬 ${activeCat === 'All' ? 'All' : activeCat} Reels`;
+      if (searchInp) searchInp.value = '';
+      renderReels(activeCat, '');
+      if (window.AudioEngine) AudioEngine.playClick();
+    });
+  });
+
+  if (searchBtn) searchBtn.addEventListener('click', () => renderReels('All', searchInp ? searchInp.value : ''));
+  if (searchInp) searchInp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') renderReels('All', searchInp.value);
+  });
+
+  renderReels('All', ''); // Initial load
+}
+
