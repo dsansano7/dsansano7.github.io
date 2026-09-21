@@ -31,7 +31,7 @@ const PROJECTS = [
     id: 2, title: 'Party Drinker', category: 'Audio Implementation', catClass: 'cat-ap', icon: '🍻',
     desc: 'A 48-hour Game Jam project set in a lively party environment, featuring a complete audio build developed from scratch. Rapid implementation using FMOD and Unity, focusing on FMOD spatialization to create an immersive atmosphere.',
     tags: ['FMOD', 'Unity', 'Game Jam', 'Spatialization'],
-    gameUrl: '', videoUrl: 'videos/Party-Drinker.mp4', cover: 'Images/Party Drinker.png'
+    gameUrl: './games/party drinker/index.html', videoUrl: 'videos/Party-Drinker.mp4', cover: 'Images/Party Drinker.png'
   },
   {
     id: 3, title: 'Cooking Fever', category: 'Sound Redesign', catClass: 'cat-sd', icon: '🍔',
@@ -502,7 +502,14 @@ function initFileExplorer() {
     if (proj.gameUrl) {
       const thumbHtml = proj.cover ? `<img src="${proj.cover}" class="xp-custom-thumb" alt="Play on Steam" />` : exeSVG;
       folderView.appendChild(createFileIcon(thumbHtml, 'Play_on_Steam.url', 'exe', () => {
-        WindowManager.open('win-steam'); AudioEngine.playOpen();
+        WindowManager.open('win-steam');
+        AudioEngine.playOpen();
+        const steamRows = document.querySelectorAll('.st-sidebar-row');
+        steamRows.forEach(row => {
+          if (row.textContent.includes(proj.title)) {
+            row.click();
+          }
+        });
       }));
     }
   }
@@ -883,6 +890,7 @@ function initSearch() {
     { terms: ['toolkit', 'fmod', 'wwise', 'unity', 'unreal', 'reaper', 'musescore', 'audio', 'middleware'], win: 'win-toolkit' },
     { terms: ['work', 'project', 'enchanted', 'neon', 'castle', 'abyss', 'orbital', 'wasteland'], win: 'win-work' },
     { terms: ['contact', 'email', 'phone', 'mail', 'call', 'languages', 'terminal'], win: 'win-contact' },
+    { terms: ['steam', 'game', 'play', 'unwraptal', 'party', 'drinker'], win: 'win-steam' },
   ];
 
   inp.addEventListener('keydown', e => {
