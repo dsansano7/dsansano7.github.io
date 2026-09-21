@@ -1677,20 +1677,17 @@ function initTerminalInteraction() {
       } else if (cmd === '2' || cmd === 'contact') {
         printLine('');
         printLine('--------------------------------------------------', 'th');
-        printLine('  Diego Sansano Reboll - Sound Designer & Audio Dev', 'tk');
+        printLine('  Diego Sansano Reboll — Direct Communications', 'tk');
         printLine('--------------------------------------------------', 'th');
-        printLine('<span class="tk">ROLE:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sound Designer - Game Audio Programmer');
+        printLine('<span class="tk">STATUS:</span>&nbsp;&nbsp;&nbsp;&nbsp;Available for Audio &amp; Dev Opportunities');
+        printLine('<span class="tk">LOCATION:</span>&nbsp;&nbsp;Valencia, Spain · Open to Remote &amp; Relocation');
         printLine('<span class="tk">EMAIL:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="tlink" href="mailto:dsansano070403@gmail.com" target="_blank" rel="noopener noreferrer">dsansano070403@gmail.com</a>');
         printLine('<span class="tk">PHONE:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+34 673 205 292');
-        printLine('<span class="tk">PORTFOLIO:</span>&nbsp;<a class="tlink" href="https://d.sansano7.github.io" target="_blank" rel="noopener noreferrer">https://d.sansano7.github.io</a>');
-        printLine('<span class="tk">LOCATION:</span>&nbsp;&nbsp;Valencia, Spain · Open to Remote &amp; Relocation');
-        printLine('<span class="tk">CURRENT:</span>&nbsp;&nbsp;&nbsp;Audio Designer &amp; Tech Audio Intern at Rural Games');
-        printLine('<span class="tk">EDUCATION:</span>&nbsp;Berklee College (Master) | UJI (Degree) | UMSC (Music)');
-        printLine('<span class="tk">LANGUAGES:</span>&nbsp;Spanish/Catalan (Native), English (C1)');
-        printLine('<span class="tk">DRIVING:</span>&nbsp;&nbsp;&nbsp;B License (Personal vehicle)');
         printLine('<span class="tk">LINKEDIN:</span>&nbsp;&nbsp;<a class="tlink" href="https://www.linkedin.com/in/diego-sansano-reboll/" target="_blank" rel="noopener noreferrer">linkedin.com/in/diego-sansano-reboll</a>');
         printLine('<span class="tk">ITCH.IO:</span>&nbsp;&nbsp;&nbsp;<a class="tlink" href="https://dsansano7.itch.io/" target="_blank" rel="noopener noreferrer">dsansano7.itch.io</a>');
+        printLine('<span class="tk">PORTFOLIO:</span>&nbsp;<a class="tlink" href="https://d.sansano7.github.io" target="_blank" rel="noopener noreferrer">https://d.sansano7.github.io</a>');
         printLine('--------------------------------------------------', 'th');
+        printLine('Tip: Select [1] from the menu or type \'mail\' to compose an email directly.');
         printLine('');
         resetToCommandPrompt();
       } else if (cmd === '3' || cmd === 'help') {
