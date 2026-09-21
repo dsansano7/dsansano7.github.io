@@ -1098,12 +1098,23 @@ function getNearestFreeCell(iconEl, targetLeft, targetTop, maxLeft, maxTop) {
 function makeIconDraggable(el) {
   let startX = 0, startY = 0;
   let selectedIcons = [];
+  let hasMoved = false;
+
+  // Prevent browser native HTML5 drag & drop on images or elements
+  el.addEventListener('dragstart', (e) => {
+    e.preventDefault();
+  });
 
   const onMouseMove = (e) => {
     const cx = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
     const cy = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
     const dx = cx - startX;
     const dy = cy - startY;
+
+    if (!hasMoved && Math.hypot(dx, dy) > 4) {
+      hasMoved = true;
+    }
+    if (!hasMoved) return;
 
     const desktop = document.getElementById('desktop');
     const db = desktop ? desktop.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight };
@@ -1123,31 +1134,47 @@ function makeIconDraggable(el) {
     document.removeEventListener('mouseup', onMouseUp);
     document.removeEventListener('touchmove', onMouseMove);
     document.removeEventListener('touchend', onMouseUp);
+    window.removeEventListener('blur', onMouseUp);
     document.body.style.userSelect = '';
+    document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = '');
 
-    selectedIcons.forEach(item => {
-      let currentLeft = parseInt(item.el.style.left || '0', 10);
-      let currentTop = parseInt(item.el.style.top || '0', 10);
+    if (hasMoved) {
+      // Suppress the click event triggered immediately after releasing a drag
+      const preventClick = (e) => {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        el.removeEventListener('click', preventClick, true);
+      };
+      el.addEventListener('click', preventClick, true);
+      setTimeout(() => {
+        el.removeEventListener('click', preventClick, true);
+      }, 100);
 
-      let snapLeft = Math.round((currentLeft - 20) / 110) * 110 + 20;
-      let snapTop = Math.round((currentTop - 20) / 120) * 120 + 20;
+      selectedIcons.forEach(item => {
+        let currentLeft = parseInt(item.el.style.left || '0', 10);
+        let currentTop = parseInt(item.el.style.top || '0', 10);
 
-      const desktop = document.getElementById('desktop');
-      let maxLeft = (desktop ? desktop.getBoundingClientRect().width : window.innerWidth) - 100;
-      let maxTop = (desktop ? desktop.getBoundingClientRect().height : window.innerHeight) - 110 - 52;
+        let snapLeft = Math.round((currentLeft - 20) / 110) * 110 + 20;
+        let snapTop = Math.round((currentTop - 20) / 120) * 120 + 20;
 
-      if (snapLeft > maxLeft) snapLeft = Math.floor((maxLeft - 20) / 110) * 110 + 20;
-      if (snapTop > maxTop) snapTop = Math.floor((maxTop - 20) / 120) * 120 + 20;
+        const desktop = document.getElementById('desktop');
+        let maxLeft = (desktop ? desktop.getBoundingClientRect().width : window.innerWidth) - 100;
+        let maxTop = (desktop ? desktop.getBoundingClientRect().height : window.innerHeight) - 110 - 52;
 
-      if (snapLeft < 20) snapLeft = 20;
-      if (snapTop < 20) snapTop = 20;
+        if (snapLeft > maxLeft) snapLeft = Math.floor((maxLeft - 20) / 110) * 110 + 20;
+        if (snapTop > maxTop) snapTop = Math.floor((maxTop - 20) / 120) * 120 + 20;
 
-      const freeCell = getNearestFreeCell(item.el, snapLeft, snapTop, maxLeft, maxTop);
-      item.el.style.left = freeCell.left + 'px';
-      item.el.style.top = freeCell.top + 'px';
-    });
+        if (snapLeft < 20) snapLeft = 20;
+        if (snapTop < 20) snapTop = 20;
+
+        const freeCell = getNearestFreeCell(item.el, snapLeft, snapTop, maxLeft, maxTop);
+        item.el.style.left = freeCell.left + 'px';
+        item.el.style.top = freeCell.top + 'px';
+      });
+    }
 
     selectedIcons = [];
+    hasMoved = false;
   };
 
   const onMouseDown = (e) => {
@@ -1158,6 +1185,7 @@ function makeIconDraggable(el) {
       el.classList.add('selected');
     }
 
+    hasMoved = false;
     startX = e.clientX;
     startY = e.clientY;
 
@@ -1168,8 +1196,10 @@ function makeIconDraggable(el) {
     }));
 
     document.body.style.userSelect = 'none';
+    document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none');
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('blur', onMouseUp);
     e.stopPropagation();
   };
 
@@ -1181,6 +1211,7 @@ function makeIconDraggable(el) {
 
     const t = e.touches[0];
     if (!t) return;
+    hasMoved = false;
     startX = t.clientX;
     startY = t.clientY;
 
@@ -1205,7 +1236,8 @@ function initDesktopIcons() {
     { top: 140, left: 20 },
     { top: 260, left: 20 },
     { top: 380, left: 20 },
-    { top: 500, left: 20 }
+    { top: 500, left: 20 },
+    { top: 620, left: 20 }
   ];
 
   document.querySelectorAll('.desktop-icon').forEach((icon, idx) => {

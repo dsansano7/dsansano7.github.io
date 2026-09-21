@@ -278,6 +278,12 @@ body.dark-mode .desktop-overlay { background:rgba(0,0,0,0.45); }
   visibility: hidden;
   opacity: 0;
   transition: background var(--tx), opacity 0.3s ease-in;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.desktop-icon * {
+  user-select: none;
+  -webkit-user-select: none;
 }
 .desktop-icon.is-ready {
   visibility: visible;
@@ -292,8 +298,14 @@ body.dark-mode .desktop-overlay { background:rgba(0,0,0,0.45); }
   display:flex; align-items:center; justify-content:center;
   filter:drop-shadow(1px 3px 6px rgba(0,0,0,0.85));
   transition:transform var(--tx);
+  user-select: none;
+  -webkit-user-select: none;
 }
-.icon-img svg { width:80px; height:80px; }
+.icon-img svg {
+  width:80px; height:80px;
+  pointer-events: none;
+  user-select: none;
+}
 .desktop-icon:hover  .icon-img { transform:scale(1.08); }
 .desktop-icon:active .icon-img { transform:scale(0.95); }
 
@@ -302,6 +314,8 @@ body.dark-mode .desktop-overlay { background:rgba(0,0,0,0.45); }
   color:#fff; text-align:center;
   text-shadow:1px 1px 3px rgba(0,0,0,1), -1px -1px 2px rgba(0,0,0,0.6);
   line-height:1.25; max-width:96px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* ============================================================
@@ -2434,4 +2448,8 @@ body.dark-mode .os-alert-btn { background: #333; color: #fff; border-color: #555
   object-fit: contain;
   display: block;
   filter: drop-shadow(1px 2px 5px rgba(0,0,0,0.6));
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
 }
