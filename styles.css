@@ -3,8 +3,7 @@
    Windows XP Luna Theme · Day/Night Wallpaper · Clean Panels
    ============================================================ */
 
-/* ── Fonts ─────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=VT323&display=swap');
+/* ── Fonts (Preloaded in index.html for maximum performance) ── */
 
 /* ── Design Tokens ──────────────────────────────────────────── */
 :root {
@@ -318,6 +317,7 @@ body.dark-mode .desktop-overlay { background:rgba(0,0,0,0.45); }
   display:flex; flex-direction:column;
   transition:box-shadow var(--tx);
   animation:win-open 0.18s ease-out;
+  contain: layout;
 }
 .os-window.focused { box-shadow:var(--w-shadow-focus); }
 
@@ -2112,6 +2112,8 @@ body.dark-mode .xp-sidebar-hdr {
   font-family: 'Segoe UI', Tahoma, Arial, sans-serif !important;
   position: relative;
   border: 1px solid #d3d3d3;
+  transform-origin: top center;
+  transition: transform 0.15s ease;
 }
 
 /* Línea decorativa superior estilo Adobe Document */

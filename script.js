@@ -5,6 +5,18 @@
 
 'use strict';
 
+/* ── Pure, High-Performance HTML Escaper (Security Hardening) ── */
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[m]));
+}
+
 /* =========================================================================
    PROJECTS DATABASE
    ========================================================================= */
@@ -212,6 +224,11 @@ const WindowManager = (() => {
       const vid = document.getElementById('os-video-player');
       if (vid) vid.pause();
     }
+    // Clean up game runner iframe on close to free GPU/RAM and halt audio loop
+    if (id === 'win-game-runner') {
+      const body = document.getElementById('game-runner-body');
+      if (body) body.innerHTML = '';
+    }
     w.el.style.display = 'none';
     w.minimized = w.maximized = false;
     w.el.classList.remove('maximized', 'minimized-snap');
@@ -275,52 +292,77 @@ const WindowManager = (() => {
     if (tabs[id]) { tabs[id].remove(); delete tabs[id]; }
   }
 
-  /* ─ drag ─────────────────────────────────────────────────── */
+  /* ─ drag (On-Demand Event Listeners: 0 overhead while idle) ─ */
   function _initDrag(id, el) {
     const tb = el.querySelector('.win-titlebar');
     if (!tb) return;
-    let dragging = false, ox = 0, oy = 0;
+    let ox = 0, oy = 0;
+
+    const move = (e) => {
+      const cx = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+      const cy = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+      el.style.left = Math.max(0, cx - ox) + 'px';
+      el.style.top = Math.max(0, cy - oy) + 'px';
+    };
+
+    const up = () => {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+      document.removeEventListener('touchmove', move);
+      document.removeEventListener('touchend', up);
+      document.body.style.userSelect = '';
+    };
 
     const down = (cx, cy) => {
       if (wins[id].maximized) return;
-      dragging = true;
       const r = el.getBoundingClientRect();
       ox = cx - r.left; oy = cy - r.top;
       focus(id);
       document.body.style.userSelect = 'none';
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+      document.addEventListener('touchmove', move, { passive: true });
+      document.addEventListener('touchend', up);
     };
-    const move = (cx, cy) => {
-      if (!dragging) return;
-      el.style.left = Math.max(0, cx - ox) + 'px';
-      el.style.top = Math.max(0, cy - oy) + 'px';
-    };
-    const up = () => { dragging = false; document.body.style.userSelect = ''; };
 
-    tb.addEventListener('mousedown', e => down(e.clientX, e.clientY));
-    document.addEventListener('mousemove', e => move(e.clientX, e.clientY));
-    document.addEventListener('mouseup', up);
-    tb.addEventListener('touchstart', e => { const t = e.touches[0]; down(t.clientX, t.clientY); }, { passive: true });
-    document.addEventListener('touchmove', e => { const t = e.touches[0]; move(t.clientX, t.clientY); }, { passive: true });
-    document.addEventListener('touchend', up);
+    tb.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      down(e.clientX, e.clientY);
+    });
+    tb.addEventListener('touchstart', e => {
+      const t = e.touches[0];
+      if (t) down(t.clientX, t.clientY);
+    }, { passive: true });
+
     el.addEventListener('mousedown', () => focus(id));
   }
 
-  /* ─ resize ───────────────────────────────────────────────── */
+  /* ─ resize (On-Demand Event Listeners) ────────────────────── */
   function _initResize(el) {
     const h = document.createElement('div');
     h.style.cssText = 'position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;z-index:10;';
     el.appendChild(h);
-    let on = false, sx = 0, sy = 0, sw = 0, sh = 0;
-    h.addEventListener('mousedown', e => {
-      on = true; sx = e.clientX; sy = e.clientY; sw = el.offsetWidth; sh = el.offsetHeight;
-      e.stopPropagation(); document.body.style.userSelect = 'none';
-    });
-    document.addEventListener('mousemove', e => {
-      if (!on) return;
+    let sx = 0, sy = 0, sw = 0, sh = 0;
+
+    const move = (e) => {
       el.style.width = Math.max(340, sw + e.clientX - sx) + 'px';
       el.style.height = Math.max(240, sh + e.clientY - sy) + 'px';
+    };
+
+    const up = () => {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+      document.body.style.userSelect = '';
+    };
+
+    h.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      sx = e.clientX; sy = e.clientY; sw = el.offsetWidth; sh = el.offsetHeight;
+      e.stopPropagation();
+      document.body.style.userSelect = 'none';
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
     });
-    document.addEventListener('mouseup', () => { on = false; document.body.style.userSelect = ''; });
   }
 
   /* ─ terminal animation ───────────────────────────────────── */
@@ -469,11 +511,11 @@ function initFileExplorer() {
   function openReadme(proj) {
     const sheet = document.getElementById('pdf-page-sheet');
     if (sheet) {
-      const tagHTML    = proj.tags.map(t => `<li class="pdf-sheet-tag">${t}</li>`).join('');
-      const paragraphs = proj.desc.split('\n\n').map(p => `<p class="pdf-sheet-desc">${p}</p>`).join('');
+      const tagHTML    = proj.tags.map(t => `<li class="pdf-sheet-tag">${escapeHtml(t)}</li>`).join('');
+      const paragraphs = proj.desc.split('\n\n').map(p => `<p class="pdf-sheet-desc">${escapeHtml(p)}</p>`).join('');
       sheet.innerHTML = `
-        <div class="pdf-sheet-title">${proj.title}</div>
-        <div class="pdf-sheet-category">${proj.category}</div>
+        <div class="pdf-sheet-title">${escapeHtml(proj.title)}</div>
+        <div class="pdf-sheet-category">${escapeHtml(proj.category)}</div>
         <div class="pdf-sheet-section-title">Description</div>
         <div class="pdf-sheet-desc-container">${paragraphs}</div>
         <div class="pdf-sheet-section-title">Tech Stack</div>
@@ -503,7 +545,7 @@ function initFileExplorer() {
     item.setAttribute('aria-label', label);
     item.innerHTML = `
       <div class="xp-icon-img">${svgHtml}</div>
-      <div class="xp-icon-label">${label}</div>
+      <div class="xp-icon-label">${escapeHtml(label)}</div>
     `;
     let clickTimer = null;
     item.addEventListener('click', e => {
@@ -526,7 +568,7 @@ function initFileExplorer() {
     return item;
   }
 
-  /* ─ toolbar buttons ────────────────────────────────── */
+  /* ─ toolbar buttons & address bar ──────────────────── */
   const goBack = () => {
     AudioEngine.playClick();
     if (viewState === 'project')        renderCategory(currentCat);
@@ -534,6 +576,59 @@ function initFileExplorer() {
   };
   if (backBtn) backBtn.addEventListener('click', goBack);
   if (upBtn)   upBtn.addEventListener('click', goBack);
+
+  const handleAddressNavigation = () => {
+    if (!addrBar) return;
+    const val = addrBar.value.trim().toLowerCase();
+    if (val === 'c:\\diegoos\\my work' || val === 'my work' || val === 'c:\\diegoos' || val === '') {
+      renderRoot();
+    } else if (val.includes('redesign') || val.includes('sound redesign')) {
+      renderCategory('Sound Redesign');
+    } else if (val.includes('implementation') || val.includes('audio implementation')) {
+      renderCategory('Audio Implementation');
+    } else {
+      const matchedProj = PROJECTS.find(p => val.includes(p.title.toLowerCase()));
+      if (matchedProj) {
+        currentCat = matchedProj.category;
+        navigateInto(matchedProj);
+      } else {
+        if (window.AudioEngine) AudioEngine.playClick();
+        if (viewState === 'project' && currentProj) {
+          addrBar.value = `C:\\DiegoOS\\My Work\\${currentCat}\\${currentProj.title}`;
+        } else if (viewState === 'category' && currentCat) {
+          addrBar.value = `C:\\DiegoOS\\My Work\\${currentCat}`;
+        } else {
+          addrBar.value = 'C:\\DiegoOS\\My Work';
+        }
+      }
+    }
+  };
+
+  if (addrBar) {
+    addrBar.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleAddressNavigation();
+    });
+  }
+  const addrGoBtn = document.getElementById('xp-addr-go');
+  if (addrGoBtn) {
+    addrGoBtn.addEventListener('click', handleAddressNavigation);
+  }
+
+  // Left sidebar navigation links
+  document.querySelectorAll('.xp-sidebar-link').forEach(link => {
+    link.addEventListener('click', () => {
+      const text = link.textContent.trim();
+      if (text.includes('My Documents') || text.includes('My Computer')) {
+        renderRoot();
+        if (window.AudioEngine) AudioEngine.playClick();
+      } else {
+        if (window.AudioEngine) AudioEngine.playHover();
+        if (typeof showOSAlert === 'function') {
+          showOSAlert('DiegoOS Explorer', `${text}: This simulated action is restricted in DiegoOS Workstation Edition.`);
+        }
+      }
+    });
+  });
 
   /* ─ initial render ─────────────────────────────────── */
   renderRoot();
@@ -608,53 +703,44 @@ function initAudioUnlocker() {
 function runBoot() {
   const boot = document.getElementById('boot-screen');
   const desktop = document.getElementById('desktop');
-  const startTime = Date.now();
   const bootDuration = 2500;
 
-  let booted = false;
+  // Single timeout instead of wasteful 50ms polling loop
+  setTimeout(() => {
+    if (boot) boot.classList.add('boot-fade-out');
+    if (desktop) desktop.style.display = 'block';
 
-  const bootInterval = setInterval(() => {
-    const elapsed = Date.now() - startTime;
+    // Wait 800ms for boot-screen fade-out to finish
+    setTimeout(() => {
+      const crtLine = document.querySelector('.crt-bright-line');
+      if (crtLine) crtLine.classList.add('bloom');
 
-    if (!booted && elapsed >= bootDuration) {
-      booted = true;
-      clearInterval(bootInterval);
-
-      boot.classList.add('boot-fade-out');
-      desktop.style.display = 'block';
-
-      // Wait 800ms for boot-screen fade-out to finish (now invisible)
+      // 1 second pause with scanline glowing
       setTimeout(() => {
-        const crtLine = document.querySelector('.crt-bright-line');
-        if (crtLine) crtLine.classList.add('bloom');
+        const crtOverlay = document.getElementById('crt-transition-overlay');
+        if (crtOverlay) crtOverlay.classList.add('open');
 
-        // 1 second user pause with scanline glowing
+        // 600ms transition time for bars to slide apart completely
         setTimeout(() => {
-          const crtOverlay = document.getElementById('crt-transition-overlay');
-          if (crtOverlay) crtOverlay.classList.add('open');
+          try { if (boot) boot.remove(); } catch (err) { console.error(err); }
+          try { if (crtOverlay) crtOverlay.remove(); } catch (err) { console.error(err); }
 
-          // 600ms transition time for bars to slide apart completely
-          setTimeout(() => {
-            try { boot.remove(); } catch (err) { console.error(err); }
-            try { if (crtOverlay) crtOverlay.remove(); } catch (err) { console.error(err); }
+          try { triggerBootChime(); } catch (err) { console.error(err); }
+          try { startClock(); } catch (err) { console.error(err); }
+          try { showWelcomeTooltip(); } catch (err) { console.error(err); }
+          try { initTaskbarAutoHide(); } catch (err) { console.error(err); }
 
-            try { triggerBootChime(); } catch (err) { console.error(err); }
-            try { startClock(); } catch (err) { console.error(err); }
-            try { showWelcomeTooltip(); } catch (err) { console.error(err); }
-            try { initTaskbarAutoHide(); } catch (err) { console.error(err); }
-
-            // Start inactivity timer of 6 seconds to highlight start button
-            inactivityTimer = setTimeout(() => {
-              const startBtn = document.getElementById('start-btn');
-              if (startBtn) {
-                startBtn.classList.add('pulse-anim');
-              }
-            }, 6000);
-          }, 600);
-        }, 1000);
-      }, 800);
-    }
-  }, 50);
+          // Start inactivity timer of 6 seconds to highlight start button
+          inactivityTimer = setTimeout(() => {
+            const startBtn = document.getElementById('start-btn');
+            if (startBtn) {
+              startBtn.classList.add('pulse-anim');
+            }
+          }, 6000);
+        }, 600);
+      }, 1000);
+    }, 800);
+  }, bootDuration);
 }
 
 function showWelcomeTooltip() {
@@ -749,7 +835,7 @@ function initStartMenu() {
   const portfolioLink = document.getElementById('sm-portfolio-link');
   if (portfolioLink) {
     portfolioLink.addEventListener('click', () => {
-      window.open('https://diego-sansano-reboll-portfolio.vercel.app/', '_blank');
+      window.open('https://diego-sansano-reboll-portfolio.vercel.app/', '_blank', 'noopener,noreferrer');
       AudioEngine.playClick();
     });
   }
@@ -772,10 +858,11 @@ function initStartMenu() {
               <div class="shutdown-status">DiegoOS is shutting down...</div>
             </div>
           </div>
-          <button class="shutdown-restart-btn" onclick="location.reload()">
+          <button class="shutdown-restart-btn">
             ↺ Restart DiegoOS
           </button>
         </div>`;
+      scr.querySelector('.shutdown-restart-btn')?.addEventListener('click', () => location.reload());
       document.body.appendChild(scr);
     });
   });
@@ -828,6 +915,10 @@ let isDarkModeGlobal = false;
 
 function setDarkModeState(state) {
   isDarkModeGlobal = Boolean(state);
+  try {
+    localStorage.setItem('diegoos_darkmode', isDarkModeGlobal ? '1' : '0');
+  } catch (e) {}
+
   const body = document.getElementById('body-root');
   const darkBtn = document.getElementById('dark-mode-btn');
   const darkIcon = document.getElementById('dark-icon');
@@ -853,6 +944,10 @@ function setDarkModeState(state) {
 function setVolumeState(percent) {
   const vol = percent / 100;
   AudioEngine.setVolume(vol);
+
+  try {
+    localStorage.setItem('diegoos_volume', String(percent));
+  } catch (e) {}
 
   const volSlider = document.getElementById('vol-slider');
   const propVolSlider = document.getElementById('prop-vol-slider');
@@ -1001,104 +1096,82 @@ function getNearestFreeCell(iconEl, targetLeft, targetTop, maxLeft, maxTop) {
 }
 
 function makeIconDraggable(el) {
-  let dragging = false;
   let startX = 0, startY = 0;
   let selectedIcons = [];
 
-  const onMouseDown = (e) => {
-    if (e.button !== 0) return;
-
-    // If the clicked icon is not selected, select it exclusively
-    if (!el.classList.contains('selected')) {
-      document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
-      el.classList.add('selected');
-    }
-
-    dragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
-
-    // Cache all selected icons and their individual starting left/top values
-    selectedIcons = Array.from(document.querySelectorAll('.desktop-icon.selected')).map(icon => {
-      return {
-        el: icon,
-        startLeft: parseInt(icon.style.left || '0', 10),
-        startTop: parseInt(icon.style.top || '0', 10)
-      };
-    });
-
-    document.body.style.userSelect = 'none';
-    e.stopPropagation();
-  };
-
   const onMouseMove = (e) => {
-    if (!dragging) return;
+    const cx = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+    const cy = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+    const dx = cx - startX;
+    const dy = cy - startY;
 
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
+    const desktop = document.getElementById('desktop');
+    const db = desktop ? desktop.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight };
+    const maxLeft = db.width - 100;
+    const maxTop = db.height - 110 - 52;
 
     selectedIcons.forEach(item => {
-      let newLeft = item.startLeft + dx;
-      let newTop = item.startTop + dy;
-
-      const desktop = document.getElementById('desktop');
-      if (desktop) {
-        const db = desktop.getBoundingClientRect();
-        const maxLeft = db.width - 100;
-        const maxTop = db.height - 110 - 52;
-
-        if (newLeft < 0) newLeft = 0;
-        if (newLeft > maxLeft) newLeft = maxLeft;
-        if (newTop < 0) newTop = 0;
-        if (newTop > maxTop) newTop = maxTop;
-      }
-
+      let newLeft = Math.max(0, Math.min(maxLeft, item.startLeft + dx));
+      let newTop = Math.max(0, Math.min(maxTop, item.startTop + dy));
       item.el.style.left = newLeft + 'px';
       item.el.style.top = newTop + 'px';
     });
   };
 
   const onMouseUp = () => {
-    if (dragging) {
-      dragging = false;
-      document.body.style.userSelect = '';
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+    document.removeEventListener('touchmove', onMouseMove);
+    document.removeEventListener('touchend', onMouseUp);
+    document.body.style.userSelect = '';
 
-      selectedIcons.forEach(item => {
-        let currentLeft = parseInt(item.el.style.left || '0', 10);
-        let currentTop = parseInt(item.el.style.top || '0', 10);
+    selectedIcons.forEach(item => {
+      let currentLeft = parseInt(item.el.style.left || '0', 10);
+      let currentTop = parseInt(item.el.style.top || '0', 10);
 
-        // Snap to 110x120 grid points starting at 20, 20
-        let snapLeft = Math.round((currentLeft - 20) / 110) * 110 + 20;
-        let snapTop = Math.round((currentTop - 20) / 120) * 120 + 20;
+      let snapLeft = Math.round((currentLeft - 20) / 110) * 110 + 20;
+      let snapTop = Math.round((currentTop - 20) / 120) * 120 + 20;
 
-        const desktop = document.getElementById('desktop');
-        let maxLeft = window.innerWidth - 100;
-        let maxTop = window.innerHeight - 110 - 52;
-        if (desktop) {
-          const db = desktop.getBoundingClientRect();
-          maxLeft = db.width - 100;
-          maxTop = db.height - 110 - 52;
-        }
+      const desktop = document.getElementById('desktop');
+      let maxLeft = (desktop ? desktop.getBoundingClientRect().width : window.innerWidth) - 100;
+      let maxTop = (desktop ? desktop.getBoundingClientRect().height : window.innerHeight) - 110 - 52;
 
-        if (snapLeft > maxLeft) snapLeft = Math.floor((maxLeft - 20) / 110) * 110 + 20;
-        if (snapTop > maxTop) snapTop = Math.floor((maxTop - 20) / 120) * 120 + 20;
+      if (snapLeft > maxLeft) snapLeft = Math.floor((maxLeft - 20) / 110) * 110 + 20;
+      if (snapTop > maxTop) snapTop = Math.floor((maxTop - 20) / 120) * 120 + 20;
 
-        if (snapLeft < 20) snapLeft = 20;
-        if (snapTop < 20) snapTop = 20;
+      if (snapLeft < 20) snapLeft = 20;
+      if (snapTop < 20) snapTop = 20;
 
-        const freeCell = getNearestFreeCell(item.el, snapLeft, snapTop, maxLeft, maxTop);
+      const freeCell = getNearestFreeCell(item.el, snapLeft, snapTop, maxLeft, maxTop);
+      item.el.style.left = freeCell.left + 'px';
+      item.el.style.top = freeCell.top + 'px';
+    });
 
-        item.el.style.left = freeCell.left + 'px';
-        item.el.style.top = freeCell.top + 'px';
-      });
-
-      selectedIcons = [];
-    }
+    selectedIcons = [];
   };
 
-  el.addEventListener('mousedown', onMouseDown);
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', onMouseUp);
+  const onMouseDown = (e) => {
+    if (e.button !== 0) return;
+
+    if (!el.classList.contains('selected')) {
+      document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    startX = e.clientX;
+    startY = e.clientY;
+
+    selectedIcons = Array.from(document.querySelectorAll('.desktop-icon.selected')).map(icon => ({
+      el: icon,
+      startLeft: parseInt(icon.style.left || '0', 10),
+      startTop: parseInt(icon.style.top || '0', 10)
+    }));
+
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    e.stopPropagation();
+  };
 
   const onTouchStart = (e) => {
     if (!el.classList.contains('selected')) {
@@ -1106,52 +1179,24 @@ function makeIconDraggable(el) {
       el.classList.add('selected');
     }
 
-    dragging = true;
     const t = e.touches[0];
+    if (!t) return;
     startX = t.clientX;
     startY = t.clientY;
 
-    selectedIcons = Array.from(document.querySelectorAll('.desktop-icon.selected')).map(icon => {
-      return {
-        el: icon,
-        startLeft: parseInt(icon.style.left || '0', 10),
-        startTop: parseInt(icon.style.top || '0', 10)
-      };
-    });
+    selectedIcons = Array.from(document.querySelectorAll('.desktop-icon.selected')).map(icon => ({
+      el: icon,
+      startLeft: parseInt(icon.style.left || '0', 10),
+      startTop: parseInt(icon.style.top || '0', 10)
+    }));
 
+    document.addEventListener('touchmove', onMouseMove, { passive: true });
+    document.addEventListener('touchend', onMouseUp);
     e.stopPropagation();
   };
 
-  const onTouchMove = (e) => {
-    if (!dragging) return;
-    const t = e.touches[0];
-    const dx = t.clientX - startX;
-    const dy = t.clientY - startY;
-
-    selectedIcons.forEach(item => {
-      let newLeft = item.startLeft + dx;
-      let newTop = item.startTop + dy;
-
-      const desktop = document.getElementById('desktop');
-      if (desktop) {
-        const db = desktop.getBoundingClientRect();
-        const maxLeft = db.width - 100;
-        const maxTop = db.height - 110 - 52;
-
-        if (newLeft < 0) newLeft = 0;
-        if (newLeft > maxLeft) newLeft = maxLeft;
-        if (newTop < 0) newTop = 0;
-        if (newTop > maxTop) newTop = maxTop;
-      }
-
-      item.el.style.left = newLeft + 'px';
-      item.el.style.top = newTop + 'px';
-    });
-  };
-
+  el.addEventListener('mousedown', onMouseDown);
   el.addEventListener('touchstart', onTouchStart, { passive: true });
-  document.addEventListener('touchmove', onTouchMove, { passive: true });
-  document.addEventListener('touchend', onMouseUp);
 }
 
 function initDesktopIcons() {
@@ -1518,8 +1563,8 @@ function initTerminalInteraction() {
     const tpSpan = termBody.querySelector('.tp');
     const getPromptText = () => tpSpan ? tpSpan.textContent : '>';
 
-    // Print the entered command with the dynamic prompt prefix
-    printLine(`<span class="tp">${getPromptText()}</span> ${val}`);
+    // Print the entered command with the dynamic prompt prefix (Sanitized)
+    printLine(`<span class="tp">${getPromptText()}</span> ${escapeHtml(val)}`);
 
     if (state === 'MENU') {
       if (trimmed === '') return;
@@ -1540,11 +1585,11 @@ function initTerminalInteraction() {
         printLine('  Diego Sansano Reboll - Contact Information', 'tk');
         printLine('--------------------------------------------------', 'th');
         printLine('<span class="tk">NAME:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Diego Sansano Reboll');
-        printLine('<span class="tk">EMAIL:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="tlink" href="mailto:dsansano070403@gmail.com" target="_blank">dsansano070403@gmail.com</a>');
+        printLine('<span class="tk">EMAIL:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="tlink" href="mailto:dsansano070403@gmail.com" target="_blank" rel="noopener noreferrer">dsansano070403@gmail.com</a>');
         printLine('<span class="tk">PHONE:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+34 673 205 292');
         printLine('<span class="tk">LOCATION:</span>&nbsp;&nbsp;Spain · Open to Remote &amp; Relocation');
-        printLine('<span class="tk">LINKEDIN:</span>&nbsp;&nbsp;<a class="tlink" href="https://www.linkedin.com/in/diego-sansano-reboll/" target="_blank">linkedin.com/in/diego-sansano-reboll</a>');
-        printLine('<span class="tk">ITCH.IO:</span>&nbsp;&nbsp;&nbsp;<a class="tlink" href="https://dsansano7.itch.io/" target="_blank">dsansano7.itch.io</a>');
+        printLine('<span class="tk">LINKEDIN:</span>&nbsp;&nbsp;<a class="tlink" href="https://www.linkedin.com/in/diego-sansano-reboll/" target="_blank" rel="noopener noreferrer">linkedin.com/in/diego-sansano-reboll</a>');
+        printLine('<span class="tk">ITCH.IO:</span>&nbsp;&nbsp;&nbsp;<a class="tlink" href="https://dsansano7.itch.io/" target="_blank" rel="noopener noreferrer">dsansano7.itch.io</a>');
         printLine('--------------------------------------------------', 'th');
         printLine('');
         resetToCommandPrompt();
@@ -1570,7 +1615,7 @@ function initTerminalInteraction() {
         showMenuBanner();
         resetToCommandPrompt();
       } else {
-        printLine(`'${trimmed}' is not recognized as an internal or external command.`);
+        printLine(`'${escapeHtml(trimmed)}' is not recognized as an internal or external command.`);
         printLine('Select a menu option (1-4) or type \'help\' to see options.');
         printLine('');
       }
@@ -1623,9 +1668,9 @@ function initTerminalInteraction() {
       printLine('');
       printLine('--------------------------------------------------', 'th');
       printLine('  Email Preview:', 'tk');
-      printLine(`  From:    ${mailData.email}`);
-      printLine(`  Subject: ${mailData.subject}`);
-      printLine(`  Message: ${mailData.body}`);
+      printLine(`  From:    ${escapeHtml(mailData.email)}`);
+      printLine(`  Subject: ${escapeHtml(mailData.subject)}`);
+      printLine(`  Message: ${escapeHtml(mailData.body)}`);
       printLine('--------------------------------------------------', 'th');
       printLine('Do you want to send this email? (y/n):');
       if (tpSpan) tpSpan.textContent = 'Send? (y/n)> ';
@@ -1715,33 +1760,10 @@ function initDesktopDragSelection() {
   const box = document.getElementById('drag-selection-box');
   if (!desktop || !box) return;
 
-  let dragActive = false;
-  let startX = 0;
-  let startY = 0;
-
-  const onMouseDown = (e) => {
-    const tgt = e.target;
-    const isBg = tgt.id === 'desktop' || tgt.classList.contains('wp-layer') || tgt.classList.contains('desktop-overlay') || tgt.id === 'icon-grid';
-    if (!isBg) return;
-
-    e.preventDefault();
-
-    dragActive = true;
-    startX = e.clientX;
-    startY = e.clientY;
-
-    box.style.left = startX + 'px';
-    box.style.top = startY + 'px';
-    box.style.width = '0px';
-    box.style.height = '0px';
-    box.style.display = 'block';
-
-    document.querySelectorAll('.desktop-icon').forEach(icon => icon.classList.remove('selected'));
-  };
+  let startX = 0, startY = 0;
+  let cachedIconRects = [];
 
   const onMouseMove = (e) => {
-    if (!dragActive) return;
-
     const currentX = e.clientX;
     const currentY = e.clientY;
 
@@ -1762,8 +1784,10 @@ function initDesktopDragSelection() {
       bottom: top + height
     };
 
-    document.querySelectorAll('.desktop-icon').forEach(icon => {
-      const r = icon.getBoundingClientRect();
+    // Fast check without layout thrashing
+    for (let i = 0; i < cachedIconRects.length; i++) {
+      const item = cachedIconRects[i];
+      const r = item.rect;
       const isOverlapping = !(
         r.right < boxRect.left ||
         r.left > boxRect.right ||
@@ -1772,22 +1796,49 @@ function initDesktopDragSelection() {
       );
 
       if (isOverlapping) {
-        icon.classList.add('selected');
+        item.el.classList.add('selected');
       } else {
-        icon.classList.remove('selected');
+        item.el.classList.remove('selected');
       }
-    });
+    }
   };
 
   const onMouseUp = () => {
-    if (!dragActive) return;
-    dragActive = false;
     box.style.display = 'none';
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+    cachedIconRects = [];
+  };
+
+  const onMouseDown = (e) => {
+    const tgt = e.target;
+    const isBg = tgt.id === 'desktop' || tgt.classList.contains('wp-layer') || tgt.classList.contains('desktop-overlay') || tgt.id === 'icon-grid';
+    if (!isBg || e.button !== 0) return;
+
+    e.preventDefault();
+
+    startX = e.clientX;
+    startY = e.clientY;
+
+    box.style.left = startX + 'px';
+    box.style.top = startY + 'px';
+    box.style.width = '0px';
+    box.style.height = '0px';
+    box.style.display = 'block';
+
+    document.querySelectorAll('.desktop-icon').forEach(icon => icon.classList.remove('selected'));
+
+    // Cache icon bounding rects once at drag start to eliminate layout thrashing during mouse movements
+    cachedIconRects = Array.from(document.querySelectorAll('.desktop-icon')).map(icon => ({
+      el: icon,
+      rect: icon.getBoundingClientRect()
+    }));
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   };
 
   desktop.addEventListener('mousedown', onMouseDown);
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', onMouseUp);
 }
 
 function initToolkitApp() {
@@ -1903,9 +1954,9 @@ function initDiegoSteam() {
       if (window.AudioEngine) AudioEngine.playClick();
 
       mainViewEl.innerHTML = `
-        <div class="st-game-hero" style="background-image: linear-gradient(180deg, rgba(27,40,56,0.2) 0%, #1b2838 100%), url('${game.cover}');">
+        <div class="st-game-hero" style="background-image: linear-gradient(180deg, rgba(27,40,56,0.2) 0%, #1b2838 100%), url('${escapeHtml(game.cover)}');">
           <div class="st-hero-details">
-            <h2 class="st-game-title">${game.title}</h2>
+            <h2 class="st-game-title">${escapeHtml(game.title)}</h2>
             <div class="st-game-dev">Developer: Diego Sansano Reboll</div>
           </div>
         </div>
@@ -1919,7 +1970,7 @@ function initDiegoSteam() {
         </div>
         <div class="st-game-desc-panel">
           <h3>About the Game</h3>
-          <p>${game.desc}</p>
+          <p>${escapeHtml(game.desc)}</p>
         </div>
       `;
 
@@ -1927,7 +1978,7 @@ function initDiegoSteam() {
         const body = document.getElementById('game-runner-body');
         const titleEl = document.getElementById('game-runner-title');
         if (body) {
-          body.innerHTML = `<iframe src="${game.gameUrl}" width="100%" height="100%" style="border:none;display:block;" title="${game.title} Demo" allow="autoplay; fullscreen"></iframe>`;
+          body.innerHTML = `<iframe src="${encodeURI(game.gameUrl)}" width="100%" height="100%" style="border:none;display:block;" title="${escapeHtml(game.title)} Demo" sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms" allow="autoplay; fullscreen"></iframe>`;
         }
         if (titleEl) titleEl.textContent = `${game.title} — DiegoOS Executable Engine`;
         WindowManager.open('win-game-runner');
@@ -1939,7 +1990,162 @@ function initDiegoSteam() {
   });
 }
 
+// 1. Función constructora de Alertas del Sistema (Module-Level & Sanitized)
+function showOSAlert(title, message) {
+  if (window.AudioEngine) AudioEngine.playOpen();
+  
+  const safeTitle = escapeHtml(title);
+  const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'os-alert-overlay';
+  overlay.innerHTML = `
+    <div class="os-alert-box">
+      <div class="win-titlebar">
+        <div class="win-title-left">
+          <span class="win-title-icon">ℹ️</span>
+          <span class="win-title-text">${safeTitle}</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn cls-btn" aria-label="Close alert">✕</button>
+        </div>
+      </div>
+      <div class="os-alert-body">
+        <div class="os-alert-icon">💡</div>
+        <div class="os-alert-text">${safeMessage}</div>
+      </div>
+      <div class="os-alert-footer">
+        <button class="os-alert-btn">OK</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+
+  const closeAlert = () => {
+    if (window.AudioEngine) AudioEngine.playClose();
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 150);
+  };
+
+  overlay.querySelector('.cls-btn')?.addEventListener('click', closeAlert);
+  overlay.querySelector('.os-alert-btn')?.addEventListener('click', closeAlert);
+}
+
+// 2. Toolbar interactiva de Adobe Reader (Zoom In, Zoom Out, Print, Save)
+let pdfZoomLevel = 100;
+function initPdfViewerToolbar() {
+  const zoomInBtn = document.getElementById('pdf-btn-zoom-in');
+  const zoomOutBtn = document.getElementById('pdf-btn-zoom-out');
+  const zoomLabel = document.querySelector('.pdf-zoom-level');
+  const printBtn = document.getElementById('pdf-btn-print');
+  const saveBtn = document.getElementById('pdf-btn-save');
+  const sheet = document.getElementById('pdf-page-sheet');
+
+  const updateZoom = (lvl) => {
+    pdfZoomLevel = Math.max(70, Math.min(160, lvl));
+    if (zoomLabel) zoomLabel.textContent = pdfZoomLevel + '%';
+    if (sheet) sheet.style.transform = `scale(${pdfZoomLevel / 100})`;
+    if (window.AudioEngine) AudioEngine.playClick();
+  };
+
+  if (zoomInBtn) zoomInBtn.addEventListener('click', () => updateZoom(pdfZoomLevel + 15));
+  if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => updateZoom(pdfZoomLevel - 15));
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      if (window.AudioEngine) AudioEngine.playClick();
+      window.print();
+    });
+  }
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      if (window.AudioEngine) AudioEngine.playClick();
+      const title = sheet ? (sheet.querySelector('.pdf-sheet-title')?.textContent || 'Project_Details') : 'Project_Details';
+      const textContent = sheet ? sheet.innerText : 'DiegoOS Audio Project Details';
+      const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title.replace(/\s+/g, '_')}_Specifications.txt`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 500);
+    });
+  }
+}
+
+// 3. Buscador interactivo de DiegoBook
+function initDiegoBookSearch() {
+  const searchInp = document.getElementById('fb-search-input');
+  if (!searchInp) return;
+  searchInp.addEventListener('input', () => {
+    const q = searchInp.value.trim().toLowerCase();
+    const posts = document.querySelectorAll('#about-body .fb-post');
+    posts.forEach(post => {
+      const text = post.textContent.toLowerCase();
+      post.style.display = (!q || text.includes(q)) ? 'block' : 'none';
+    });
+  });
+}
+
+// 4. Ordenación interactiva de Programas en Toolkit
+function initToolkitSorting() {
+  const select = document.getElementById('ar-sort-select');
+  const list = document.getElementById('ar-list');
+  if (!select || !list) return;
+
+  select.addEventListener('change', () => {
+    const val = select.value;
+    const items = Array.from(list.querySelectorAll('.ar-item'));
+
+    items.sort((a, b) => {
+      if (val === 'name') {
+        const nameA = a.querySelector('.ar-item-title')?.textContent.trim() || '';
+        const nameB = b.querySelector('.ar-item-title')?.textContent.trim() || '';
+        return nameA.localeCompare(nameB);
+      } else {
+        const parseSize = el => {
+          const str = el.querySelector('.ar-item-size strong')?.textContent.trim() || '0 MB';
+          const num = parseFloat(str) || 0;
+          return str.includes('GB') ? num * 1024 : num;
+        };
+        return parseSize(b) - parseSize(a);
+      }
+    });
+
+    items.forEach(item => list.appendChild(item));
+    if (window.AudioEngine) AudioEngine.playClick();
+  });
+}
+
+// 5. Persistencia segura en Notepad
+function initNotepadStorage() {
+  const ta = document.getElementById('notepad-textarea');
+  if (!ta) return;
+  try {
+    const saved = localStorage.getItem('diegoos_notepad_note');
+    if (saved != null) ta.value = saved;
+  } catch (e) {}
+
+  ta.addEventListener('input', () => {
+    try {
+      localStorage.setItem('diegoos_notepad_note', ta.value);
+    } catch (e) {}
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  // Restore persisted settings
+  try {
+    const savedTheme = localStorage.getItem('diegoos_darkmode');
+    if (savedTheme === '1') setDarkModeState(true);
+    const savedVol = localStorage.getItem('diegoos_volume');
+    if (savedVol != null) {
+      const p = parseInt(savedVol, 10);
+      if (!isNaN(p)) setVolumeState(p);
+    }
+  } catch (e) {}
+
   // Register static windows
   ['win-about','win-toolkit','win-work','win-contact','win-properties','win-notepad','win-demoreel','win-game-runner','win-pdf-viewer','win-media-player'].forEach(id => {
     WindowManager.register(id);
@@ -1965,61 +2171,34 @@ document.addEventListener('DOMContentLoaded', () => {
   initToolkitApp();
   initDiegoSteam();
   initDiegoReel();
+  initPdfViewerToolbar();
+  initDiegoBookSearch();
+  initToolkitSorting();
+  initNotepadStorage();
 
-  // 1. Función constructora de Alertas del Sistema
-  function showOSAlert(title, message) {
-    if (window.AudioEngine) AudioEngine.playOpen();
-    
-    const overlay = document.createElement('div');
-    overlay.className = 'os-alert-overlay';
-    overlay.innerHTML = `
-      <div class="os-alert-box">
-        <div class="win-titlebar">
-          <div class="win-title-left">
-            <span class="win-title-icon">ℹ️</span>
-            <span class="win-title-text">${title}</span>
-          </div>
-          <div class="win-caption-btns">
-            <button class="cap-btn cls-btn">✕</button>
-          </div>
-        </div>
-        <div class="os-alert-body">
-          <div class="os-alert-icon">💡</div>
-          <div class="os-alert-text">${message}</div>
-        </div>
-        <div class="os-alert-footer">
-          <button class="os-alert-btn">OK</button>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(overlay);
-
-    const closeAlert = () => {
-      if (window.AudioEngine) AudioEngine.playClose();
-      overlay.style.opacity = '0';
-      setTimeout(() => overlay.remove(), 150);
-    };
-
-    overlay.querySelector('.cls-btn').addEventListener('click', closeAlert);
-    overlay.querySelector('.os-alert-btn').addEventListener('click', closeAlert);
+  // Wire Facebook message link
+  const fbMsgLink = document.getElementById('fb-send-message-link');
+  if (fbMsgLink) {
+    fbMsgLink.addEventListener('click', () => {
+      WindowManager.open('win-contact');
+      if (window.AudioEngine) AudioEngine.playOpen();
+    });
   }
 
   // Sistema de Ayuda Global para las Ventanas de DiegoOS
   const helpMap = {
     'win-about': "🔹 DiegoBook (About Me):\nParodia de la red social Facebook (versión 2008). Explora las publicaciones del muro central para leer la biografía detallada de Diego, su formación musical avanzada y sus logros de desarrollo de videojuegos en Firescale Studios.",
     'win-toolkit': "🔹 Add or Remove Programs (Toolkit):\nHaz clic sobre cualquier fila de software para expandir sus detalles técnicos y ver el nivel de dominio. Si usas 'Remove' para ocultar un programa, puedes ir a 'Add New Programs' en la barra lateral para ejecutar el asistente de instalación y restaurarlos todos juntos.",
-    'win-work': "🔹 File Explorer (My Work):\nExplorador de archivos clásico de Windows XP. Haz clic en las carpetas para seleccionarlas y doble clic para entrar en ellas. Dentro de cada proyecto verás un PDF corporativo con la ficha técnica técnica y un ejecutable (.exe o .mp4) para lanzar la simulación de la demo.",
+    'win-work': "🔹 File Explorer (My Work):\nExplorador de archivos clásico de Windows XP. Haz clic en las carpetas para seleccionarlas y doble clic para entrar en ellas. Dentro de cada proyecto verás un PDF corporativo con la ficha técnica y un ejecutable (.exe o .mp4) para lanzar la simulación de la demo.",
     'win-pdf-viewer': "🔹 Adobe Reader (Project Details):\nVisor de especificaciones técnicas. Aquí puedes leer con tipografía limpia y maquetación premium los resúmenes editoriales de cada proyecto de sonido, la descripción del flujo de trabajo en REAPER/FMOD y el Tech Stack utilizado.",
     'win-notepad': "🔹 Notepad (Bloc de Notas):\nEditor de texto plano completamente funcional. Úsalo para escribir recordatorios, notas rápidas de código o comentarios temporales durante tu sesión en el sistema operativo.",
     'win-properties': "🔹 Control Panel (Display Properties):\nConsola central de configuración. Úsala para regular el mezclador de volumen general de DiegoOS o cambiar el fondo de pantalla alternando entre el modo Día y el modo Noche.",
     'win-demoreel': "🔹 DiegoTube (Demoreels):\nClon interactivo de YouTube. Explora los reproductores y haz clic en las miniaturas multimedia para cargar y reproducir los demoreels de diseño de sonido y programación de audio de Diego."
   };
 
-  // 2. Modificación del evento de Ayuda (reemplazando alert)
+  // Modificación del evento de Ayuda (reemplazando alert nativo)
   document.querySelectorAll('.menu-item').forEach(item => {
     if (item.textContent.trim() === 'Help') {
-      // Evitamos duplicar eventos si ya estaba asignado
       const newClone = item.cloneNode(true);
       item.parentNode.replaceChild(newClone, item);
       
@@ -2029,7 +2208,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (parentWin) {
           const winId = parentWin.id;
           const helpText = helpMap[winId] || "Asistente de Ayuda de DiegoOS: Utiliza los controles de la ventana para explorar el portfolio interactivo.";
-          // Llamada a la nueva alerta nativa
           showOSAlert('DiegoOS Help', helpText);
         }
       });
@@ -2052,6 +2230,7 @@ function initDiegoReel() {
   const searchBtn = document.getElementById('dr-search-btn');
   const navItems  = document.querySelectorAll('#dr-sidebar .dt-nav-item');
   const titleEl   = document.getElementById('dr-section-title');
+  const urlGoBtn  = document.querySelector('.dt-url-go');
   if (!grid) return;
 
   let activeCat = 'All';
@@ -2075,12 +2254,12 @@ function initDiegoReel() {
       const card = document.createElement('div');
       card.className = 'dt-video-card';
       card.innerHTML = `
-        <div class="dt-thumb" style="background-image:url('${proj.cover}'); background-size:cover; background-position:center;">
+        <div class="dt-thumb" style="background-image:url('${escapeHtml(proj.cover)}'); background-size:cover; background-position:center;">
           <div class="dt-thumb-overlay"><div class="dt-play-btn" aria-label="Play">▶</div></div>
           <span class="dt-duration">${dur}</span>
         </div>
         <div class="dt-card-info">
-          <div class="dt-video-title">${proj.title} — ${proj.category} Showcase</div>
+          <div class="dt-video-title">${escapeHtml(proj.title)} — ${escapeHtml(proj.category)} Showcase</div>
           <div class="dt-video-meta">Diego Sansano Reboll</div>
         </div>
       `;
@@ -2113,7 +2292,14 @@ function initDiegoReel() {
   if (searchInp) searchInp.addEventListener('keydown', e => {
     if (e.key === 'Enter') renderReels('All', searchInp.value);
   });
+  if (urlGoBtn) {
+    urlGoBtn.addEventListener('click', () => {
+      renderReels(activeCat, searchInp ? searchInp.value : '');
+      if (window.AudioEngine) AudioEngine.playClick();
+    });
+  }
 
   renderReels('All', ''); // Initial load
 }
+
 

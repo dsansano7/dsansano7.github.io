@@ -8,6 +8,8 @@
   <meta name="description"
     content="Interactive Windows XP-themed portfolio — Diego Sansano, Game Audio Developer & Sound Designer." />
   <meta name="author" content="Diego Sansano" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -159,7 +161,7 @@
       <div class="win-body fb-body" id="about-body">
         <div class="fb-header">
           <div class="fb-logo">diego<span class="fb-logo-box">book</span></div>
-          <div class="fb-search"><input type="text" placeholder="Search" aria-label="Search"></div>
+          <div class="fb-search"><input type="text" id="fb-search-input" placeholder="Search wall posts..." aria-label="Search wall posts"></div>
           <div class="fb-nav">Profile | Friends | Inbox</div>
         </div>
 
@@ -168,7 +170,7 @@
             <img src="Images/Perfil.png" alt="Diego" class="fb-profile-pic">
             <div class="fb-actions">
               <div class="fb-action-link">View Photos of Diego (5)</div>
-              <div class="fb-action-link" onclick="WindowManager.open('win-contact')">Send Diego a Message</div>
+              <div class="fb-action-link" id="fb-send-message-link">Send Diego a Message</div>
             </div>
             <div class="fb-info-box">
               <div class="fb-box-title">Information</div>
@@ -267,8 +269,9 @@
           <div id="ar-view-list" style="display:flex; flex-direction:column; height:100%;">
             <div class="ar-header">
               <span class="ar-header-text">Currently installed programs:</span>
-              <span class="ar-sort">Sort by: <select>
-                  <option>Size</option>
+              <span class="ar-sort">Sort by: <select id="ar-sort-select" aria-label="Sort installed programs">
+                  <option value="size">Size</option>
+                  <option value="name">Name</option>
                 </select></span>
             </div>
             <div class="ar-list" id="ar-list">
@@ -430,7 +433,7 @@
           <span class="xp-addr-label">Address</span>
           <input class="xp-address-bar" id="xp-address-bar" type="text" value="C:\DiegoOS\My Work"
             aria-label="Address bar" />
-          <button class="xp-addr-go">Go</button>
+          <button class="xp-addr-go" id="xp-addr-go" title="Go to address">Go</button>
         </div>
       </div>
       <!-- XP Main Layout -->
