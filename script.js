@@ -58,31 +58,42 @@ const AudioEngine = (() => {
   let masterVol = 0.7;
 
   function getCtx() {
-    if (!ctx) {
-      ctx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = ctx.createGain();
-      masterGain.gain.value = masterVol;
-      masterGain.connect(ctx.destination);
+    try {
+      if (!ctx && (window.AudioContext || window.webkitAudioContext)) {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = ctx.createGain();
+        masterGain.gain.value = masterVol;
+        masterGain.connect(ctx.destination);
+      }
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+      return ctx;
+    } catch (e) {
+      return null;
     }
-    if (ctx.state === 'suspended') ctx.resume();
-    return ctx;
   }
 
   function tone({ freq = 440, type = 'sine', gain = 0.15, start = 0,
     dur = 0.18, attack = 0.01, release = 0.1 }) {
     if (muted) return;
-    const c = getCtx();
-    const osc = c.createOscillator();
-    const env = c.createGain();
-    const hp = c.createBiquadFilter();
-    hp.type = 'highpass'; hp.frequency.value = 180;
-    osc.type = type; osc.frequency.value = freq;
-    env.gain.setValueAtTime(0, c.currentTime + start);
-    env.gain.linearRampToValueAtTime(gain, c.currentTime + start + attack);
-    env.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + start + dur);
-    osc.connect(hp); hp.connect(env); env.connect(masterGain);
-    osc.start(c.currentTime + start);
-    osc.stop(c.currentTime + start + dur + release);
+    try {
+      const c = getCtx();
+      if (!c) return;
+      const osc = c.createOscillator();
+      const env = c.createGain();
+      const hp = c.createBiquadFilter();
+      hp.type = 'highpass'; hp.frequency.value = 180;
+      osc.type = type; osc.frequency.value = freq;
+      env.gain.setValueAtTime(0, c.currentTime + start);
+      env.gain.linearRampToValueAtTime(gain, c.currentTime + start + attack);
+      env.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + start + dur);
+      osc.connect(hp); hp.connect(env); env.connect(masterGain);
+      osc.start(c.currentTime + start);
+      osc.stop(c.currentTime + start + dur + release);
+    } catch (e) {
+      // Ignore audio synthesis errors on locked or unsupported devices
+    }
   }
 
   function playBootChime() {
@@ -126,14 +137,15 @@ const AudioEngine = (() => {
   function setVolume(vol) {
     masterVol = Math.max(0, Math.min(1, vol));
     if (masterGain) {
-      masterGain.gain.setTargetAtTime(masterVol, getCtx().currentTime, 0.04);
+      const c = getCtx();
+      if (c) masterGain.gain.setTargetAtTime(masterVol, c.currentTime, 0.04);
     }
   }
   function getVolume() { return masterVol; }
 
   return {
     playBootChime, playClick, playHover, playOpen, playClose,
-    setMuted, isMuted, setVolume, getVolume
+    setMuted, isMuted, setVolume, getVolume, getCtx
   };
 })();
 
@@ -219,15 +231,23 @@ const WindowManager = (() => {
   function close(id) {
     const w = wins[id];
     if (!w) return;
-    // Pause video when Media Player is closed
+    // Pause and unload video when Media Player is closed to free memory/buffers
     if (id === 'win-media-player') {
       const vid = document.getElementById('os-video-player');
-      if (vid) vid.pause();
+      if (vid) {
+        vid.pause();
+        vid.removeAttribute('src');
+        vid.load();
+      }
     }
     // Clean up game runner iframe on close to free GPU/RAM and halt audio loop
     if (id === 'win-game-runner') {
       const body = document.getElementById('game-runner-body');
-      if (body) body.innerHTML = '';
+      if (body) {
+        const ifr = body.querySelector('iframe');
+        if (ifr) ifr.src = 'about:blank';
+        body.innerHTML = '';
+      }
     }
     w.el.style.display = 'none';
     w.minimized = w.maximized = false;
@@ -297,10 +317,25 @@ const WindowManager = (() => {
     const tb = el.querySelector('.win-titlebar');
     if (!tb) return;
     let ox = 0, oy = 0;
+    let startX = 0, startY = 0;
+    let isDragging = false;
+
+    const disableIframes = () => {
+      document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none');
+    };
+    const enableIframes = () => {
+      document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = '');
+    };
 
     const move = (e) => {
       const cx = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
       const cy = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+      if (!isDragging) {
+        if (Math.hypot(cx - startX, cy - startY) < 3) return;
+        isDragging = true;
+        document.body.style.userSelect = 'none';
+        disableIframes();
+      }
       el.style.left = Math.max(0, cx - ox) + 'px';
       el.style.top = Math.max(0, cy - oy) + 'px';
     };
@@ -310,26 +345,35 @@ const WindowManager = (() => {
       document.removeEventListener('mouseup', up);
       document.removeEventListener('touchmove', move);
       document.removeEventListener('touchend', up);
+      window.removeEventListener('blur', up);
       document.body.style.userSelect = '';
+      enableIframes();
+      isDragging = false;
     };
 
     const down = (cx, cy) => {
       if (wins[id].maximized) return;
       const r = el.getBoundingClientRect();
-      ox = cx - r.left; oy = cy - r.top;
+      startX = cx;
+      startY = cy;
+      ox = cx - r.left;
+      oy = cy - r.top;
+      isDragging = false;
       focus(id);
-      document.body.style.userSelect = 'none';
       document.addEventListener('mousemove', move);
       document.addEventListener('mouseup', up);
       document.addEventListener('touchmove', move, { passive: true });
       document.addEventListener('touchend', up);
+      window.addEventListener('blur', up, { once: true });
     };
 
     tb.addEventListener('mousedown', e => {
       if (e.button !== 0) return;
+      if (e.target.closest('.win-caption-btns') || e.target.closest('.cap-btn') || e.target.closest('button')) return;
       down(e.clientX, e.clientY);
     });
     tb.addEventListener('touchstart', e => {
+      if (e.target.closest('.win-caption-btns') || e.target.closest('.cap-btn') || e.target.closest('button')) return;
       const t = e.touches[0];
       if (t) down(t.clientX, t.clientY);
     }, { passive: true });
@@ -344,6 +388,13 @@ const WindowManager = (() => {
     el.appendChild(h);
     let sx = 0, sy = 0, sw = 0, sh = 0;
 
+    const disableIframes = () => {
+      document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none');
+    };
+    const enableIframes = () => {
+      document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = '');
+    };
+
     const move = (e) => {
       el.style.width = Math.max(340, sw + e.clientX - sx) + 'px';
       el.style.height = Math.max(240, sh + e.clientY - sy) + 'px';
@@ -352,7 +403,9 @@ const WindowManager = (() => {
     const up = () => {
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', up);
+      window.removeEventListener('blur', up);
       document.body.style.userSelect = '';
+      enableIframes();
     };
 
     h.addEventListener('mousedown', e => {
@@ -360,8 +413,10 @@ const WindowManager = (() => {
       sx = e.clientX; sy = e.clientY; sw = el.offsetWidth; sh = el.offsetHeight;
       e.stopPropagation();
       document.body.style.userSelect = 'none';
+      disableIframes();
       document.addEventListener('mousemove', move);
       document.addEventListener('mouseup', up);
+      window.addEventListener('blur', up, { once: true });
     });
   }
 
@@ -494,13 +549,13 @@ function initFileExplorer() {
 
     // Video file → opens native Media Player
     if (proj.videoUrl) {
-      const thumbHtml = `<img src="Images/Video icono.png" style="width:52px;height:52px;object-fit:contain;filter:drop-shadow(1px 2px 3px rgba(0,0,0,0.4));" alt="Showreel.mp4" />`;
+      const thumbHtml = `<img src="Images/Video icono.png" draggable="false" style="width:52px;height:52px;object-fit:contain;filter:drop-shadow(1px 2px 3px rgba(0,0,0,0.4));" alt="Showreel.mp4" />`;
       folderView.appendChild(createFileIcon(thumbHtml, 'Showreel.mp4', 'video', () => openVideo(proj)));
     }
 
     // Steam link
     if (proj.gameUrl) {
-      const thumbHtml = proj.cover ? `<img src="${proj.cover}" class="xp-custom-thumb" alt="Play on Steam" />` : exeSVG;
+      const thumbHtml = proj.cover ? `<img src="${proj.cover}" draggable="false" class="xp-custom-thumb" alt="Play on Steam" />` : exeSVG;
       folderView.appendChild(createFileIcon(thumbHtml, 'Play_on_Steam.url', 'exe', () => {
         WindowManager.open('win-steam');
         AudioEngine.playOpen();
@@ -1121,6 +1176,8 @@ function makeIconDraggable(el) {
 
     if (!hasMoved && Math.hypot(dx, dy) > 4) {
       hasMoved = true;
+      document.body.style.userSelect = 'none';
+      document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none');
     }
     if (!hasMoved) return;
 
@@ -1203,8 +1260,6 @@ function makeIconDraggable(el) {
       startTop: parseInt(icon.style.top || '0', 10)
     }));
 
-    document.body.style.userSelect = 'none';
-    document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none');
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
     window.addEventListener('blur', onMouseUp);
@@ -1801,16 +1856,29 @@ function initDesktopDragSelection() {
   if (!desktop || !box) return;
 
   let startX = 0, startY = 0;
+  let isSelecting = false;
   let cachedIconRects = [];
 
   const onMouseMove = (e) => {
     const currentX = e.clientX;
     const currentY = e.clientY;
+    const dx = currentX - startX;
+    const dy = currentY - startY;
+
+    if (!isSelecting) {
+      if (Math.hypot(dx, dy) < 4) return;
+      isSelecting = true;
+      box.style.display = 'block';
+      cachedIconRects = Array.from(document.querySelectorAll('.desktop-icon')).map(icon => ({
+        el: icon,
+        rect: icon.getBoundingClientRect()
+      }));
+    }
 
     const left = Math.min(startX, currentX);
     const top = Math.min(startY, currentY);
-    const width = Math.abs(startX - currentX);
-    const height = Math.abs(startY - currentY);
+    const width = Math.abs(dx);
+    const height = Math.abs(dy);
 
     box.style.left = left + 'px';
     box.style.top = top + 'px';
@@ -1847,7 +1915,9 @@ function initDesktopDragSelection() {
     box.style.display = 'none';
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
+    window.removeEventListener('blur', onMouseUp);
     cachedIconRects = [];
+    isSelecting = false;
   };
 
   const onMouseDown = (e) => {
@@ -1859,23 +1929,13 @@ function initDesktopDragSelection() {
 
     startX = e.clientX;
     startY = e.clientY;
-
-    box.style.left = startX + 'px';
-    box.style.top = startY + 'px';
-    box.style.width = '0px';
-    box.style.height = '0px';
-    box.style.display = 'block';
+    isSelecting = false;
 
     document.querySelectorAll('.desktop-icon').forEach(icon => icon.classList.remove('selected'));
 
-    // Cache icon bounding rects once at drag start to eliminate layout thrashing during mouse movements
-    cachedIconRects = Array.from(document.querySelectorAll('.desktop-icon')).map(icon => ({
-      el: icon,
-      rect: icon.getBoundingClientRect()
-    }));
-
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('blur', onMouseUp, { once: true });
   };
 
   desktop.addEventListener('mousedown', onMouseDown);
@@ -1994,7 +2054,7 @@ function initDiegoSteam() {
       if (window.AudioEngine) AudioEngine.playClick();
 
       mainViewEl.innerHTML = `
-        <div class="st-game-hero" style="background-image: linear-gradient(180deg, rgba(27,40,56,0.2) 0%, #1b2838 100%), url('${escapeHtml(game.cover)}');">
+        <div class="st-game-hero" style="background-image: linear-gradient(to right, rgba(20,28,38,0.85) 0%, rgba(20,28,38,0.4) 40%, transparent 75%), linear-gradient(180deg, rgba(20,28,38,0) 0%, rgba(20,28,38,0.15) 30%, rgba(27,38,52,0.7) 60%, #212c3d 90%, #212c3d 100%), url('${escapeHtml(game.cover)}');">
           <div class="st-hero-details">
             <h2 class="st-game-title">${escapeHtml(game.title)}</h2>
             <div class="st-game-dev">Developer: Diego Sansano Reboll</div>

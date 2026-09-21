@@ -2013,6 +2013,12 @@ body.dark-mode .xp-file-icon.xp-selected {
 body.dark-mode .xp-icon-label { color: #eee; }
 .xp-file-icon.xp-selected .xp-icon-label { color: #002080; }
 body.dark-mode .xp-file-icon.xp-selected .xp-icon-label { color: #a0c0ff; }
+.xp-file-icon img,
+.xp-file-icon svg {
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
 
 /* Type-specific icon sizes */
 .xp-type-folder .xp-icon-svg {
@@ -2426,10 +2432,47 @@ body.dark-mode .os-alert-btn { background: #333; color: #fff; border-color: #555
 .st-sidebar-row.active { background: #384353; color: #66c0f4; font-weight: 700; }
 .st-main-panel { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #1b2838; }
 .st-empty-state { margin: auto; font-size: 14px; color: #8f98a0; }
-.st-game-hero { height: 220px; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding: 20px 24px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.st-game-title { font-size: 32px; font-weight: 800; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-.st-game-dev { font-size: 12px; color: #66c0f4; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); margin-top: 2px; }
-.st-play-bar { background: #283442; padding: 16px 24px; display: flex; align-items: center; gap: 24px; border-bottom: 1px solid #171a21; }
+.st-game-hero {
+  min-height: 240px;
+  background-size: cover;
+  background-position: center 20%;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: flex-end;
+  padding: 24px 28px;
+  position: relative;
+  border-bottom: none;
+}
+.st-hero-details {
+  position: relative;
+  z-index: 2;
+}
+.st-game-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8);
+}
+.st-game-dev {
+  font-size: 13px;
+  color: #66c0f4;
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  margin-top: 4px;
+}
+.st-play-bar {
+  background: #212c3d;
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  border-top: none;
+  border-bottom: 1px solid #141b24;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  position: relative;
+  z-index: 3;
+}
 .st-play-btn { background: linear-gradient(90deg, #a4d007 0%, #799a05 100%); border: none; border-radius: 2px; color: #fff; font-size: 20px; font-weight: 800; padding: 12px 64px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); letter-spacing: 1px; }
 .st-play-btn:hover { filter: brightness(1.15); }
 .st-play-btn:active { transform: scale(0.98); }
