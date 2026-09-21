@@ -941,10 +941,10 @@ function initSearch() {
   if (!inp) return;
 
   const map = [
-    { terms: ['about', 'me', 'diego', 'bio', 'saxophone', 'berklee', 'uji', 'firescale', 'gdd'], win: 'win-about' },
-    { terms: ['toolkit', 'fmod', 'wwise', 'unity', 'unreal', 'reaper', 'musescore', 'audio', 'middleware'], win: 'win-toolkit' },
-    { terms: ['work', 'project', 'enchanted', 'neon', 'castle', 'abyss', 'orbital', 'wasteland'], win: 'win-work' },
-    { terms: ['contact', 'email', 'phone', 'mail', 'call', 'languages', 'terminal'], win: 'win-contact' },
+    { terms: ['about', 'me', 'diego', 'bio', 'saxophone', 'berklee', 'uji', 'firescale', 'rural', 'gdd', 'education', 'cv', 'experience'], win: 'win-about' },
+    { terms: ['toolkit', 'fmod', 'wwise', 'unity', 'unreal', 'reaper', 'audition', 'fabfilter', 'izotope', 'git', 'github', 'latex', 'overleaf', 'musescore', 'audio', 'middleware', 'stack', 'skills'], win: 'win-toolkit' },
+    { terms: ['work', 'project', 'tlou', 'cooking', 'unwraptal', 'party', 'drinker', 'showreel', 'demoreel'], win: 'win-work' },
+    { terms: ['contact', 'email', 'phone', 'mail', 'call', 'languages', 'terminal', 'license'], win: 'win-contact' },
     { terms: ['steam', 'game', 'play', 'unwraptal', 'party', 'drinker'], win: 'win-steam' },
   ];
 
@@ -1677,12 +1677,17 @@ function initTerminalInteraction() {
       } else if (cmd === '2' || cmd === 'contact') {
         printLine('');
         printLine('--------------------------------------------------', 'th');
-        printLine('  Diego Sansano Reboll - Contact Information', 'tk');
+        printLine('  Diego Sansano Reboll - Sound Designer & Audio Dev', 'tk');
         printLine('--------------------------------------------------', 'th');
-        printLine('<span class="tk">NAME:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Diego Sansano Reboll');
+        printLine('<span class="tk">ROLE:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sound Designer - Game Audio Programmer');
         printLine('<span class="tk">EMAIL:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="tlink" href="mailto:dsansano070403@gmail.com" target="_blank" rel="noopener noreferrer">dsansano070403@gmail.com</a>');
         printLine('<span class="tk">PHONE:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+34 673 205 292');
-        printLine('<span class="tk">LOCATION:</span>&nbsp;&nbsp;Spain · Open to Remote &amp; Relocation');
+        printLine('<span class="tk">PORTFOLIO:</span>&nbsp;<a class="tlink" href="https://d.sansano7.github.io" target="_blank" rel="noopener noreferrer">https://d.sansano7.github.io</a>');
+        printLine('<span class="tk">LOCATION:</span>&nbsp;&nbsp;Valencia, Spain · Open to Remote &amp; Relocation');
+        printLine('<span class="tk">CURRENT:</span>&nbsp;&nbsp;&nbsp;Audio Designer &amp; Tech Audio Intern at Rural Games');
+        printLine('<span class="tk">EDUCATION:</span>&nbsp;Berklee College (Master) | UJI (Degree) | UMSC (Music)');
+        printLine('<span class="tk">LANGUAGES:</span>&nbsp;Spanish/Catalan (Native), English (C1)');
+        printLine('<span class="tk">DRIVING:</span>&nbsp;&nbsp;&nbsp;B License (Personal vehicle)');
         printLine('<span class="tk">LINKEDIN:</span>&nbsp;&nbsp;<a class="tlink" href="https://www.linkedin.com/in/diego-sansano-reboll/" target="_blank" rel="noopener noreferrer">linkedin.com/in/diego-sansano-reboll</a>');
         printLine('<span class="tk">ITCH.IO:</span>&nbsp;&nbsp;&nbsp;<a class="tlink" href="https://dsansano7.itch.io/" target="_blank" rel="noopener noreferrer">dsansano7.itch.io</a>');
         printLine('--------------------------------------------------', 'th');
@@ -2002,7 +2007,19 @@ function initToolkitApp() {
     nextBtn.disabled = true;
 
     let progress = 0;
-    const files = ["Initializing...", "Extracting: fmod_api.dll", "Linking: wwise.lib", "Compiling: C# Scripts", "Finalizing Setup..."];
+    const files = [
+      "Initializing...",
+      "Extracting: fmod_studio_api.dll",
+      "Linking: wwise_audio_engine.lib",
+      "Compiling: Unity C# Audio Framework",
+      "Configuring: Unreal MetaSounds & Blueprints",
+      "Loading: REAPER DAW Scripts & Automation",
+      "Calibrating: Adobe Audition Spectral Engine",
+      "Authoring: FabFilter & iZotope RX Presets",
+      "Syncing: Git LFS Audio Repository",
+      "Compiling: Overleaf LaTeX GDD Documents",
+      "Finalizing Setup..."
+    ];
     const bar = document.getElementById('wizard-bar');
     const statusTxt = document.getElementById('wizard-status-txt');
 
