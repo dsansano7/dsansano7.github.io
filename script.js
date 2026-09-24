@@ -894,6 +894,16 @@ function initStartMenu() {
     });
   });
 
+  const itchLink = document.getElementById('sm-itch-link');
+  if (itchLink) {
+    itchLink.addEventListener('click', () => {
+      window.open('https://dsansano7.itch.io/', '_blank', 'noopener,noreferrer');
+      menu.style.display = 'none'; open = false;
+      btn.setAttribute('aria-expanded', 'false');
+      AudioEngine.playClick();
+    });
+  }
+
   const portfolioLink = document.getElementById('sm-portfolio-link');
   if (portfolioLink) {
     portfolioLink.addEventListener('click', () => {
@@ -945,7 +955,7 @@ function initSearch() {
     { terms: ['toolkit', 'fmod', 'wwise', 'unity', 'unreal', 'reaper', 'audition', 'fabfilter', 'izotope', 'git', 'github', 'latex', 'overleaf', 'musescore', 'audio', 'middleware', 'stack', 'skills'], win: 'win-toolkit' },
     { terms: ['work', 'project', 'tlou', 'cooking', 'unwraptal', 'party', 'drinker', 'showreel', 'demoreel'], win: 'win-work' },
     { terms: ['contact', 'email', 'phone', 'mail', 'call', 'languages', 'terminal', 'license'], win: 'win-contact' },
-    { terms: ['steam', 'game', 'play', 'unwraptal', 'party', 'drinker'], win: 'win-steam' },
+    { terms: ['steam', 'game', 'play', 'unwraptal', 'party', 'drinker', 'itch'], win: 'win-steam' },
   ];
 
   inp.addEventListener('keydown', e => {
@@ -1300,11 +1310,13 @@ function initDesktopIcons() {
     { top: 260, left: 20 },
     { top: 380, left: 20 },
     { top: 500, left: 20 },
-    { top: 620, left: 20 }
+    { top: 620, left: 20 },
+    { top: 20, left: 130 }
   ];
 
   document.querySelectorAll('.desktop-icon').forEach((icon, idx) => {
     const winId = icon.dataset.window;
+    const url = icon.dataset.url;
     let timer = null;
 
     const coords = defaultCoords[idx] || { top: 20 + idx * 120, left: 20 };
@@ -1314,6 +1326,15 @@ function initDesktopIcons() {
 
     makeIconDraggable(icon);
 
+    const triggerAction = () => {
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+        AudioEngine.playOpen();
+      } else if (winId) {
+        WindowManager.open(winId);
+      }
+    };
+
     icon.addEventListener('click', e => {
       e.stopPropagation();
       cancelInactivityTimer();
@@ -1322,18 +1343,18 @@ function initDesktopIcons() {
       AudioEngine.playClick();
 
       if (isMobileDevice()) {
-        if (winId) WindowManager.open(winId);
+        triggerAction();
       } else {
         if (timer) {
           clearTimeout(timer); timer = null;
-          if (winId) WindowManager.open(winId);
+          triggerAction();
         } else {
           timer = setTimeout(() => { timer = null; }, 360);
         }
       }
     });
     icon.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (winId) WindowManager.open(winId); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerAction(); }
     });
     icon.addEventListener('mouseenter', () => AudioEngine.playHover());
     icon.addEventListener('contextmenu', e => {
@@ -1685,7 +1706,6 @@ function initTerminalInteraction() {
         printLine('<span class="tk">PHONE:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+34 673 205 292');
         printLine('<span class="tk">LINKEDIN:</span>&nbsp;&nbsp;<a class="tlink" href="https://www.linkedin.com/in/diego-sansano-reboll/" target="_blank" rel="noopener noreferrer">linkedin.com/in/diego-sansano-reboll</a>');
         printLine('<span class="tk">ITCH.IO:</span>&nbsp;&nbsp;&nbsp;<a class="tlink" href="https://dsansano7.itch.io/" target="_blank" rel="noopener noreferrer">dsansano7.itch.io</a>');
-        printLine('<span class="tk">PORTFOLIO:</span>&nbsp;<a class="tlink" href="https://d.sansano7.github.io" target="_blank" rel="noopener noreferrer">https://d.sansano7.github.io</a>');
         printLine('--------------------------------------------------', 'th');
         printLine('Tip: Select [1] from the menu or type \'mail\' to compose an email directly.');
         printLine('');
@@ -2054,6 +2074,15 @@ function initDiegoSteam() {
   const mainViewEl = document.getElementById('st-main-view');
   if (!gameListEl || !mainViewEl) return;
 
+  const storeBtn = document.getElementById('steam-menu-store');
+  if (storeBtn && !storeBtn.dataset.wired) {
+    storeBtn.dataset.wired = 'true';
+    storeBtn.addEventListener('click', () => {
+      window.open('https://dsansano7.itch.io/', '_blank', 'noopener,noreferrer');
+      if (window.AudioEngine) AudioEngine.playClick();
+    });
+  }
+
   const playableGames = PROJECTS.filter(p => p.gameUrl && p.gameUrl !== '');
   gameListEl.innerHTML = '<div class="st-sidebar-title">GAMES (' + playableGames.length + ')</div>';
 
@@ -2085,6 +2114,7 @@ function initDiegoSteam() {
         <div class="st-game-desc-panel">
           <h3>About the Game</h3>
           <p>${escapeHtml(game.desc)}</p>
+          <p style="margin-top:10px; font-size:11px; color:#8f98a0;">Find more game builds and audio releases at <a href="https://dsansano7.itch.io/" target="_blank" rel="noopener noreferrer" style="color:#66c0f4; text-decoration:underline;">dsansano7.itch.io ↗</a></p>
         </div>
       `;
 
@@ -2102,6 +2132,16 @@ function initDiegoSteam() {
     gameListEl.appendChild(row);
     if(idx === 0) row.click();
   });
+
+  const itchRow = document.createElement('div');
+  itchRow.className = 'st-sidebar-row st-sidebar-itch';
+  itchRow.innerHTML = '🌐 More on Itch.io ↗';
+  itchRow.title = "Visit Diego's Itch.io Profile";
+  itchRow.addEventListener('click', () => {
+    window.open('https://dsansano7.itch.io/', '_blank', 'noopener,noreferrer');
+    if (window.AudioEngine) AudioEngine.playClick();
+  });
+  gameListEl.appendChild(itchRow);
 }
 
 // 1. Función constructora de Alertas del Sistema (Module-Level & Sanitized)
@@ -2290,12 +2330,20 @@ document.addEventListener('DOMContentLoaded', () => {
   initToolkitSorting();
   initNotepadStorage();
 
-  // Wire Facebook message link
+  // Wire Facebook message and Itch links
   const fbMsgLink = document.getElementById('fb-send-message-link');
   if (fbMsgLink) {
     fbMsgLink.addEventListener('click', () => {
       WindowManager.open('win-contact');
       if (window.AudioEngine) AudioEngine.playOpen();
+    });
+  }
+
+  const fbItchLink = document.getElementById('fb-itch-link');
+  if (fbItchLink) {
+    fbItchLink.addEventListener('click', () => {
+      window.open('https://dsansano7.itch.io/', '_blank', 'noopener,noreferrer');
+      if (window.AudioEngine) AudioEngine.playClick();
     });
   }
 
