@@ -21,17 +21,17 @@
   --menubar-bdr: #b0a898;
 
   /* Taskbar */
-  --tb-bg:    linear-gradient(180deg, #3d7ee8 0%, #2558c7 45%, #183e96 100%);
-  --tb-h:     52px;
-  --tray-bg:  linear-gradient(180deg, #1d3fa3 0%, #102570 100%);
+  --tb-bg:    linear-gradient(180deg, #245edb 0%, #1e52c8 8%, #1642af 48%, #12379a 50%, #1844b8 90%, #143ca0 100%);
+  --tb-h:     46px;
+  --tray-bg:  linear-gradient(180deg, #0e2d78 0%, #123894 48%, #0d276b 50%, #103285 100%);
 
-  /* Start button */
-  --start-bg:     linear-gradient(180deg,#5da838 0%,#3d8c1a 42%,#2e7212 100%);
-  --start-hover:  linear-gradient(180deg,#6ec244 0%,#4aaa22 42%,#377214 100%);
-  --start-active: linear-gradient(180deg,#2e7212 0%,#3d8c1a 100%);
-  --start-border: #2a6214;
-  --start-border-bottom: #1a4a0a;
-  --start-pulse-shadow: rgba(93, 168, 56, 0.85);
+  /* Start button — Deep Royal Sapphire Crystal (Max contrast for red, green, blue, yellow in DS logo) */
+  --start-bg:     linear-gradient(180deg, #1d335a 0%, #13223f 46%, #0b1528 50%, #162645 100%);
+  --start-hover:  linear-gradient(180deg, #2b497c 0%, #1b3158 46%, #101e38 50%, #1e355e 100%);
+  --start-active: linear-gradient(180deg, #0b1528 0%, #13223f 100%);
+  --start-border: #0e1b30;
+  --start-border-bottom: #080f1c;
+  --start-pulse-shadow: rgba(66, 133, 244, 0.75);
 
   /* Caption buttons */
   --cap-close: linear-gradient(180deg,#ea4040 0%,#c61c1c 100%);
@@ -73,19 +73,19 @@ body.dark-mode {
   --win-border:  #3838cc;
   --menubar-bg:  #0d0d24;
   --menubar-bdr: #28288a;
-  --tb-bg:       linear-gradient(180deg,#04040e 0%,#080820 100%);
-  --tray-bg:     linear-gradient(180deg,#04040e 0%,#060618 100%);
+  --tb-bg:       linear-gradient(180deg, #0a0b14 0%, #121424 48%, #090a12 50%, #0e101c 100%);
+  --tray-bg:     linear-gradient(180deg, #06070e 0%, #0a0a14 50%, #05050a 100%);
   --txt:         #dde0ff;
   --muted:       #8888cc;
   --panel-bg:    #131326;
   --panel-hdr:   linear-gradient(180deg,#1e1e3a,#161630);
   --panel-bdr:   1px solid #28285a;
-  --start-bg:     linear-gradient(180deg,#5f59f2 0%,#3d34cf 45%,#20197a 100%);
-  --start-hover:  linear-gradient(180deg,#7671f7 0%,#5249e0 42%,#3328bd 100%);
-  --start-active: linear-gradient(180deg,#20197a 0%,#3d34cf 100%);
-  --start-border: #3d34cf;
-  --start-border-bottom: #1c1570;
-  --start-pulse-shadow: rgba(95, 89, 242, 0.85);
+  --start-bg:     linear-gradient(180deg, #28246e 0%, #1d1954 48%, #13103c 50%, #201c5e 100%);
+  --start-hover:  linear-gradient(180deg, #37328c 0%, #272270 48%, #1a1650 50%, #2c267a 100%);
+  --start-active: linear-gradient(180deg, #13103c 0%, #1d1954 100%);
+  --start-border: #141238;
+  --start-border-bottom: #0a091e;
+  --start-pulse-shadow: rgba(99, 102, 241, 0.75);
 }
 
 /* ── Reset ───────────────────────────────────────────────────── */
@@ -669,10 +669,10 @@ body.dark-mode .proj-showreel-slot { background:linear-gradient(135deg,#0a1228,#
 #taskbar {
   position:fixed; bottom:0; left:0; right:0;
   height:var(--tb-h); background:var(--tb-bg);
-  display:flex; align-items:center;
+  display:flex; align-items:stretch;
   z-index:1000;
-  box-shadow:0 -1px 0 rgba(255,255,255,0.22), inset 0 1px 0 rgba(255,255,255,0.18);
-  padding:0 4px; gap:4px;
+  box-shadow:0 -1px 0 rgba(255,255,255,0.38), inset 0 1px 0 rgba(255,255,255,0.22);
+  padding:0; gap:0;
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 #taskbar.tb-hidden {
@@ -680,23 +680,51 @@ body.dark-mode .proj-showreel-slot { background:linear-gradient(135deg,#0a1228,#
 }
 
 /* Left section */
-.tb-left { display:flex; align-items:center; gap:5px; flex-shrink:0; }
-
-/* Start Button — locked inside taskbar height */
-#start-btn {
-  display:flex; align-items:center; gap:6px;
-  background:var(--start-bg);
-  border:1px solid var(--start-border); border-bottom-color:var(--start-border-bottom);
-  border-radius:18px; padding:0 18px 0 10px;
-  color:#fff; cursor:pointer;
-  font-family:var(--f-ui); font-weight:700; font-size:17px; font-style:italic;
-  height:40px; line-height:1; flex-shrink:0;
-  box-shadow:0 2px 5px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.32);
-  transition:background var(--tx), box-shadow var(--tx);
-  text-shadow:1px 1px 2px rgba(0,0,0,0.55);
+.tb-left {
+  display:flex; align-items:stretch; height:100%; flex-shrink:0;
 }
-#start-btn:hover  { background:var(--start-hover); }
-#start-btn:active { background:var(--start-active); box-shadow:0 1px 2px rgba(0,0,0,0.4); }
+
+/* Start Button — anchored flush to bottom-left corner with curved outer flank */
+#start-btn {
+  display:flex; align-items:center; gap:8px;
+  background:var(--start-bg);
+  border:1px solid var(--start-border);
+  border-left:none;
+  border-bottom:none;
+  border-top-left-radius:0;
+  border-bottom-left-radius:0;
+  border-top-right-radius:20px;
+  border-bottom-right-radius:20px;
+  padding:0 22px 0 12px;
+  color:#fff; cursor:pointer;
+  font-family:var(--f-ui); font-weight:700; font-size:16px; font-style:italic;
+  height:100%; line-height:1; flex-shrink:0;
+  box-shadow:2px 0 8px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -1px 0 rgba(0,0,0,0.25);
+  transition:background var(--tx), box-shadow var(--tx), filter var(--tx);
+  text-shadow:1px 1px 3px rgba(0,0,0,0.75);
+  position:relative;
+}
+#start-btn:hover {
+  background:var(--start-hover);
+  box-shadow:2px 0 14px var(--start-pulse-shadow), inset 0 1px 1px rgba(255,255,255,0.5);
+}
+#start-btn:active,
+#start-btn[aria-expanded="true"] {
+  background:var(--start-active);
+  box-shadow:inset 1px 2px 4px rgba(0,0,0,0.5), inset 0 0 2px rgba(0,0,0,0.6);
+}
+
+#start-btn .start-logo-img {
+  width:28px;
+  height:28px;
+  object-fit:contain;
+  flex-shrink:0;
+  display:inline-block;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+}
+body:not(.dark-mode) #start-btn .start-logo-img {
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,0.7)) drop-shadow(0 0 3px rgba(255,255,255,0.35)) !important;
+}
 
 .start-flag {
   display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
@@ -743,29 +771,45 @@ body.dark-mode #taskbar-search::placeholder { color:#555; }
 
 /* Center Tabs */
 .tb-center {
-  flex:1; display:flex; align-items:center; gap:3px;
-  padding:0 4px; overflow:hidden;
+  flex:1; display:flex; align-items:center; gap:4px;
+  padding:0 8px; overflow-x:auto; overflow-y:hidden;
+  scrollbar-width:none;
 }
+.tb-center::-webkit-scrollbar { display:none; }
+
 .tb-tab {
-  display:flex; align-items:center; gap:5px;
-  background:linear-gradient(180deg,#3a6acd,#2a52ac);
-  border:1px solid rgba(255,255,255,0.16); border-radius:3px;
-  padding:0 12px; color:#dde8ff; font-size:11px;
-  font-family:var(--f-ui); cursor:pointer; height:28px;
-  max-width:170px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
-  transition:background var(--tx);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.15);
+  display:flex; align-items:center; gap:6px;
+  background:linear-gradient(180deg,#356bd6 0%,#2554be 50%,#1c44a8 51%,#2350b8 100%);
+  border:1px solid rgba(255,255,255,0.22);
+  border-bottom-color:rgba(0,0,0,0.3);
+  border-radius:3px;
+  padding:0 12px; color:#eaf1ff; font-size:11.5px;
+  font-family:var(--f-ui); cursor:pointer; height:32px;
+  max-width:180px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+  transition:background var(--tx), box-shadow var(--tx);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.28), 0 1px 2px rgba(0,0,0,0.25);
 }
-.tb-tab:hover  { background:linear-gradient(180deg,#4a7ade,#3a62bc); }
-.tb-tab.active { background:linear-gradient(180deg,#1c3a9a,#152e82); box-shadow:inset 0 2px 5px rgba(0,0,0,0.45); }
+.tb-tab:hover {
+  background:linear-gradient(180deg,#4880ed 0%,#3467d4 50%,#2854bf 51%,#3467d4 100%);
+  color:#fff;
+}
+.tb-tab.active {
+  background:linear-gradient(180deg,#112866 0%,#0e2154 50%,#132a68 51%,#173278 100%);
+  border-color:rgba(0,0,0,0.5);
+  border-top-color:rgba(0,0,0,0.65);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.6), inset 0 0 2px rgba(0,0,0,0.5);
+  color:#ffffff;
+  font-weight:600;
+}
 
 /* System Tray */
 .tb-right {
   position:relative;
-  display:flex; align-items:center; gap:3px;
+  display:flex; align-items:center; gap:5px;
   background:var(--tray-bg);
-  border-left:1px solid rgba(255,255,255,0.16);
-  padding:0 8px; height:100%; flex-shrink:0;
+  border-left:1px solid rgba(255,255,255,0.18);
+  box-shadow:inset 1px 0 3px rgba(0,0,0,0.35), inset 0 1px 2px rgba(0,0,0,0.25);
+  padding:0 12px; height:100%; flex-shrink:0;
 }
 
 /* Balloon Tooltip (Modern XP Style) */
@@ -2223,21 +2267,13 @@ body.dark-mode .xp-sidebar-hdr {
   filter: drop-shadow(0 0 14px rgba(80,160,255,0.5));
 }
 
-/* Reescalado del Logo en el Botón de Inicio */
-#start-btn {
-  padding: 0 16px 0 8px; /* Adjusted padding to let the 32px logo breathe */
-  gap: 8px;              /* Adjusted gap between logo and start text */
+/* Dragging state */
+body.is-dragging,
+body.is-dragging * {
+  cursor: grabbing !important;
 }
-#start-btn .start-logo-img {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  flex-shrink: 0;
-  display: inline-block;
-}
-/* Resplandor de contraste para el logo personalizado en modo claro */
-body:not(.dark-mode) #start-btn .start-logo-img {
-  filter: drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.95)) drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.35)) !important;
+body.is-dragging .desktop-icon {
+  pointer-events: none;
 }
 
 /* Reescalado del Logo en la Pantalla de Apagado (Retro Shutdown) */
@@ -2508,4 +2544,359 @@ body.dark-mode .os-alert-btn { background: #333; color: #fff; border-color: #555
   user-select: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DIEGOREEL YOUTUBE WATCH VIEW
+   ══════════════════════════════════════════════════════════════ */
+.dt-watch-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.dt-watch-topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e2e2;
+}
+body.dark-mode .dt-watch-topbar { border-color: #2c2c2c; }
+
+.dt-back-btn {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-family: var(--f-ui);
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.dt-back-btn:hover {
+  background: #cc0000;
+  border-color: #aa0000;
+  color: #fff;
+}
+body.dark-mode .dt-back-btn {
+  background: #252525;
+  border-color: #444;
+  color: #ddd;
+}
+body.dark-mode .dt-back-btn:hover {
+  background: #cc0000;
+  border-color: #aa0000;
+  color: #fff;
+}
+
+.dt-watch-breadcrumbs {
+  font-size: 12px;
+  color: #666;
+  font-family: var(--f-ui);
+}
+body.dark-mode .dt-watch-breadcrumbs { color: #999; }
+
+.dt-watch-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+@media (max-width: 760px) {
+  .dt-watch-layout { flex-direction: column; }
+}
+
+.dt-watch-player-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dt-player-frame {
+  width: 100%;
+  background: #000;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dt-video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
+
+.dt-watch-info-bar {
+  margin-top: 12px;
+}
+
+.dt-watch-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #111;
+  font-family: var(--f-ui);
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+body.dark-mode .dt-watch-title { color: #f0f0f0; }
+
+.dt-watch-meta-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #666;
+  padding: 6px 0 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-family: var(--f-ui);
+}
+body.dark-mode .dt-watch-meta-line {
+  color: #999;
+  border-bottom-color: #333;
+}
+
+.dt-meta-sep {
+  color: #bbb;
+}
+body.dark-mode .dt-meta-sep {
+  color: #555;
+}
+
+/* DiegoSteam Retro Action Bar */
+.dt-steam-bar {
+  background: #1b2838;
+  border: 1px solid #2a475e;
+  border-radius: 2px;
+  padding: 10px 14px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dt-steam-bar-text {
+  font-size: 12px;
+  color: #acb2b8;
+  font-family: var(--f-ui);
+  line-height: 1.4;
+}
+
+.dt-steam-bar-text strong {
+  color: #66c0f4;
+}
+
+.dt-steam-launch-btn {
+  background: #2a475e;
+  border: 1px solid #66c0f4;
+  border-radius: 2px;
+  padding: 6px 14px;
+  color: #ffffff;
+  font-family: var(--f-ui);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.dt-steam-launch-btn:hover {
+  background: #66c0f4;
+  color: #171a21;
+}
+
+/* Description Dossier Box (Authentic Retro YouTube 2008 / Classic Web) */
+.dt-description-box {
+  background: #fafafa;
+  border: 1px solid #e2e2e2;
+  border-radius: 2px;
+  padding: 14px 16px;
+  margin-top: 12px;
+  font-family: var(--f-ui);
+}
+body.dark-mode .dt-description-box {
+  background: #191919;
+  border-color: #2e2e2e;
+}
+
+.dt-desc-section {
+  margin-bottom: 14px;
+}
+.dt-desc-section:last-child {
+  margin-bottom: 0;
+}
+
+.dt-desc-heading {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #222;
+  margin: 0 0 6px 0;
+  letter-spacing: 0.2px;
+}
+body.dark-mode .dt-desc-heading {
+  color: #e0e0e0;
+}
+
+.dt-desc-text {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #333;
+  margin: 0;
+}
+body.dark-mode .dt-desc-text {
+  color: #bbb;
+}
+
+.dt-desc-tags {
+  font-weight: 600;
+  color: #1a4fba;
+}
+body.dark-mode .dt-desc-tags {
+  color: #79a7ff;
+}
+
+.dt-specs-list {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 6px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #333;
+}
+body.dark-mode .dt-specs-list {
+  color: #bbb;
+}
+
+/* Right Column (Up Next / Related) */
+.dt-watch-sidebar-col {
+  width: 250px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (max-width: 760px) {
+  .dt-watch-sidebar-col {
+    width: 100%;
+  }
+}
+
+.dt-upnext-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #222;
+  font-family: var(--f-ui);
+  padding-bottom: 4px;
+  border-bottom: 2px solid #cc0000;
+  display: inline-block;
+  align-self: flex-start;
+}
+body.dark-mode .dt-upnext-title {
+  color: #eee;
+}
+
+.dt-upnext-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dt-related-item {
+  display: flex;
+  gap: 8px;
+  cursor: pointer;
+  padding: 5px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  transition: background 0.1s;
+}
+.dt-related-item:hover {
+  background: #f0f0f0;
+  border-color: #e0e0e0;
+}
+body.dark-mode .dt-related-item:hover {
+  background: #242424;
+  border-color: #333;
+}
+
+.dt-related-thumb {
+  width: 96px;
+  aspect-ratio: 16/9;
+  border-radius: 2px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  flex-shrink: 0;
+  border: 1px solid #ccc;
+}
+body.dark-mode .dt-related-thumb {
+  border-color: #444;
+}
+
+.dt-related-dur {
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 3px;
+  border-radius: 2px;
+  font-family: var(--f-mono);
+}
+
+.dt-related-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.dt-related-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #111;
+  font-family: var(--f-ui);
+  line-height: 1.3;
+  margin-bottom: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+body.dark-mode .dt-related-title {
+  color: #eee;
+}
+
+.dt-related-author {
+  font-size: 10.5px;
+  color: #666;
+  font-family: var(--f-ui);
+}
+body.dark-mode .dt-related-author {
+  color: #999;
+}
+
+.dt-related-cat {
+  font-size: 10px;
+  color: #cc0000;
+  font-weight: 700;
+  font-family: var(--f-ui);
 }

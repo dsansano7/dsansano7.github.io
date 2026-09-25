@@ -44,6 +44,12 @@ const PROJECTS = [
     desc: 'A full-cycle audio production for a month-long Game Jam. The game features Wario Ware-style mini-games. Crafted all custom SFX and an original dynamic soundtrack (Menu, HUB, and End Game), fully implemented in Unity via FMOD.',
     tags: ['FMOD', 'Unity', 'Music Composition', 'SFX'],
     gameUrl: './games/unwraptal/index.html', videoUrl: 'videos/Unwraptal.mp4', cover: 'Images/Unwraptal.png'
+  },
+  {
+    id: 5, title: 'Just 5 Minutes', category: 'Audio Implementation', catClass: 'cat-ap', icon: '⏱️',
+    desc: 'A 2D idle game developed with a strong focus on anti-fatigue audio design. Tailored so that repetitive gameplay loops remain warm, pleasant, and immersive over extended play sessions, featuring gentle ambient music layering and subtle, non-intrusive sound effects crafted to avoid ear fatigue.',
+    tags: ['FMOD', 'Unity', '2D Idle', 'Anti-Fatigue Audio', 'Dynamic Music'],
+    gameUrl: './games/Just 5 min/index.html', videoUrl: 'videos/Just 5 min.mp4', cover: 'Images/Just 5 min.png'
   }
 ];
 
@@ -56,6 +62,8 @@ const AudioEngine = (() => {
   let masterGain = null;
   let muted = false;
   let masterVol = 0.7;
+  let isDraggingState = false;
+  let lastHoverTime = 0;
 
   function getCtx() {
     try {
@@ -115,8 +123,22 @@ const AudioEngine = (() => {
   }
 
   function playHover() {
-    if (muted) return;
+    if (muted || isDraggingState) return;
+    const now = performance.now();
+    if (now - lastHoverTime < 90) return; // Prevent rapid-fire sound stacking
+    lastHoverTime = now;
     tone({ freq: 1800, type: 'sine', gain: 0.015, dur: 0.035, attack: 0.002, release: 0.018 });
+  }
+
+  function setDragging(val) {
+    isDraggingState = Boolean(val);
+    if (!isDraggingState) {
+      lastHoverTime = performance.now() + 100; // Cooldown after release
+    }
+  }
+
+  function isDragging() {
+    return isDraggingState;
   }
 
   function playOpen() {
@@ -145,7 +167,8 @@ const AudioEngine = (() => {
 
   return {
     playBootChime, playClick, playHover, playOpen, playClose,
-    setMuted, isMuted, setVolume, getVolume, getCtx
+    setMuted, isMuted, setVolume, getVolume, getCtx,
+    setDragging, isDragging
   };
 })();
 
@@ -234,6 +257,14 @@ const WindowManager = (() => {
     // Pause and unload video when Media Player is closed to free memory/buffers
     if (id === 'win-media-player') {
       const vid = document.getElementById('os-video-player');
+      if (vid) {
+        vid.pause();
+        vid.removeAttribute('src');
+        vid.load();
+      }
+    }
+    if (id === 'win-demoreel') {
+      const vid = document.getElementById('dr-player-video');
       if (vid) {
         vid.pause();
         vid.removeAttribute('src');
@@ -333,6 +364,8 @@ const WindowManager = (() => {
       if (!isDragging) {
         if (Math.hypot(cx - startX, cy - startY) < 3) return;
         isDragging = true;
+        AudioEngine.setDragging(true);
+        document.body.classList.add('is-dragging');
         document.body.style.userSelect = 'none';
         disableIframes();
       }
@@ -346,6 +379,8 @@ const WindowManager = (() => {
       document.removeEventListener('touchmove', move);
       document.removeEventListener('touchend', up);
       window.removeEventListener('blur', up);
+      document.body.classList.remove('is-dragging');
+      AudioEngine.setDragging(false);
       document.body.style.userSelect = '';
       enableIframes();
       isDragging = false;
@@ -894,24 +929,6 @@ function initStartMenu() {
     });
   });
 
-  const itchLink = document.getElementById('sm-itch-link');
-  if (itchLink) {
-    itchLink.addEventListener('click', () => {
-      window.open('https://dsansano7.itch.io/', '_blank', 'noopener,noreferrer');
-      menu.style.display = 'none'; open = false;
-      btn.setAttribute('aria-expanded', 'false');
-      AudioEngine.playClick();
-    });
-  }
-
-  const portfolioLink = document.getElementById('sm-portfolio-link');
-  if (portfolioLink) {
-    portfolioLink.addEventListener('click', () => {
-      window.open('https://diego-sansano-reboll-portfolio.vercel.app/', '_blank', 'noopener,noreferrer');
-      AudioEngine.playClick();
-    });
-  }
-
   // Shut down easter egg
   ['sm-shutdown-btn', 'sm-shutdown'].forEach(id => {
     const el = document.getElementById(id);
@@ -953,9 +970,9 @@ function initSearch() {
   const map = [
     { terms: ['about', 'me', 'diego', 'bio', 'saxophone', 'berklee', 'uji', 'firescale', 'rural', 'gdd', 'education', 'cv', 'experience'], win: 'win-about' },
     { terms: ['toolkit', 'fmod', 'wwise', 'unity', 'unreal', 'reaper', 'audition', 'fabfilter', 'izotope', 'git', 'github', 'latex', 'overleaf', 'musescore', 'audio', 'middleware', 'stack', 'skills'], win: 'win-toolkit' },
-    { terms: ['work', 'project', 'tlou', 'cooking', 'unwraptal', 'party', 'drinker', 'showreel', 'demoreel'], win: 'win-work' },
+    { terms: ['work', 'project', 'reels', 'demoreel', 'video', 'showreel', 'tlou', 'cooking', 'just', 'minutes'], win: 'win-demoreel' },
     { terms: ['contact', 'email', 'phone', 'mail', 'call', 'languages', 'terminal', 'license'], win: 'win-contact' },
-    { terms: ['steam', 'game', 'play', 'unwraptal', 'party', 'drinker', 'itch'], win: 'win-steam' },
+    { terms: ['steam', 'game', 'play', 'unwraptal', 'party', 'drinker', 'itch', 'just', 'minutes'], win: 'win-steam' },
   ];
 
   inp.addEventListener('keydown', e => {
@@ -1186,6 +1203,8 @@ function makeIconDraggable(el) {
 
     if (!hasMoved && Math.hypot(dx, dy) > 4) {
       hasMoved = true;
+      AudioEngine.setDragging(true);
+      document.body.classList.add('is-dragging');
       document.body.style.userSelect = 'none';
       document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none');
     }
@@ -1210,6 +1229,8 @@ function makeIconDraggable(el) {
     document.removeEventListener('touchmove', onMouseMove);
     document.removeEventListener('touchend', onMouseUp);
     window.removeEventListener('blur', onMouseUp);
+    document.body.classList.remove('is-dragging');
+    AudioEngine.setDragging(false);
     document.body.style.userSelect = '';
     document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = '');
 
@@ -1310,8 +1331,7 @@ function initDesktopIcons() {
     { top: 260, left: 20 },
     { top: 380, left: 20 },
     { top: 500, left: 20 },
-    { top: 620, left: 20 },
-    { top: 20, left: 130 }
+    { top: 620, left: 20 }
   ];
 
   document.querySelectorAll('.desktop-icon').forEach((icon, idx) => {
@@ -1705,7 +1725,6 @@ function initTerminalInteraction() {
         printLine('<span class="tk">EMAIL:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="tlink" href="mailto:dsansano070403@gmail.com" target="_blank" rel="noopener noreferrer">dsansano070403@gmail.com</a>');
         printLine('<span class="tk">PHONE:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+34 673 205 292');
         printLine('<span class="tk">LINKEDIN:</span>&nbsp;&nbsp;<a class="tlink" href="https://www.linkedin.com/in/diego-sansano-reboll/" target="_blank" rel="noopener noreferrer">linkedin.com/in/diego-sansano-reboll</a>');
-        printLine('<span class="tk">ITCH.IO:</span>&nbsp;&nbsp;&nbsp;<a class="tlink" href="https://dsansano7.itch.io/" target="_blank" rel="noopener noreferrer">dsansano7.itch.io</a>');
         printLine('--------------------------------------------------', 'th');
         printLine('Tip: Select [1] from the menu or type \'mail\' to compose an email directly.');
         printLine('');
@@ -1890,6 +1909,8 @@ function initDesktopDragSelection() {
     if (!isSelecting) {
       if (Math.hypot(dx, dy) < 4) return;
       isSelecting = true;
+      AudioEngine.setDragging(true);
+      document.body.classList.add('is-dragging');
       box.style.display = 'block';
       cachedIconRects = Array.from(document.querySelectorAll('.desktop-icon')).map(icon => ({
         el: icon,
@@ -1938,6 +1959,8 @@ function initDesktopDragSelection() {
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
     window.removeEventListener('blur', onMouseUp);
+    document.body.classList.remove('is-dragging');
+    AudioEngine.setDragging(false);
     cachedIconRects = [];
     isSelecting = false;
   };
@@ -2384,23 +2407,219 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ══════════════════════════════════════════════════════════════
-   DIEGOREEL — Dynamic video grid driven by PROJECTS data
+   DIEGOREEL — Dynamic video grid & YouTube-style watch view
    ══════════════════════════════════════════════════════════════ */
 function initDiegoReel() {
-  const grid      = document.getElementById('dr-video-grid');
+  const mainEl    = document.querySelector('.dt-main');
+  const sidebarEl = document.getElementById('dr-sidebar');
   const searchInp = document.getElementById('dr-search');
   const searchBtn = document.getElementById('dr-search-btn');
   const navItems  = document.querySelectorAll('#dr-sidebar .dt-nav-item');
-  const titleEl   = document.getElementById('dr-section-title');
   const urlGoBtn  = document.querySelector('.dt-url-go');
-  if (!grid) return;
+  const urlInput  = document.querySelector('.dt-url-input');
+  if (!mainEl) return;
 
   let activeCat = 'All';
+
+  function getTechSpecs(p) {
+    switch (p.id) {
+      case 1: // The Last of Us
+        return `
+          <li><strong>DAW &amp; Spatial Routing:</strong> Fully tracked, edited, and mixed natively in Cockos REAPER utilizing custom surround buses and VST sub-group processing chains.</li>
+          <li><strong>Foley &amp; Texture Artistry:</strong> Multi-layered acoustic Foley including tactical cloth rustle, weapon manipulation, breathing dynamics, and footstep surfaces (cracked concrete, shattered glass, dirt, and timber).</li>
+          <li><strong>Environmental Soundscaping:</strong> Spatialized acoustic transition when crossing breached boundaries into reverberant corridors, combining high-frequency low-pass dampening with subtle low-end resonance.</li>
+          <li><strong>Dynamic Mixing:</strong> Calibrated cinematic loudness with prioritize-first sidechain ducking between dialogue intelligibility, environmental tension, and concussive impacts.</li>
+        `;
+      case 2: // Party Drinker
+        return `
+          <li><strong>Engine &amp; Middleware:</strong> Developed in Unity with complete FMOD Studio real-time middleware soundbank architecture.</li>
+          <li><strong>3D Spatialization:</strong> Real-time distance attenuation curves, directional panning, and early reflection filters for chaotic partygoers and background club acoustics.</li>
+          <li><strong>Dynamic Adaptive Music:</strong> State-machine parameter transitions in FMOD responding dynamically to the player's intoxication gauge and mini-game tempo.</li>
+          <li><strong>Playable Experience:</strong> Instant WebGL interactive build available to launch right now in DiegoSteam!</li>
+        `;
+      case 3: // Cooking Fever
+        return `
+          <li><strong>UI/UX Sonic Feedback:</strong> Tactile micro-sound design engineered for drag-and-drop mechanics, frying pan sizzle loops, timer alarms, and dopamine-rewarding coin telemetry.</li>
+          <li><strong>Asset Optimization:</strong> Lightweight, low-latency audio compression optimized for fast mobile/web asset memory budgets without loss of fidelity.</li>
+          <li><strong>Sound Synthesis:</strong> Blended acoustic recordings with synthetic transient layers sculpted in REAPER with FabFilter Pro-Q &amp; Pro-C2.</li>
+        `;
+      case 4: // Unwraptal
+        return `
+          <li><strong>Engine &amp; Middleware:</strong> Unity engine integrated with a comprehensive FMOD Studio dynamic event hierarchy.</li>
+          <li><strong>Adaptive Soundtrack:</strong> Seamless horizontal re-sequencing and vertical layering across Main Menu, HUB zone, and fast-paced countdown minigames.</li>
+          <li><strong>Whimsical SFX Palette:</strong> Punchy, animated cartoon audio assets frame-locked to character state machines, slapstick collisions, and victory fanfare.</li>
+          <li><strong>Playable Experience:</strong> Instant WebGL interactive build available to launch right now in DiegoSteam!</li>
+        `;
+      case 5: // Just 5 Minutes
+        return `
+          <li><strong>Engine &amp; Middleware:</strong> Developed in Unity with an FMOD Studio dynamic event architecture tailored for 2D idle game progression.</li>
+          <li><strong>Anti-Fatigue Sound Design:</strong> Soft transients, warm equalization, and acoustic micro-variations across recurring click and reward triggers to prevent auditory fatigue during long sessions.</li>
+          <li><strong>Adaptive Background Music:</strong> Multi-layered ambient soundtrack with parameter-driven intensity and stem transitions that keep the repetitive soundscape soothing and engaging.</li>
+          <li><strong>Playable Experience:</strong> Instant WebGL interactive build available to launch right now in DiegoSteam!</li>
+        `;
+      default:
+        return p.tags.map(t => `<li><strong>${escapeHtml(t)}:</strong> Specialized implementation and sound design.</li>`).join('');
+    }
+  }
+
+  function openWatchPage(proj) {
+    if (window.AudioEngine) AudioEngine.playOpen();
+
+    if (urlInput) {
+      const slug = proj.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      urlInput.textContent = `diegoreel.com/watch?v=${slug}`;
+    }
+
+    if (sidebarEl) sidebarEl.style.display = 'none';
+
+    const relatedReels = PROJECTS.filter(item => item.id !== proj.id && item.videoUrl);
+
+    mainEl.innerHTML = `
+      <div class="dt-watch-container">
+        <!-- Top Navigation Bar -->
+        <div class="dt-watch-topbar">
+          <button class="dt-back-btn" id="dr-back-btn" title="Back to All Reels">
+            Back to All Reels
+          </button>
+          <div class="dt-watch-breadcrumbs">
+            <span>DiegoReel</span> &gt; <span>${escapeHtml(proj.category)}</span> &gt; <strong>${escapeHtml(proj.title)}</strong>
+          </div>
+        </div>
+
+        <div class="dt-watch-layout">
+          <!-- Left Column: Video Player + Details -->
+          <div class="dt-watch-player-col">
+            <!-- Video Player -->
+            <div class="dt-player-frame">
+              <video id="dr-player-video" src="${escapeHtml(proj.videoUrl)}" poster="${escapeHtml(proj.cover)}" controls autoplay playsinline class="dt-video-player"></video>
+            </div>
+
+            <!-- Title & Metadata -->
+            <div class="dt-watch-info-bar">
+              <h1 class="dt-watch-title">${escapeHtml(proj.title)} &mdash; ${escapeHtml(proj.category)}</h1>
+              <div class="dt-watch-meta-line">
+                <span>From: <strong>Diego Sansano Reboll</strong></span>
+                <span class="dt-meta-sep">|</span>
+                <span>Category: <strong>${escapeHtml(proj.category)}</strong></span>
+                <span class="dt-meta-sep">|</span>
+                <span>Role: Sound Designer &amp; Game Audio Developer</span>
+              </div>
+            </div>
+
+            <!-- Play in DiegoSteam Banner (if gameUrl exists) -->
+            ${proj.gameUrl ? `
+            <div class="dt-steam-bar">
+              <div class="dt-steam-bar-text">
+                <strong>Playable Interactive Build:</strong> Experience the gameplay and real-time audio implementation directly inside DiegoSteam.
+              </div>
+              <button class="dt-steam-launch-btn" id="dr-launch-steam-btn" data-title="${escapeHtml(proj.title)}">
+                Launch in DiegoSteam
+              </button>
+            </div>
+            ` : ''}
+
+            <!-- Description Box (Clean retro YouTube 2008 / classic web layout) -->
+            <div class="dt-description-box">
+              <div class="dt-desc-section">
+                <h3 class="dt-desc-heading">Project Overview</h3>
+                <p class="dt-desc-text">${escapeHtml(proj.desc)}</p>
+              </div>
+
+              <div class="dt-desc-section">
+                <h3 class="dt-desc-heading">Audio Technology &amp; Middleware</h3>
+                <p class="dt-desc-text dt-desc-tags">${escapeHtml(proj.tags.join(' · '))}</p>
+              </div>
+
+              <div class="dt-desc-section">
+                <h3 class="dt-desc-heading">Technical Sound Design &amp; Implementation</h3>
+                <ul class="dt-specs-list">
+                  ${getTechSpecs(proj)}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Up Next / Related Reels -->
+          <div class="dt-watch-sidebar-col">
+            <div class="dt-upnext-title">Related Reels</div>
+            <div class="dt-upnext-list">
+              ${relatedReels.map(rel => {
+                const dur = rel.category === 'Sound Redesign' ? '02:45' : '04:12';
+                return `
+                  <div class="dt-related-item" data-id="${rel.id}">
+                    <div class="dt-related-thumb" style="background-image:url('${escapeHtml(rel.cover)}');">
+                      <span class="dt-related-dur">${dur}</span>
+                    </div>
+                    <div class="dt-related-info">
+                      <div class="dt-related-title">${escapeHtml(rel.title)}</div>
+                      <div class="dt-related-author">Diego Sansano Reboll</div>
+                      <div class="dt-related-cat">${escapeHtml(rel.category)}</div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Wire Back Button
+    const backBtn = document.getElementById('dr-back-btn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        const vid = document.getElementById('dr-player-video');
+        if (vid) { vid.pause(); vid.src = ''; }
+        if (sidebarEl) sidebarEl.style.display = '';
+        if (urlInput) urlInput.textContent = 'diegoreel.com/channel/diegosansano';
+        renderReels(activeCat, '');
+        if (window.AudioEngine) AudioEngine.playClick();
+      });
+    }
+
+    // Wire DiegoSteam Launch Button
+    const steamBtn = document.getElementById('dr-launch-steam-btn');
+    if (steamBtn) {
+      steamBtn.addEventListener('click', () => {
+        const vid = document.getElementById('dr-player-video');
+        if (vid) vid.pause();
+        WindowManager.open('win-steam');
+        if (window.AudioEngine) AudioEngine.playOpen();
+        const steamRows = document.querySelectorAll('.st-sidebar-row');
+        steamRows.forEach(row => {
+          if (row.textContent.includes(proj.title)) {
+            row.click();
+          }
+        });
+      });
+    }
+
+    // Wire Related Reel Cards
+    mainEl.querySelectorAll('.dt-related-item').forEach(relCard => {
+      relCard.addEventListener('click', () => {
+        const targetId = parseInt(relCard.dataset.id, 10);
+        const targetProj = PROJECTS.find(p => p.id === targetId);
+        if (targetProj) {
+          const vid = document.getElementById('dr-player-video');
+          if (vid) { vid.pause(); vid.src = ''; }
+          openWatchPage(targetProj);
+        }
+      });
+    });
+  }
 
   function renderReels(filterCat, query) {
     filterCat = filterCat || activeCat;
     query     = query     || '';
-    grid.innerHTML = '';
+
+    if (sidebarEl) sidebarEl.style.display = '';
+    if (urlInput) urlInput.textContent = 'diegoreel.com/channel/diegosansano';
+
+    mainEl.innerHTML = `
+      <div class="dt-section-title" id="dr-section-title">${filterCat === 'All' ? 'All' : filterCat} Reels</div>
+      <div class="dt-video-grid" id="dr-video-grid"></div>
+    `;
+    const grid = document.getElementById('dr-video-grid');
 
     let filtered = PROJECTS.filter(p => p.videoUrl);
     if (filterCat !== 'All') filtered = filtered.filter(p => p.category === filterCat);
@@ -2425,37 +2644,44 @@ function initDiegoReel() {
           <div class="dt-video-meta">Diego Sansano Reboll</div>
         </div>
       `;
-      card.addEventListener('click', () => {
-        const vidEl   = document.getElementById('os-video-player');
-        const titleBar = document.getElementById('media-player-title');
-        if (vidEl)   vidEl.src = proj.videoUrl;
-        if (titleBar) titleBar.textContent = `${proj.title} — Windows Media Player`;
-        WindowManager.open('win-media-player');
-        if (vidEl) vidEl.play().catch(() => {});
-        if (window.AudioEngine) AudioEngine.playOpen();
-      });
+      card.addEventListener('click', () => openWatchPage(proj));
       grid.appendChild(card);
     });
   }
 
   navItems.forEach(item => {
     item.addEventListener('click', () => {
+      const vid = document.getElementById('dr-player-video');
+      if (vid) { vid.pause(); vid.src = ''; }
       navItems.forEach(n => n.classList.remove('dt-nav-active'));
       item.classList.add('dt-nav-active');
       activeCat = item.dataset.cat;
-      if (titleEl) titleEl.textContent = `🎬 ${activeCat === 'All' ? 'All' : activeCat} Reels`;
       if (searchInp) searchInp.value = '';
       renderReels(activeCat, '');
       if (window.AudioEngine) AudioEngine.playClick();
     });
   });
 
-  if (searchBtn) searchBtn.addEventListener('click', () => renderReels('All', searchInp ? searchInp.value : ''));
-  if (searchInp) searchInp.addEventListener('keydown', e => {
-    if (e.key === 'Enter') renderReels('All', searchInp.value);
-  });
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => {
+      const vid = document.getElementById('dr-player-video');
+      if (vid) { vid.pause(); vid.src = ''; }
+      renderReels('All', searchInp ? searchInp.value : '');
+    });
+  }
+  if (searchInp) {
+    searchInp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const vid = document.getElementById('dr-player-video');
+        if (vid) { vid.pause(); vid.src = ''; }
+        renderReels('All', searchInp.value);
+      }
+    });
+  }
   if (urlGoBtn) {
     urlGoBtn.addEventListener('click', () => {
+      const vid = document.getElementById('dr-player-video');
+      if (vid) { vid.pause(); vid.src = ''; }
       renderReels(activeCat, searchInp ? searchInp.value : '');
       if (window.AudioEngine) AudioEngine.playClick();
     });
