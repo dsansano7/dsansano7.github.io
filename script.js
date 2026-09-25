@@ -73,9 +73,6 @@ const AudioEngine = (() => {
         masterGain.gain.value = masterVol;
         masterGain.connect(ctx.destination);
       }
-      if (ctx && ctx.state === 'suspended') {
-        ctx.resume().catch(() => {});
-      }
       return ctx;
     } catch (e) {
       return null;
@@ -88,6 +85,9 @@ const AudioEngine = (() => {
     try {
       const c = getCtx();
       if (!c) return;
+      if (c.state === 'suspended') {
+        c.resume().catch(() => {});
+      }
       const osc = c.createOscillator();
       const env = c.createGain();
       const hp = c.createBiquadFilter();
@@ -779,7 +779,7 @@ const unlockAudio = () => {
           bootChimePlayed = true;
           removeAudioUnlockListeners();
         }
-      });
+      }).catch(() => {});
     } else if (ctx.state === 'running') {
       if (bootCompleted && !bootChimePlayed) {
         AudioEngine.playBootChime();
@@ -908,28 +908,69 @@ function startClock() {
 function initStartMenu() {
   const btn = document.getElementById('start-btn');
   const menu = document.getElementById('start-menu');
-  let open = false;
+  if (!btn || !menu) return;
 
-  const toggle = () => {
-    open = !open;
-    menu.style.display = open ? 'block' : 'none';
-    btn.setAttribute('aria-expanded', String(open));
-    if (open) AudioEngine.playClick();
+  const isMenuOpen = () => menu.classList.contains('open');
+
+  const closeMenu = () => {
+    menu.classList.remove('open');
+    menu.style.display = 'none';
+    btn.setAttribute('aria-expanded', 'false');
   };
 
-  btn.addEventListener('click', e => { e.stopPropagation(); cancelInactivityTimer(); toggle(); });
-  document.addEventListener('click', e => {
-    if (open && !menu.contains(e.target) && e.target !== btn) {
-      open = false; menu.style.display = 'none';
-      btn.setAttribute('aria-expanded', 'false');
+  const openMenu = () => {
+    cancelInactivityTimer();
+    menu.classList.add('open');
+    menu.style.display = '';
+    btn.setAttribute('aria-expanded', 'true');
+    AudioEngine.playClick();
+  };
+
+  let lastToggleTime = 0;
+  const toggle = () => {
+    const now = Date.now();
+    if (now - lastToggleTime < 300) return;
+    lastToggleTime = now;
+
+    if (isMenuOpen()) {
+      closeMenu();
+      AudioEngine.playClick();
+    } else {
+      openMenu();
+    }
+  };
+
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle();
+  });
+
+  btn.addEventListener('touchend', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle();
+  });
+
+  const onOutsideTap = e => {
+    if (!isMenuOpen()) return;
+    if (menu.contains(e.target) || btn.contains(e.target)) return;
+    closeMenu();
+  };
+
+  document.addEventListener('pointerdown', onOutsideTap);
+  document.addEventListener('click', onOutsideTap);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && isMenuOpen()) {
+      closeMenu();
     }
   });
 
   document.querySelectorAll('#start-menu .sm-item[data-window]').forEach(item => {
     item.addEventListener('click', () => {
       WindowManager.open(item.dataset.window);
-      menu.style.display = 'none'; open = false;
-      btn.setAttribute('aria-expanded', 'false');
+      closeMenu();
       AudioEngine.playClick();
     });
   });
@@ -939,6 +980,7 @@ function initStartMenu() {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('click', () => {
+      closeMenu();
       AudioEngine.playClose();
       const scr = document.createElement('div');
       scr.className = 'shutdown-screen';
@@ -962,7 +1004,7 @@ function initStartMenu() {
   });
 
   const logoff = document.getElementById('sm-logoff-btn');
-  if (logoff) logoff.addEventListener('click', () => { AudioEngine.playClose(); location.reload(); });
+  if (logoff) logoff.addEventListener('click', () => { closeMenu(); AudioEngine.playClose(); location.reload(); });
 }
 
 /* ──────────────────────────────────────────────────────────────
@@ -993,7 +1035,7 @@ function initSearch() {
       AudioEngine.playOpen();
       // Close Start Menu
       const sm = document.getElementById('start-menu');
-      if (sm) sm.style.display = 'none';
+      if (sm) { sm.classList.remove('open'); sm.style.display = 'none'; }
       const btn = document.getElementById('start-btn');
       if (btn) btn.setAttribute('aria-expanded', 'false');
     } else {
@@ -1395,7 +1437,10 @@ function initDesktopIcons() {
     if (isDesktopBg) {
       document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
       const sm = document.getElementById('start-menu');
-      if (sm) sm.style.display = 'none';
+      if (sm) {
+        sm.classList.remove('open');
+        sm.style.display = 'none';
+      }
       document.getElementById('start-btn').setAttribute('aria-expanded', 'false');
     }
   });
@@ -1859,7 +1904,8 @@ function initTaskbarAutoHide() {
   };
 
   const hideTaskbar = () => {
-    const startMenuOpen = document.getElementById('start-menu').style.display !== 'none';
+    const sm = document.getElementById('start-menu');
+    const startMenuOpen = sm && (sm.classList.contains('open') || sm.style.display !== 'none');
     const ctxMenuOpen = document.getElementById('_ctx') !== null;
     const balloonTip = document.getElementById('balloon-tip');
     const balloonOpen = balloonTip && balloonTip.style.display !== 'none' && !balloonTip.classList.contains('hiding');
