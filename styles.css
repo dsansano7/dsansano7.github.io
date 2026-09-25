@@ -274,8 +274,8 @@ body.dark-mode .desktop-overlay { background:rgba(0,0,0,0.45); }
   position:absolute;
   pointer-events:auto;
   display:flex; flex-direction:column; align-items:center;
-  width:100px; cursor:pointer; padding:6px;
-  border-radius:5px;
+  width:116px; cursor:pointer; padding:8px 6px;
+  border-radius:6px;
   visibility: hidden;
   opacity: 0;
   transition: background var(--tx), opacity 0.3s ease-in;
@@ -295,7 +295,7 @@ body.dark-mode .desktop-overlay { background:rgba(0,0,0,0.45); }
 .desktop-icon.selected { background:rgba(10,88,200,0.48); }
 
 .icon-img {
-  width:80px; height:80px;
+  width:88px; height:88px;
   display:flex; align-items:center; justify-content:center;
   filter:drop-shadow(1px 3px 6px rgba(0,0,0,0.85));
   transition:transform var(--tx);
@@ -303,7 +303,7 @@ body.dark-mode .desktop-overlay { background:rgba(0,0,0,0.45); }
   -webkit-user-select: none;
 }
 .icon-img svg {
-  width:80px; height:80px;
+  width:88px; height:88px;
   pointer-events: none;
   user-select: none;
 }
@@ -311,10 +311,10 @@ body.dark-mode .desktop-overlay { background:rgba(0,0,0,0.45); }
 .desktop-icon:active .icon-img { transform:scale(0.95); }
 
 .icon-label {
-  margin-top:6px; font-size:13.5px; font-weight:700;
+  margin-top:6px; font-size:14px; font-weight:700;
   color:#fff; text-align:center;
   text-shadow:1px 1px 3px rgba(0,0,0,1), -1px -1px 2px rgba(0,0,0,0.6);
-  line-height:1.25; max-width:96px;
+  line-height:1.25; max-width:110px;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -1089,7 +1089,7 @@ body.dark-mode .sm-foot-btn { background:#1a1a1a; border-color:#444; color:#ccc;
     right: 10px !important;
     bottom: calc(var(--tb-h) + var(--safe-bottom) + 12px) !important;
     display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)) !important;
     grid-auto-rows: max-content !important;
     gap: 16px 8px !important;
     justify-items: center !important;
@@ -1103,7 +1103,7 @@ body.dark-mode .sm-foot-btn { background:#1a1a1a; border-color:#444; color:#ccc;
     position: relative !important;
     top: auto !important;
     left: auto !important;
-    width: 80px !important;
+    width: 88px !important;
     height: auto !important;
     margin: 0 !important;
     padding: 6px 4px !important;
@@ -1112,12 +1112,12 @@ body.dark-mode .sm-foot-btn { background:#1a1a1a; border-color:#444; color:#ccc;
   }
   .desktop-icon .desktop-icon-img,
   .desktop-icon .icon-img svg {
-    width: 52px !important;
-    height: 52px !important;
+    width: 62px !important;
+    height: 62px !important;
   }
   .desktop-icon .icon-label {
-    font-size: 11px !important;
-    max-width: 76px !important;
+    font-size: 11.5px !important;
+    max-width: 84px !important;
     line-height: 1.25 !important;
     margin-top: 5px !important;
   }
@@ -2083,23 +2083,10 @@ body.dark-mode .dt-search-inp { background: #121212; color: #eee; }
 body.dark-mode .dt-search-btn { background: #2a2a2a; border-color: #555; }
 .dt-search-btn:hover { background: #e8e8e8; }
 
-/* Header right action buttons */
-.dt-header-right { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; }
-.dt-header-btn {
-  background: none;
-  border: 1px solid #cc0000;
-  color: #cc0000;
-  border-radius: 2px;
-  padding: 5px 14px;
-  font-size: 12px;
-  font-family: var(--f-ui);
-  font-weight: 700;
-  cursor: pointer;
-  transition: background var(--tx), color var(--tx);
+/* Hidden sidebar in watch mode */
+.dt-sidebar.dt-sidebar-hidden {
+  display: none !important;
 }
-.dt-header-btn:hover { background: #cc0000; color: #fff; }
-.dt-signin-btn { background: #cc0000; color: #fff; }
-.dt-signin-btn:hover { background: #aa0000; border-color: #aa0000; }
 
 /* ── Main layout ── */
 .dt-layout {
@@ -3097,11 +3084,11 @@ body.dark-mode .os-alert-btn { background: #333; color: #fff; border-color: #555
 
 /* --- ESCALADO PARA ICONOS PNG EN EL ESCRITORIO --- */
 .desktop-icon-img {
-  width: 72px;
-  height: 72px;
+  width: 86px;
+  height: 86px;
   object-fit: contain;
   display: block;
-  filter: drop-shadow(1px 2px 5px rgba(0,0,0,0.6));
+  filter: drop-shadow(1px 2px 6px rgba(0,0,0,0.65));
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;

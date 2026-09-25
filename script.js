@@ -296,6 +296,14 @@ const WindowManager = (() => {
   function minimize(id) {
     const w = wins[id];
     if (!w) return;
+    if (id === 'win-demoreel') {
+      const vid = document.getElementById('dr-player-video');
+      if (vid) vid.pause();
+    }
+    if (id === 'win-media-player') {
+      const vid = document.getElementById('os-video-player');
+      if (vid) vid.pause();
+    }
     w.minimized = true;
     w.el.classList.add('minimized-snap');
     setTimeout(() => { w.el.style.display = 'none'; w.el.classList.remove('minimized-snap'); }, 220);
@@ -1375,11 +1383,11 @@ function makeIconDraggable(el) {
 function initDesktopIcons() {
   const defaultCoords = [
     { top: 20, left: 20 },
-    { top: 140, left: 20 },
-    { top: 260, left: 20 },
-    { top: 380, left: 20 },
-    { top: 500, left: 20 },
-    { top: 620, left: 20 }
+    { top: 155, left: 20 },
+    { top: 290, left: 20 },
+    { top: 425, left: 20 },
+    { top: 560, left: 20 },
+    { top: 695, left: 20 }
   ];
 
   document.querySelectorAll('.desktop-icon').forEach((icon, idx) => {
@@ -1387,7 +1395,7 @@ function initDesktopIcons() {
     const url = icon.dataset.url;
     let timer = null;
 
-    const coords = defaultCoords[idx] || { top: 20 + idx * 120, left: 20 };
+    const coords = defaultCoords[idx] || { top: 20 + idx * 135, left: 20 };
     icon.style.top = coords.top + 'px';
     icon.style.left = coords.left + 'px';
     icon.classList.add('is-ready');
@@ -2522,7 +2530,10 @@ function initDiegoReel() {
       urlInput.textContent = `diegoreel.com/watch?v=${slug}`;
     }
 
-    if (sidebarEl) sidebarEl.style.display = 'none';
+    if (sidebarEl) {
+      sidebarEl.classList.add('dt-sidebar-hidden');
+      sidebarEl.style.display = 'none';
+    }
 
     const relatedReels = PROJECTS.filter(item => item.id !== proj.id && item.videoUrl);
 
@@ -2531,7 +2542,7 @@ function initDiegoReel() {
         <!-- Top Navigation Bar -->
         <div class="dt-watch-topbar">
           <button class="dt-back-btn" id="dr-back-btn" title="Back to All Reels">
-            Back to All Reels
+            &#8592; Back to All Reels
           </button>
           <div class="dt-watch-breadcrumbs">
             <span>DiegoReel</span> &gt; <span>${escapeHtml(proj.category)}</span> &gt; <strong>${escapeHtml(proj.title)}</strong>
@@ -2616,15 +2627,38 @@ function initDiegoReel() {
       </div>
     `;
 
+    // Immediately reset scroll positions to top
+    mainEl.scrollTop = 0;
+    const dtBody = document.querySelector('.dt-body');
+    if (dtBody) dtBody.scrollTop = 0;
+    const winDemoreel = document.getElementById('win-demoreel');
+    if (winDemoreel) {
+      const winBody = winDemoreel.querySelector('.win-body');
+      if (winBody) winBody.scrollTop = 0;
+    }
+
+    // Scroll directly to video element at top
+    requestAnimationFrame(() => {
+      mainEl.scrollTop = 0;
+      const vidEl = document.getElementById('dr-player-video');
+      if (vidEl) {
+        vidEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+      }
+    });
+
     // Wire Back Button
     const backBtn = document.getElementById('dr-back-btn');
     if (backBtn) {
       backBtn.addEventListener('click', () => {
         const vid = document.getElementById('dr-player-video');
         if (vid) { vid.pause(); vid.src = ''; }
-        if (sidebarEl) sidebarEl.style.display = '';
+        if (sidebarEl) {
+          sidebarEl.classList.remove('dt-sidebar-hidden');
+          sidebarEl.style.display = '';
+        }
         if (urlInput) urlInput.textContent = 'diegoreel.com/channel/diegosansano';
         renderReels(activeCat, '');
+        mainEl.scrollTop = 0;
         if (window.AudioEngine) AudioEngine.playClick();
       });
     }
@@ -2664,8 +2698,12 @@ function initDiegoReel() {
     filterCat = filterCat || activeCat;
     query     = query     || '';
 
-    if (sidebarEl) sidebarEl.style.display = '';
+    if (sidebarEl) {
+      sidebarEl.classList.remove('dt-sidebar-hidden');
+      sidebarEl.style.display = '';
+    }
     if (urlInput) urlInput.textContent = 'diegoreel.com/channel/diegosansano';
+    mainEl.scrollTop = 0;
 
     mainEl.innerHTML = `
       <div class="dt-section-title" id="dr-section-title">${filterCat === 'All' ? 'All' : filterCat} Reels</div>
