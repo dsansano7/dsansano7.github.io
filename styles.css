@@ -23,6 +23,7 @@
   /* Taskbar */
   --tb-bg:    linear-gradient(180deg, #245edb 0%, #1e52c8 8%, #1642af 48%, #12379a 50%, #1844b8 90%, #143ca0 100%);
   --tb-h:     46px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
   --tray-bg:  linear-gradient(180deg, #0e2d78 0%, #123894 48%, #0d276b 50%, #103285 100%);
 
   /* Start button — Deep Royal Sapphire Crystal (Max contrast for red, green, blue, yellow in DS logo) */
@@ -1065,32 +1066,496 @@ body.dark-mode .sm-foot-btn { background:#1a1a1a; border-color:#444; color:#ccc;
 .sm-foot-btn:hover { filter:brightness(0.9); }
 
 /* ============================================================
-   MOBILE RESPONSIVE
+   MOBILE RESPONSIVE DESIGN SYSTEM (SMARTPHONES & TABLETS)
    ============================================================ */
-@media (max-width:720px) {
-  #icon-grid {
-    flex-direction:row; flex-wrap:wrap;
-    top:auto; bottom:calc(var(--tb-h) + 10px);
-    left:8px; right:8px; gap:10px; justify-content:flex-start;
+@media (max-width: 768px) {
+  :root {
+    --tb-h: 40px;
   }
-  .desktop-icon { width:72px; }
-  .icon-img,.icon-img svg { width:52px; height:52px; }
 
-  .os-window {
-    top:0!important; left:0!important;
-    width:100vw!important;
-    height:calc(100vh - var(--tb-h))!important;
-    border-radius:0; min-width:unset;
+  /* ── Desktop & Icon Grid ── */
+  #icon-grid {
+    position: absolute !important;
+    top: 14px !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: calc(var(--tb-h) + var(--safe-bottom) + 12px) !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)) !important;
+    grid-auto-rows: max-content !important;
+    gap: 16px 8px !important;
+    justify-items: center !important;
+    align-content: flex-start !important;
+    padding: 6px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    z-index: 10 !important;
   }
-  #start-menu { width:100%; border-radius:0; }
-  .sm-cols { flex-direction:column; }
-  .search-box { display:none; }
-  .tb-center  { display:none; }
-  .project-grid { grid-template-columns:1fr 1fr; }
-  .about-hero   { flex-direction:column; align-items:center; }
+  .desktop-icon {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 80px !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 6px 4px !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .desktop-icon .desktop-icon-img,
+  .desktop-icon .icon-img svg {
+    width: 52px !important;
+    height: 52px !important;
+  }
+  .desktop-icon .icon-label {
+    font-size: 11px !important;
+    max-width: 76px !important;
+    line-height: 1.25 !important;
+    margin-top: 5px !important;
+  }
+
+  /* ── Windows Full Screen Adaptation ── */
+  .os-window {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: calc(100dvh - var(--tb-h) - var(--safe-bottom)) !important;
+    height: calc(100vh - var(--tb-h) - var(--safe-bottom)) !important;
+    border-radius: 0 !important;
+    border: none !important;
+    min-width: unset !important;
+    box-shadow: none !important;
+  }
+  .win-titlebar {
+    height: 38px !important;
+    padding: 0 10px !important;
+    touch-action: manipulation !important;
+    cursor: default !important;
+  }
+  .win-title-icon { font-size: 16px !important; }
+  .win-title-text { font-size: 13px !important; font-weight: 700 !important; }
+  .win-caption-btns { gap: 6px !important; }
+  .cap-btn {
+    width: 32px !important;
+    height: 28px !important;
+    font-size: 13px !important;
+    border-radius: 3px !important;
+  }
+  .max-btn { display: none !important; }
+  .cls-btn { width: 34px !important; }
+  .win-menubar {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding: 4px 8px !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .win-menubar::-webkit-scrollbar { display: none !important; }
+  .menu-item { padding: 4px 8px !important; font-size: 12px !important; }
+
+  /* ── Taskbar Multitasking ── */
+  #taskbar {
+    height: calc(var(--tb-h) + var(--safe-bottom)) !important;
+    padding-bottom: var(--safe-bottom) !important;
+  }
+  #start-btn {
+    padding: 0 12px 0 8px !important;
+    font-size: 13.5px !important;
+    border-top-right-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+  }
+  #start-btn .start-logo-img {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .search-box { display: none !important; }
+  .tb-center {
+    display: flex !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    overflow-x: auto !important;
+    padding: 0 4px !important;
+    gap: 4px !important;
+    scrollbar-width: none !important;
+  }
+  .tb-center::-webkit-scrollbar { display: none !important; }
+  .tb-tab {
+    height: 28px !important;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+    max-width: 105px !important;
+    flex-shrink: 0 !important;
+    line-height: 28px !important;
+  }
+  .tb-right {
+    padding: 0 6px !important;
+    gap: 4px !important;
+  }
+  .tray-sep { display: none !important; }
+  .tray-clock { font-size: 10.5px !important; padding: 0 2px !important; min-width: auto !important; }
+  .tray-btn { font-size: 14px !important; padding: 2px !important; }
+
+  /* ── Start Menu ── */
+  #start-menu {
+    width: 100% !important;
+    left: 0 !important;
+    bottom: calc(var(--tb-h) + var(--safe-bottom)) !important;
+    border-radius: 8px 8px 0 0 !important;
+    max-height: calc(100dvh - var(--tb-h) - var(--safe-bottom) - 8px) !important;
+    max-height: calc(100vh - var(--tb-h) - var(--safe-bottom) - 8px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .sm-header {
+    padding: 12px 16px !important;
+    gap: 12px !important;
+  }
+  .sm-avatar {
+    width: 52px !important;
+    height: 52px !important;
+  }
+  .sm-avatar svg, .start-avatar-img {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .sm-username { font-size: 17px !important; }
+  .sm-usertag { font-size: 11.5px !important; }
+  .sm-cols {
+    flex-direction: column !important;
+    min-height: auto !important;
+  }
+  .sm-left {
+    border-right: none !important;
+    border-bottom: 2px solid #ddd !important;
+    padding: 6px 0 !important;
+  }
+  body.dark-mode .sm-left { border-bottom-color: #333 !important; }
+  .sm-right {
+    padding: 6px 0 !important;
+  }
+  .sm-item {
+    padding: 11px 16px !important;
+  }
+  .sm-footer {
+    padding: 10px 14px !important;
+  }
+
+  /* ── DiegoSteam on Mobile ── */
+  .st-body {
+    flex-direction: column !important;
+  }
+  .st-sidebar {
+    width: 100% !important;
+    height: auto !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding: 8px !important;
+    border-right: none !important;
+    border-bottom: 1px solid #171a21 !important;
+    gap: 6px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    background: #1e2630 !important;
+  }
+  .st-sidebar::-webkit-scrollbar { display: none !important; }
+  .st-sidebar-title { display: none !important; }
+  .st-sidebar-row {
+    padding: 7px 12px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    flex-shrink: 0 !important;
+    background: rgba(255,255,255,0.06) !important;
+  }
+  .st-sidebar-row.active {
+    background: #384353 !important;
+    color: #66c0f4 !important;
+  }
+  .st-sidebar-itch {
+    margin-top: 0 !important;
+    margin-left: auto !important;
+    border-top: none !important;
+  }
+  .st-main-panel {
+    flex: 1 !important;
+    width: 100% !important;
+    overflow-y: auto !important;
+  }
+  .st-game-hero {
+    min-height: 180px !important;
+    padding: 16px !important;
+    background-size: 100% 100%, 100% 100%, contain !important;
+    background-position: left top, left top, right center !important;
+  }
+  .st-hero-details {
+    max-width: 65% !important;
+  }
+  .st-game-title {
+    font-size: 22px !important;
+  }
+  .st-game-dev {
+    font-size: 11.5px !important;
+  }
+  .st-play-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+  }
+  .st-play-btn {
+    width: 100% !important;
+    padding: 11px 0 !important;
+    font-size: 18px !important;
+    text-align: center !important;
+    justify-content: center !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  .st-stats-box {
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+  .st-stat small { font-size: 8.5px !important; }
+  .st-stat span { font-size: 12px !important; }
+  .st-game-desc-panel {
+    padding: 16px !important;
+  }
+  .st-game-desc-panel h3 { font-size: 13px !important; }
+  .st-game-desc-panel p { font-size: 12.5px !important; line-height: 1.55 !important; }
+
+  /* ── DiegoReel on Mobile ── */
+  .dt-header {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+  .dt-logo { font-size: 18px !important; }
+  .dt-header-search { flex: 1 !important; }
+  .dt-search-inp { font-size: 12px !important; padding: 5px 8px !important; }
+  .dt-search-btn { font-size: 11px !important; padding: 5px 10px !important; }
+  .dt-layout {
+    flex-direction: column !important;
+  }
+  .dt-sidebar {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding: 6px 8px !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    gap: 6px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .dt-sidebar::-webkit-scrollbar { display: none !important; }
+  .dt-nav-label, .dt-nav-sep { display: none !important; }
+  .dt-nav-item {
+    padding: 5px 12px !important;
+    border-radius: 14px !important;
+    font-size: 11.5px !important;
+    background: #e8e8e8 !important;
+    color: #333 !important;
+    flex-shrink: 0 !important;
+    border: 1px solid #ccc !important;
+  }
+  body.dark-mode .dt-nav-item {
+    background: #2a2a2a !important;
+    color: #ccc !important;
+    border-color: #444 !important;
+  }
+  .dt-nav-active {
+    background: #cc0000 !important;
+    color: #fff !important;
+    border-color: #aa0000 !important;
+  }
+  .dt-main {
+    padding: 10px !important;
+  }
+  .dt-video-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .dt-video-title { font-size: 12px !important; }
+  .dt-video-meta { font-size: 10.5px !important; }
+
+  /* Watch Page */
+  .dt-watch-layout {
+    flex-direction: column !important;
+    gap: 14px !important;
+    padding: 10px !important;
+  }
+  .dt-watch-player-col, .dt-watch-sidebar-col {
+    width: 100% !important;
+  }
+  .dt-watch-title { font-size: 15px !important; }
+  .dt-watch-actions { flex-direction: column !important; gap: 8px !important; }
+  #dr-launch-steam-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 8px 12px !important;
+  }
+  .dt-watch-tech-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── DiegoBook (About Me) on Mobile ── */
+  .fb-header {
+    padding: 8px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .fb-search { order: 3; width: 100% !important; }
+  .fb-search input { width: 100% !important; box-sizing: border-box !important; }
+  .fb-nav { font-size: 11px !important; }
+  .fb-layout {
+    flex-direction: column !important;
+    padding: 10px !important;
+    gap: 14px !important;
+  }
+  .fb-left {
+    width: 100% !important;
+  }
+  .fb-profile-pic {
+    max-width: 130px !important;
+    margin: 0 auto !important;
+    display: block !important;
+  }
+  .fb-right {
+    width: 100% !important;
+  }
+  .fb-wall-title { font-size: 15px !important; }
+  .fb-post-content { font-size: 12.5px !important; }
+
+  /* ── Toolkit (Add/Remove Programs) on Mobile ── */
+  .ar-body {
+    flex-direction: column !important;
+  }
+  .ar-sidebar {
+    width: 100% !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    padding: 6px 8px !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    scrollbar-width: none !important;
+  }
+  .ar-sidebar::-webkit-scrollbar { display: none !important; }
+  .ar-side-btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+  }
+  .ar-icon { font-size: 18px !important; }
+  .ar-header {
+    padding: 8px 10px !important;
+  }
+  .ar-list {
+    margin: 0 6px 6px !important;
+  }
+  .ar-item-header {
+    padding: 8px 10px !important;
+  }
+  .ar-item-title { font-size: 12px !important; margin-left: 8px !important; }
+  .ar-item-details {
+    padding: 0 10px 10px 10px !important;
+  }
+  .ar-item-details p { font-size: 12px !important; }
+
+  /* ── Adobe Reader / PDF Viewer on Mobile ── */
+  .pdf-content-area {
+    padding: 8px !important;
+  }
+  .pdf-page-sheet {
+    padding: 24px 16px !important;
+    min-height: auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .pdf-sheet-title {
+    font-size: 22px !important;
+  }
+  .pdf-sheet-category {
+    margin-bottom: 20px !important;
+  }
+  .pdf-sheet-section-title {
+    margin-top: 24px !important;
+    margin-bottom: 12px !important;
+  }
+  .pdf-toolbar {
+    padding: 4px 6px !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+  .pdf-btn {
+    padding: 4px 8px !important;
+    font-size: 13px !important;
+  }
+  .pdf-page-indicator { font-size: 11px !important; }
+
+  /* ── File Explorer (My Work) on Mobile ── */
+  .xp-sidebar { display: none !important; }
+  .xp-toolbar {
+    flex-wrap: wrap !important;
+    padding: 4px 6px !important;
+    gap: 4px !important;
+  }
+  .xp-address-row {
+    flex: 1 1 100% !important;
+    margin-top: 2px !important;
+  }
+  .xp-folder-view {
+    padding: 8px !important;
+    gap: 8px !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)) !important;
+  }
+  .xp-file-icon {
+    width: auto !important;
+    margin: 0 !important;
+    padding: 6px 4px !important;
+  }
+
+  /* ── Command Prompt on Mobile ── */
+  .terminal-screen {
+    padding: 10px !important;
+    font-size: 12.5px !important;
+    line-height: 1.5 !important;
+    word-break: break-word !important;
+  }
+  #terminal-input {
+    font-size: 13px !important;
+  }
+
+  /* ── Balloon Notifications & Dialogs ── */
+  #balloon-tip {
+    width: auto !important;
+    left: 10px !important;
+    right: 10px !important;
+    max-width: calc(100vw - 20px) !important;
+    padding: 14px 34px 14px 14px !important;
+    box-sizing: border-box !important;
+    bottom: calc(var(--tb-h) + var(--safe-bottom) + 8px) !important;
+  }
+  .balloon-title { font-size: 15px !important; }
+  .balloon-body { font-size: 12.5px !important; }
+  .os-alert-dialog {
+    width: calc(100vw - 32px) !important;
+    max-width: 380px !important;
+  }
 }
-@media (max-width:480px) {
-  .project-grid { grid-template-columns:1fr; }
+
+@media (max-width: 480px) {
+  #icon-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  .dt-video-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* ============================================================
@@ -1633,6 +2098,10 @@ body.dark-mode .dt-section-title { color: #eee; }
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
+  background-color: #000;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 /* Play overlay — hidden until hover */
@@ -1773,15 +2242,7 @@ body.dark-mode .dt-live-banner {
 }
 .dt-live-join:hover { background: #aa0000; }
 
-/* ── Mobile: collapse sidebar ── */
-@media (max-width: 720px) {
-  .dt-sidebar { display: none; }
-  .dt-video-grid { grid-template-columns: 1fr 1fr; }
-  .dt-header-right { display: none; }
-}
-@media (max-width: 480px) {
-  .dt-video-grid { grid-template-columns: 1fr; }
-}
+/* (Mobile responsive rules for DiegoReel consolidated in master responsive section) */
 
 /* ============================================================
    XP FILE EXPLORER — My Work Window
@@ -2092,11 +2553,7 @@ body.dark-mode .xp-file-icon.xp-selected .xp-icon-label { color: #a0c0ff; }
   font-size: 14px;
 }
 
-@media (max-width: 720px) {
-  .xp-sidebar { display: none; }
-  .xp-file-icon { width: 80px; }
-  .xp-toolbar { flex-wrap: wrap; }
-}
+/* (Mobile responsive rules for File Explorer consolidated in master responsive section) */
 
 /* =========================================================================
    DARK MODE SIDEBAR & ADOBE READER PDF VIEW STYLES
@@ -2328,7 +2785,7 @@ body.is-dragging .desktop-icon {
 .xp-custom-thumb {
   width: 56px !important; 
   height: 54px !important;
-  object-fit: cover; 
+  object-fit: contain; 
   border-radius: 4px;
   border: 1px solid #7f9db9; 
   background: #000;
@@ -2482,9 +2939,10 @@ body.dark-mode .os-alert-btn { background: #333; color: #fff; border-color: #555
 .st-main-panel { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #1b2838; }
 .st-empty-state { margin: auto; font-size: 14px; color: #8f98a0; }
 .st-game-hero {
-  min-height: 240px;
-  background-size: cover;
-  background-position: center 20%;
+  min-height: 250px;
+  background-color: #17212f;
+  background-size: 100% 100%, 100% 100%, contain;
+  background-position: left top, left top, calc(100% - 24px) center;
   background-repeat: no-repeat;
   display: flex;
   align-items: flex-end;
@@ -2495,6 +2953,7 @@ body.dark-mode .os-alert-btn { background: #333; color: #fff; border-color: #555
 .st-hero-details {
   position: relative;
   z-index: 2;
+  max-width: 55%;
 }
 .st-game-title {
   font-size: 34px;
@@ -2839,8 +3298,10 @@ body.dark-mode .dt-related-item:hover {
   width: 96px;
   aspect-ratio: 16/9;
   border-radius: 2px;
-  background-size: cover;
+  background-size: contain;
+  background-repeat: no-repeat;
   background-position: center;
+  background-color: #000;
   position: relative;
   flex-shrink: 0;
   border: 1px solid #ccc;

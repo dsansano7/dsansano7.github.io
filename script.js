@@ -236,13 +236,18 @@ const WindowManager = (() => {
     const winWidth = w.el.offsetWidth || parseInt(w.el.style.width, 10) || 850;
     const winHeight = w.el.offsetHeight || parseInt(w.el.style.height, 10) || 650;
 
-    let left = (viewportWidth - winWidth) / 2;
-    let top = (viewportHeight - 52 - winHeight) / 2;
-    if (left < 0) left = 0;
-    if (top < 0) top = 0;
+    if (isMobileDevice()) {
+      w.el.style.left = '0px';
+      w.el.style.top = '0px';
+    } else {
+      let left = (viewportWidth - winWidth) / 2;
+      let top = (viewportHeight - 52 - winHeight) / 2;
+      if (left < 0) left = 0;
+      if (top < 0) top = 0;
 
-    w.el.style.left = left + 'px';
-    w.el.style.top = top + 'px';
+      w.el.style.left = left + 'px';
+      w.el.style.top = top + 'px';
+    }
 
     AudioEngine.playOpen();
     focus(id);
@@ -387,7 +392,7 @@ const WindowManager = (() => {
     };
 
     const down = (cx, cy) => {
-      if (wins[id].maximized) return;
+      if (wins[id].maximized || isMobileDevice()) return;
       const r = el.getBoundingClientRect();
       startX = cx;
       startY = cy;
@@ -733,7 +738,7 @@ function initFileExplorer() {
 
 
 const isMobileDevice = () => {
-  return window.matchMedia('(max-width: 720px)').matches || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  return window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches;
 };
 
 let inactivityTimer = null;
@@ -1298,6 +1303,7 @@ function makeIconDraggable(el) {
   };
 
   const onTouchStart = (e) => {
+    if (isMobileDevice()) return;
     if (!el.classList.contains('selected')) {
       document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
       el.classList.add('selected');
@@ -2120,7 +2126,7 @@ function initDiegoSteam() {
       if (window.AudioEngine) AudioEngine.playClick();
 
       mainViewEl.innerHTML = `
-        <div class="st-game-hero" style="background-image: linear-gradient(to right, rgba(20,28,38,0.85) 0%, rgba(20,28,38,0.4) 40%, transparent 75%), linear-gradient(180deg, rgba(20,28,38,0) 0%, rgba(20,28,38,0.15) 30%, rgba(27,38,52,0.7) 60%, #212c3d 90%, #212c3d 100%), url('${escapeHtml(game.cover)}');">
+        <div class="st-game-hero" style="background-image: linear-gradient(to right, #1b2838 0%, #1b2838 35%, rgba(27,40,56,0.85) 55%, transparent 80%), linear-gradient(180deg, transparent 70%, #212c3d 100%), url('${escapeHtml(game.cover)}');">
           <div class="st-hero-details">
             <h2 class="st-game-title">${escapeHtml(game.title)}</h2>
             <div class="st-game-dev">Developer: Diego Sansano Reboll</div>
@@ -2635,7 +2641,7 @@ function initDiegoReel() {
       const card = document.createElement('div');
       card.className = 'dt-video-card';
       card.innerHTML = `
-        <div class="dt-thumb" style="background-image:url('${escapeHtml(proj.cover)}'); background-size:cover; background-position:center;">
+        <div class="dt-thumb" style="background-image:url('${escapeHtml(proj.cover)}'); background-size:contain; background-repeat:no-repeat; background-position:center; background-color:#000;">
           <div class="dt-thumb-overlay"><div class="dt-play-btn" aria-label="Play">▶</div></div>
           <span class="dt-duration">${dur}</span>
         </div>
