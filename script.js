@@ -1196,40 +1196,46 @@ function initPropertiesPanel() {
   }
 }
 /* ──────────────────────────────────────────────────────────────
-   10. DESKTOP ICONS — single click = select, double = open, draggable
+   10. DESKTOP ICONS — single click = select, double = open, draggable & grid-snapped
    ────────────────────────────────────────────────────────────── */
-function isCellOccupied(iconEl, left, top) {
+const ICON_GRID_STEP_X = 135;
+const ICON_GRID_STEP_Y = 135;
+const ICON_GRID_OFFSET_X = 20;
+const ICON_GRID_OFFSET_Y = 20;
+
+function isCellOccupied(iconEl, left, top, excludeElements = []) {
   const icons = document.querySelectorAll('.desktop-icon');
   for (const icon of icons) {
     if (icon === iconEl) continue;
+    if (excludeElements && excludeElements.includes(icon)) continue;
     const oLeft = parseInt(icon.style.left || '0', 10);
     const oTop = parseInt(icon.style.top || '0', 10);
-    if (Math.abs(oLeft - left) < 55 && Math.abs(oTop - top) < 60) {
+    if (Math.abs(oLeft - left) < 68 && Math.abs(oTop - top) < 68) {
       return true;
     }
   }
   return false;
 }
 
-function getNearestFreeCell(iconEl, targetLeft, targetTop, maxLeft, maxTop) {
+function getNearestFreeCell(iconEl, targetLeft, targetTop, maxLeft, maxTop, excludeElements = []) {
   let layer = 0;
-  while (layer < 15) {
+  while (layer < 25) {
     if (layer === 0) {
-      if (!isCellOccupied(iconEl, targetLeft, targetTop)) {
+      if (!isCellOccupied(iconEl, targetLeft, targetTop, excludeElements)) {
         return { left: targetLeft, top: targetTop };
       }
     } else {
-      for (let dx = -layer; dx <= layer; dx++) {
-        for (let dy = -layer; dy <= layer; dy++) {
+      for (let dy = -layer; dy <= layer; dy++) {
+        for (let dx = -layer; dx <= layer; dx++) {
           if (Math.max(Math.abs(dx), Math.abs(dy)) !== layer) continue;
 
-          const candidateLeft = targetLeft + dx * 110;
-          const candidateTop = targetTop + dy * 120;
+          const candidateLeft = targetLeft + dx * ICON_GRID_STEP_X;
+          const candidateTop = targetTop + dy * ICON_GRID_STEP_Y;
 
-          if (candidateLeft < 20 || candidateLeft > maxLeft) continue;
-          if (candidateTop < 20 || candidateTop > maxTop) continue;
+          if (candidateLeft < ICON_GRID_OFFSET_X || candidateLeft > maxLeft) continue;
+          if (candidateTop < ICON_GRID_OFFSET_Y || candidateTop > maxTop) continue;
 
-          if (!isCellOccupied(iconEl, candidateLeft, candidateTop)) {
+          if (!isCellOccupied(iconEl, candidateLeft, candidateTop, excludeElements)) {
             return { left: candidateLeft, top: candidateTop };
           }
         }
@@ -1267,8 +1273,8 @@ function makeIconDraggable(el) {
 
     const desktop = document.getElementById('desktop');
     const db = desktop ? desktop.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight };
-    const maxLeft = db.width - 100;
-    const maxTop = db.height - 110 - 52;
+    const maxLeft = db.width - 130;
+    const maxTop = db.height - 145 - 46;
 
     selectedIcons.forEach(item => {
       let newLeft = Math.max(0, Math.min(maxLeft, item.startLeft + dx));
@@ -1301,26 +1307,38 @@ function makeIconDraggable(el) {
         el.removeEventListener('click', preventClick, true);
       }, 100);
 
+      const desktop = document.getElementById('desktop');
+      const deskW = desktop ? desktop.getBoundingClientRect().width : window.innerWidth;
+      const deskH = desktop ? desktop.getBoundingClientRect().height : window.innerHeight;
+      const maxLeft = deskW - 130;
+      const maxTop = deskH - 145 - 46;
+
+      const movingEls = selectedIcons.map(item => item.el);
+
       selectedIcons.forEach(item => {
         let currentLeft = parseInt(item.el.style.left || '0', 10);
         let currentTop = parseInt(item.el.style.top || '0', 10);
 
-        let snapLeft = Math.round((currentLeft - 20) / 110) * 110 + 20;
-        let snapTop = Math.round((currentTop - 20) / 120) * 120 + 20;
+        let snapLeft = Math.round((currentLeft - ICON_GRID_OFFSET_X) / ICON_GRID_STEP_X) * ICON_GRID_STEP_X + ICON_GRID_OFFSET_X;
+        let snapTop = Math.round((currentTop - ICON_GRID_OFFSET_Y) / ICON_GRID_STEP_Y) * ICON_GRID_STEP_Y + ICON_GRID_OFFSET_Y;
 
-        const desktop = document.getElementById('desktop');
-        let maxLeft = (desktop ? desktop.getBoundingClientRect().width : window.innerWidth) - 100;
-        let maxTop = (desktop ? desktop.getBoundingClientRect().height : window.innerHeight) - 110 - 52;
+        if (snapLeft > maxLeft) snapLeft = Math.max(ICON_GRID_OFFSET_X, Math.floor((maxLeft - ICON_GRID_OFFSET_X) / ICON_GRID_STEP_X) * ICON_GRID_STEP_X + ICON_GRID_OFFSET_X);
+        if (snapTop > maxTop) snapTop = Math.max(ICON_GRID_OFFSET_Y, Math.floor((maxTop - ICON_GRID_OFFSET_Y) / ICON_GRID_STEP_Y) * ICON_GRID_STEP_Y + ICON_GRID_OFFSET_Y);
 
-        if (snapLeft > maxLeft) snapLeft = Math.floor((maxLeft - 20) / 110) * 110 + 20;
-        if (snapTop > maxTop) snapTop = Math.floor((maxTop - 20) / 120) * 120 + 20;
+        if (snapLeft < ICON_GRID_OFFSET_X) snapLeft = ICON_GRID_OFFSET_X;
+        if (snapTop < ICON_GRID_OFFSET_Y) snapTop = ICON_GRID_OFFSET_Y;
 
-        if (snapLeft < 20) snapLeft = 20;
-        if (snapTop < 20) snapTop = 20;
-
-        const freeCell = getNearestFreeCell(item.el, snapLeft, snapTop, maxLeft, maxTop);
+        const pendingOthers = movingEls.filter(m => m !== item.el);
+        const freeCell = getNearestFreeCell(item.el, snapLeft, snapTop, maxLeft, maxTop, pendingOthers);
+        item.el.classList.add('is-snapping');
         item.el.style.left = freeCell.left + 'px';
         item.el.style.top = freeCell.top + 'px';
+        setTimeout(() => {
+          item.el.classList.remove('is-snapping');
+        }, 200);
+
+        const idx = movingEls.indexOf(item.el);
+        if (idx !== -1) movingEls.splice(idx, 1);
       });
     }
 
@@ -1390,12 +1408,24 @@ function initDesktopIcons() {
     { top: 695, left: 20 }
   ];
 
+  const desktop = document.getElementById('desktop');
+  const deskH = desktop ? desktop.getBoundingClientRect().height : (window.innerHeight || 800);
+  const maxRows = Math.max(1, Math.floor((deskH - 46 - ICON_GRID_OFFSET_Y) / ICON_GRID_STEP_Y));
+
   document.querySelectorAll('.desktop-icon').forEach((icon, idx) => {
     const winId = icon.dataset.window;
     const url = icon.dataset.url;
     let timer = null;
 
-    const coords = defaultCoords[idx] || { top: 20 + idx * 135, left: 20 };
+    let coords = defaultCoords[idx] || { top: 20 + idx * 135, left: 20 };
+    if (coords.top + 145 + 46 > deskH && idx >= maxRows) {
+      const col = Math.floor(idx / maxRows);
+      const row = idx % maxRows;
+      coords = {
+        left: ICON_GRID_OFFSET_X + col * ICON_GRID_STEP_X,
+        top: ICON_GRID_OFFSET_Y + row * ICON_GRID_STEP_Y
+      };
+    }
     icon.style.top = coords.top + 'px';
     icon.style.left = coords.left + 'px';
     icon.classList.add('is-ready');
@@ -1511,18 +1541,23 @@ function createNewTextFile(x, y) {
   const icon = document.createElement('div');
   icon.className = 'desktop-icon text-file-icon';
 
-  let left = x - 50;
-  let top = y - 40;
+  const desktop = document.getElementById('desktop');
+  const deskW = desktop ? desktop.getBoundingClientRect().width : window.innerWidth;
+  const deskH = desktop ? desktop.getBoundingClientRect().height : window.innerHeight;
+  const maxLeft = deskW - 130;
+  const maxTop = deskH - 145 - 46;
 
-  if (left < 10) left = 10;
-  if (top < 10) top = 10;
-  const maxLeft = window.innerWidth - 110;
-  const maxTop = window.innerHeight - 150;
-  if (left > maxLeft) left = maxLeft;
-  if (top > maxTop) top = maxTop;
+  let snapLeft = Math.round(((x - 50) - ICON_GRID_OFFSET_X) / ICON_GRID_STEP_X) * ICON_GRID_STEP_X + ICON_GRID_OFFSET_X;
+  let snapTop = Math.round(((y - 40) - ICON_GRID_OFFSET_Y) / ICON_GRID_STEP_Y) * ICON_GRID_STEP_Y + ICON_GRID_OFFSET_Y;
 
-  icon.style.left = left + 'px';
-  icon.style.top = top + 'px';
+  if (snapLeft > maxLeft) snapLeft = Math.max(ICON_GRID_OFFSET_X, Math.floor((maxLeft - ICON_GRID_OFFSET_X) / ICON_GRID_STEP_X) * ICON_GRID_STEP_X + ICON_GRID_OFFSET_X);
+  if (snapTop > maxTop) snapTop = Math.max(ICON_GRID_OFFSET_Y, Math.floor((maxTop - ICON_GRID_OFFSET_Y) / ICON_GRID_STEP_Y) * ICON_GRID_STEP_Y + ICON_GRID_OFFSET_Y);
+  if (snapLeft < ICON_GRID_OFFSET_X) snapLeft = ICON_GRID_OFFSET_X;
+  if (snapTop < ICON_GRID_OFFSET_Y) snapTop = ICON_GRID_OFFSET_Y;
+
+  const freeCell = getNearestFreeCell(icon, snapLeft, snapTop, maxLeft, maxTop);
+  icon.style.left = freeCell.left + 'px';
+  icon.style.top = freeCell.top + 'px';
   icon.setAttribute('tabindex', '0');
   icon.setAttribute('role', 'button');
   icon.setAttribute('aria-label', 'Nuevo Documento — Text file icon');

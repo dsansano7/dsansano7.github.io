@@ -293,6 +293,9 @@ body.dark-mode .desktop-overlay { background:rgba(0,0,0,0.45); }
 .desktop-icon:hover    { background:rgba(255,255,255,0.22); }
 .desktop-icon:focus    { outline:1px dotted #fff; background:rgba(255,255,255,0.14); }
 .desktop-icon.selected { background:rgba(10,88,200,0.48); }
+.desktop-icon.is-snapping {
+  transition: left 0.18s cubic-bezier(0.2, 0.9, 0.3, 1), top 0.18s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
+}
 
 .icon-img {
   width:88px; height:88px;
