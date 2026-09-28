@@ -2192,22 +2192,13 @@ function initDiegoSteam() {
   const mainViewEl = document.getElementById('st-main-view');
   if (!gameListEl || !mainViewEl) return;
 
-  const storeBtn = document.getElementById('steam-menu-store');
-  if (storeBtn && !storeBtn.dataset.wired) {
-    storeBtn.dataset.wired = 'true';
-    storeBtn.addEventListener('click', () => {
-      window.open('https://dsansano7.itch.io/', '_blank', 'noopener,noreferrer');
-      if (window.AudioEngine) AudioEngine.playClick();
-    });
-  }
-
   const playableGames = PROJECTS.filter(p => p.gameUrl && p.gameUrl !== '');
   gameListEl.innerHTML = '<div class="st-sidebar-title">GAMES (' + playableGames.length + ')</div>';
 
   playableGames.forEach((game, idx) => {
     const row = document.createElement('div');
     row.className = 'st-sidebar-row';
-    row.textContent = '🕹️ ' + game.title;
+    row.textContent = game.title;
 
     row.addEventListener('click', () => {
       document.querySelectorAll('.st-sidebar-row').forEach(r => r.classList.remove('active'));
@@ -2253,7 +2244,7 @@ function initDiegoSteam() {
 
   const itchRow = document.createElement('div');
   itchRow.className = 'st-sidebar-row st-sidebar-itch';
-  itchRow.innerHTML = '🌐 More on Itch.io ↗';
+  itchRow.innerHTML = 'More on Itch.io ↗';
   itchRow.title = "Visit Diego's Itch.io Profile";
   itchRow.addEventListener('click', () => {
     window.open('https://dsansano7.itch.io/', '_blank', 'noopener,noreferrer');
@@ -2448,20 +2439,12 @@ document.addEventListener('DOMContentLoaded', () => {
   initToolkitSorting();
   initNotepadStorage();
 
-  // Wire Facebook message and Itch links
+  // Wire Facebook message link
   const fbMsgLink = document.getElementById('fb-send-message-link');
   if (fbMsgLink) {
     fbMsgLink.addEventListener('click', () => {
       WindowManager.open('win-contact');
       if (window.AudioEngine) AudioEngine.playOpen();
-    });
-  }
-
-  const fbItchLink = document.getElementById('fb-itch-link');
-  if (fbItchLink) {
-    fbItchLink.addEventListener('click', () => {
-      window.open('https://dsansano7.itch.io/', '_blank', 'noopener,noreferrer');
-      if (window.AudioEngine) AudioEngine.playClick();
     });
   }
 
