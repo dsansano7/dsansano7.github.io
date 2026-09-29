@@ -836,12 +836,54 @@
           </div>
         </div>
         <div class="sm-col sm-right">
-          <div class="sm-col-label">System</div>
-          <div class="sm-item sm-nowin"><span class="sm-item-icon">📂</span> My Documents</div>
-          <div class="sm-item sm-nowin"><span class="sm-item-icon">🖥️</span> My Computer</div>
-          <div class="sm-item sm-nowin"><span class="sm-item-icon">⚙️</span> Control Panel</div>
+          <div class="sm-col-label">System &amp; Workspace</div>
+          <div class="sm-item" data-window="win-work" title="Open My Work (File Explorer)">
+            <span class="sm-item-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 5.5C2 4.67 2.67 4 3.5 4H8L9.5 6H16.5C17.33 6 18 6.67 18 7.5V14.5C18 15.33 17.33 16 16.5 16H3.5C2.67 16 2 15.33 2 14.5V5.5Z" fill="#e8a838" stroke="#a06010" stroke-width="1.2"/>
+                <path d="M2 8H18V14.5C18 15.33 17.33 16 16.5 16H3.5C2.67 16 2 15.33 2 14.5V8Z" fill="#f5c858"/>
+              </svg>
+            </span>
+            <div class="sm-item-text"><strong>My Work</strong><small>Audio Projects &amp; Demos</small></div>
+          </div>
+          <div class="sm-item" data-window="win-pdf-viewer" title="Open Technical Specs (Adobe Reader)">
+            <span class="sm-item-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="2" width="14" height="16" rx="2" fill="#e83838" stroke="#aa1010" stroke-width="1.2"/>
+                <path d="M6 7H14M6 10H14M6 13H11" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <div class="sm-item-text"><strong>Tech Specs</strong><small>Workflow &amp; Implementation</small></div>
+          </div>
+          <div class="sm-item" data-window="win-properties" title="Open Display &amp; Audio Settings">
+            <span class="sm-item-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="10" cy="10" r="3.2" fill="#5070a0" stroke="#204070" stroke-width="1.2"/>
+                <path d="M10 2V4M10 16V18M2 10H4M16 10H18M4.3 4.3L5.7 5.7M14.3 14.3L15.7 15.7M4.3 15.7L5.7 14.3M14.3 5.7L15.7 4.3" stroke="#204070" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <div class="sm-item-text"><strong>Control Panel</strong><small>Themes &amp; Volume</small></div>
+          </div>
+          <div class="sm-item" data-window="win-notepad" title="Open Notepad">
+            <span class="sm-item-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="2" width="14" height="16" rx="2" fill="#f8f8fa" stroke="#4070b0" stroke-width="1.2"/>
+                <path d="M6 6H14M6 9H14M6 12H12" stroke="#8090a0" stroke-width="1.2" stroke-linecap="round"/>
+                <path d="M13 13L16 16M13 16H16" stroke="#205090" stroke-width="1.2"/>
+              </svg>
+            </span>
+            <div class="sm-item-text"><strong>Notepad</strong><small>Scratchpad &amp; Notes</small></div>
+          </div>
           <hr class="sm-hr" />
-          <div class="sm-item sm-nowin" id="sm-shutdown"><span class="sm-item-icon">⏻</span> Shut Down...</div>
+          <div class="sm-item" id="sm-shutdown" title="Shut Down DiegoOS">
+            <span class="sm-item-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="10" cy="10" r="7.5" fill="#fde8e8" stroke="#d03030" stroke-width="1.2"/>
+                <path d="M10 5V10M7 7.5A5 5 0 1 0 13 7.5" stroke="#d03030" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <div class="sm-item-text"><strong>Shut Down...</strong><small>Turn off session</small></div>
+          </div>
         </div>
       </div>
       <div class="sm-footer">

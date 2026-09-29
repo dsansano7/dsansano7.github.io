@@ -1053,7 +1053,8 @@ body.dark-mode .sm-col-label { color:#555; border-color:#2a2a2a; }
 }
 body.dark-mode .sm-item { color:#ddd; }
 .sm-item:hover { background:#1e62d2; color:#fff; }
-.sm-item-icon { font-size:18px; flex-shrink:0; }
+.sm-item-icon { font-size:18px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.sm-item-icon svg { display:block; flex-shrink:0; }
 .sm-item-text { display:flex; flex-direction:column; gap:1px; }
 .sm-item-text strong { font-size:14.5px; }
 .sm-item-text small  { font-size:11px; color:#888; font-family:var(--f-mono); }
