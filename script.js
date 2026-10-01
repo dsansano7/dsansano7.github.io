@@ -1411,13 +1411,13 @@ function makeIconDraggable(el) {
 
 function initDesktopIcons() {
   const defaultCoords = [
-    { top: 20, left: 20 },
-    { top: 155, left: 20 },
-    { top: 290, left: 20 },
-    { top: 425, left: 20 },
-    { top: 560, left: 20 },
-    { top: 695, left: 20 },
-    { top: 20, left: 155 }
+    { top: 20, left: 20 },   // 0: About Me (DiegoBook)
+    { top: 155, left: 20 },  // 1: Toolkit
+    { top: 290, left: 20 },  // 2: Contact (Terminal)
+    { top: 425, left: 20 },  // 3: Demoreels (DiegoTube)
+    { top: 560, left: 20 },  // 4: DiegoSteam
+    { top: 20, left: 155 },  // 5: DiegoCode (Column 2, Row 1)
+    { top: 155, left: 155 }  // 6: Itch.io (Column 2, Row 2)
   ];
 
   const desktop = document.getElementById('desktop');
@@ -1429,7 +1429,7 @@ function initDesktopIcons() {
     const url = icon.dataset.url;
     let timer = null;
 
-    let coords = defaultCoords[idx] || { top: 20 + idx * 135, left: 20 };
+    let coords = defaultCoords[idx] || { top: 20 + (idx % maxRows) * ICON_GRID_STEP_Y, left: 20 + Math.floor(idx / maxRows) * ICON_GRID_STEP_X };
     if (coords.top + 145 + 46 > deskH && idx >= maxRows) {
       const col = Math.floor(idx / maxRows);
       const row = idx % maxRows;
@@ -1467,10 +1467,17 @@ function initDesktopIcons() {
           clearTimeout(timer); timer = null;
           triggerAction();
         } else {
-          timer = setTimeout(() => { timer = null; }, 360);
+          timer = setTimeout(() => { timer = null; }, 400);
         }
       }
     });
+
+    icon.addEventListener('dblclick', e => {
+      e.stopPropagation();
+      if (timer) { clearTimeout(timer); timer = null; }
+      triggerAction();
+    });
+
     icon.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerAction(); }
     });
@@ -1631,9 +1638,15 @@ function createNewTextFile(x, y, customDoc = null) {
         clearTimeout(timer); timer = null;
         openThisDoc();
       } else {
-        timer = setTimeout(() => { timer = null; }, 360);
+        timer = setTimeout(() => { timer = null; }, 400);
       }
     }
+  });
+
+  icon.addEventListener('dblclick', e => {
+    e.stopPropagation();
+    if (timer) { clearTimeout(timer); timer = null; }
+    openThisDoc();
   });
 
   icon.addEventListener('keydown', e => {
