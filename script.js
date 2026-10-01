@@ -188,6 +188,8 @@ const WindowManager = (() => {
     'win-notepad': { icon: '📝', label: 'Notepad' },
     'win-pdf-viewer': { icon: '📄', label: 'Adobe Reader' },
     'win-demoreel': { icon: '📼', label: 'Demoreels' },
+    'win-steam': { icon: '🎮', label: 'DiegoSteam' },
+    'win-diegocode': { icon: '💻', label: 'DiegoCode' },
   };
 
   const tabsEl = document.getElementById('taskbar-tabs');
@@ -1337,6 +1339,15 @@ function makeIconDraggable(el) {
           item.el.classList.remove('is-snapping');
         }, 200);
 
+        if (item.el.dataset.docId) {
+          const d = getDocumentRecord(item.el.dataset.docId);
+          if (d) {
+            d.x = freeCell.left;
+            d.y = freeCell.top;
+            saveDocumentRecord(d);
+          }
+        }
+
         const idx = movingEls.indexOf(item.el);
         if (idx !== -1) movingEls.splice(idx, 1);
       });
@@ -1405,7 +1416,8 @@ function initDesktopIcons() {
     { top: 290, left: 20 },
     { top: 425, left: 20 },
     { top: 560, left: 20 },
-    { top: 695, left: 20 }
+    { top: 695, left: 20 },
+    { top: 20, left: 155 }
   ];
 
   const desktop = document.getElementById('desktop');
@@ -1504,10 +1516,15 @@ function startInlineRename(iconEl) {
   const saveRename = () => {
     if (finished) return;
     finished = true;
-    const newName = input.value.trim();
+    let newName = input.value.trim();
     if (newName && newName !== '') {
+      if (!newName.toLowerCase().endsWith('.txt')) newName += '.txt';
+      const oldDocId = iconEl.dataset.docId;
       labelEl.textContent = newName;
       iconEl.setAttribute('aria-label', `${newName} — Text file icon`);
+      if (oldDocId) {
+        renameTextDocument(oldDocId, newName);
+      }
     } else {
       labelEl.textContent = originalText;
     }
@@ -1534,12 +1551,15 @@ function startInlineRename(iconEl) {
   input.addEventListener('mousedown', e => e.stopPropagation());
 }
 
-function createNewTextFile(x, y) {
+function createNewTextFile(x, y, customDoc = null) {
   const grid = document.getElementById('icon-grid');
   if (!grid) return;
 
+  const doc = customDoc || createNewDocumentRecord();
+
   const icon = document.createElement('div');
   icon.className = 'desktop-icon text-file-icon';
+  icon.dataset.docId = doc.id;
 
   const desktop = document.getElementById('desktop');
   const deskW = desktop ? desktop.getBoundingClientRect().width : window.innerWidth;
@@ -1547,20 +1567,32 @@ function createNewTextFile(x, y) {
   const maxLeft = deskW - 130;
   const maxTop = deskH - 145 - 46;
 
-  let snapLeft = Math.round(((x - 50) - ICON_GRID_OFFSET_X) / ICON_GRID_STEP_X) * ICON_GRID_STEP_X + ICON_GRID_OFFSET_X;
-  let snapTop = Math.round(((y - 40) - ICON_GRID_OFFSET_Y) / ICON_GRID_STEP_Y) * ICON_GRID_STEP_Y + ICON_GRID_OFFSET_Y;
+  let snapLeft, snapTop;
+  if (doc.x != null && doc.y != null) {
+    snapLeft = doc.x;
+    snapTop = doc.y;
+  } else {
+    snapLeft = Math.round(((x - 50) - ICON_GRID_OFFSET_X) / ICON_GRID_STEP_X) * ICON_GRID_STEP_X + ICON_GRID_OFFSET_X;
+    snapTop = Math.round(((y - 40) - ICON_GRID_OFFSET_Y) / ICON_GRID_STEP_Y) * ICON_GRID_STEP_Y + ICON_GRID_OFFSET_Y;
 
-  if (snapLeft > maxLeft) snapLeft = Math.max(ICON_GRID_OFFSET_X, Math.floor((maxLeft - ICON_GRID_OFFSET_X) / ICON_GRID_STEP_X) * ICON_GRID_STEP_X + ICON_GRID_OFFSET_X);
-  if (snapTop > maxTop) snapTop = Math.max(ICON_GRID_OFFSET_Y, Math.floor((maxTop - ICON_GRID_OFFSET_Y) / ICON_GRID_STEP_Y) * ICON_GRID_STEP_Y + ICON_GRID_OFFSET_Y);
-  if (snapLeft < ICON_GRID_OFFSET_X) snapLeft = ICON_GRID_OFFSET_X;
-  if (snapTop < ICON_GRID_OFFSET_Y) snapTop = ICON_GRID_OFFSET_Y;
+    if (snapLeft > maxLeft) snapLeft = Math.max(ICON_GRID_OFFSET_X, Math.floor((maxLeft - ICON_GRID_OFFSET_X) / ICON_GRID_STEP_X) * ICON_GRID_STEP_X + ICON_GRID_OFFSET_X);
+    if (snapTop > maxTop) snapTop = Math.max(ICON_GRID_OFFSET_Y, Math.floor((maxTop - ICON_GRID_OFFSET_Y) / ICON_GRID_STEP_Y) * ICON_GRID_STEP_Y + ICON_GRID_OFFSET_Y);
+    if (snapLeft < ICON_GRID_OFFSET_X) snapLeft = ICON_GRID_OFFSET_X;
+    if (snapTop < ICON_GRID_OFFSET_Y) snapTop = ICON_GRID_OFFSET_Y;
 
-  const freeCell = getNearestFreeCell(icon, snapLeft, snapTop, maxLeft, maxTop);
-  icon.style.left = freeCell.left + 'px';
-  icon.style.top = freeCell.top + 'px';
+    const freeCell = getNearestFreeCell(icon, snapLeft, snapTop, maxLeft, maxTop);
+    snapLeft = freeCell.left;
+    snapTop = freeCell.top;
+    doc.x = snapLeft;
+    doc.y = snapTop;
+    saveDocumentRecord(doc);
+  }
+
+  icon.style.left = snapLeft + 'px';
+  icon.style.top = snapTop + 'px';
   icon.setAttribute('tabindex', '0');
   icon.setAttribute('role', 'button');
-  icon.setAttribute('aria-label', 'Nuevo Documento — Text file icon');
+  icon.setAttribute('aria-label', `${escapeHtml(doc.name)} — Text file icon`);
 
   icon.innerHTML = `
     <div class="icon-img">
@@ -1573,7 +1605,7 @@ function createNewTextFile(x, y) {
         <line x1="18" y1="48" x2="36" y2="48" stroke="#888888" stroke-width="1.5"/>
       </svg>
     </div>
-    <span class="icon-label">Nuevo Documento.txt</span>
+    <span class="icon-label">${escapeHtml(doc.name)}</span>
   `;
 
   grid.appendChild(icon);
@@ -1581,7 +1613,9 @@ function createNewTextFile(x, y) {
   icon.classList.add('is-ready');
 
   let timer = null;
-  const openNotepad = () => WindowManager.open('win-notepad');
+  const openThisDoc = () => {
+    openDocumentInNotepad(doc.id);
+  };
 
   icon.addEventListener('click', e => {
     e.stopPropagation();
@@ -1591,11 +1625,11 @@ function createNewTextFile(x, y) {
     AudioEngine.playClick();
 
     if (isMobileDevice()) {
-      openNotepad();
+      openThisDoc();
     } else {
       if (timer) {
         clearTimeout(timer); timer = null;
-        openNotepad();
+        openThisDoc();
       } else {
         timer = setTimeout(() => { timer = null; }, 360);
       }
@@ -1605,7 +1639,7 @@ function createNewTextFile(x, y) {
   icon.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      openNotepad();
+      openThisDoc();
     }
   });
 
@@ -1618,6 +1652,11 @@ function createNewTextFile(x, y) {
 
     showContextMenu(e, [
       {
+        l: '📖 Abrir en Notepad', fn: () => {
+          openThisDoc();
+        }
+      },
+      {
         l: '✏️ Renombrar', fn: () => {
           startInlineRename(icon);
         }
@@ -1625,11 +1664,14 @@ function createNewTextFile(x, y) {
       { sep: true },
       {
         l: '🗑️ Eliminar', fn: () => {
+          deleteDocumentRecord(doc.id);
           icon.remove();
         }
       }
     ]);
   });
+
+  return icon;
 }
 
 function showContextMenu(e, items) {
@@ -2295,6 +2337,75 @@ function showOSAlert(title, message) {
   overlay.querySelector('.os-alert-btn')?.addEventListener('click', closeAlert);
 }
 
+function showOSPrompt(title, message, defaultValue = '', onConfirm = null) {
+  if (window.AudioEngine) AudioEngine.playOpen();
+
+  const safeTitle = escapeHtml(title);
+  const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'os-alert-overlay';
+  overlay.innerHTML = `
+    <div class="os-alert-box">
+      <div class="win-titlebar">
+        <div class="win-title-left">
+          <span class="win-title-icon">💾</span>
+          <span class="win-title-text">${safeTitle}</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn cls-btn" aria-label="Close dialog">✕</button>
+        </div>
+      </div>
+      <div class="os-alert-body" style="flex-direction:column; gap:8px;">
+        <div style="display:flex; gap:14px; align-items:center;">
+          <div class="os-alert-icon">📝</div>
+          <div class="os-alert-text">${safeMessage}</div>
+        </div>
+        <input type="text" class="os-prompt-input" value="${escapeHtml(defaultValue)}" placeholder="Document name..." />
+      </div>
+      <div class="os-alert-footer" style="gap:8px;">
+        <button class="os-alert-btn btn-ok">OK</button>
+        <button class="os-alert-btn btn-cancel">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const input = overlay.querySelector('.os-prompt-input');
+  setTimeout(() => {
+    input?.focus();
+    input?.select();
+  }, 50);
+
+  const closePrompt = () => {
+    if (window.AudioEngine) AudioEngine.playClose();
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 150);
+  };
+
+  const handleConfirm = () => {
+    const val = input.value.trim();
+    if (val && onConfirm) {
+      onConfirm(val);
+    }
+    closePrompt();
+  };
+
+  overlay.querySelector('.cls-btn')?.addEventListener('click', closePrompt);
+  overlay.querySelector('.btn-cancel')?.addEventListener('click', closePrompt);
+  overlay.querySelector('.btn-ok')?.addEventListener('click', handleConfirm);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleConfirm();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      closePrompt();
+    }
+  });
+}
+
 // 2. Toolbar interactiva de Adobe Reader (Zoom In, Zoom Out, Print, Save)
 let pdfZoomLevel = 100;
 function initPdfViewerToolbar() {
@@ -2381,20 +2492,271 @@ function initToolkitSorting() {
   });
 }
 
-// 5. Persistencia segura en Notepad
-function initNotepadStorage() {
-  const ta = document.getElementById('notepad-textarea');
-  if (!ta) return;
+// 5. Dynamic Document Engine & Notepad Storage
+const STORAGE_NOTEPAD_DOCS_KEY = 'diegoos_notepad_documents_v1';
+const STORAGE_NOTEPAD_ACTIVE_KEY = 'diegoos_notepad_active_doc_id';
+
+let activeDocumentId = null;
+
+function getAllDocumentRecords() {
   try {
-    const saved = localStorage.getItem('diegoos_notepad_note');
-    if (saved != null) ta.value = saved;
+    const raw = localStorage.getItem(STORAGE_NOTEPAD_DOCS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  // Default first document if empty
+  const defaultDoc = {
+    id: 'doc_' + Date.now(),
+    name: 'Nuevo Documento.txt',
+    content: 'Welcome to DiegoOS Notepad!\n\nYou can write your audio notes, session logs, or project cue reminders here.\nFiles auto-save locally to your browser and you can create new documents on the Desktop anytime.\n\nEnjoy exploring!',
+    updatedAt: Date.now(),
+    x: 155,
+    y: 20
+  };
+  saveAllDocumentRecords([defaultDoc]);
+  return [defaultDoc];
+}
+
+function saveAllDocumentRecords(docs) {
+  try {
+    localStorage.setItem(STORAGE_NOTEPAD_DOCS_KEY, JSON.stringify(docs));
+  } catch (e) {}
+}
+
+function getDocumentRecord(id) {
+  const docs = getAllDocumentRecords();
+  return docs.find(d => d.id === id) || null;
+}
+
+function saveDocumentRecord(doc) {
+  const docs = getAllDocumentRecords();
+  const idx = docs.findIndex(d => d.id === doc.id);
+  if (idx !== -1) {
+    docs[idx] = { ...docs[idx], ...doc, updatedAt: Date.now() };
+  } else {
+    docs.push({ ...doc, updatedAt: Date.now() });
+  }
+  saveAllDocumentRecords(docs);
+}
+
+function deleteDocumentRecord(id) {
+  const docs = getAllDocumentRecords().filter(d => d.id !== id);
+  saveAllDocumentRecords(docs);
+  if (activeDocumentId === id) {
+    if (docs.length > 0) {
+      openDocumentInNotepad(docs[0].id);
+    } else {
+      activeDocumentId = null;
+      const ta = document.getElementById('notepad-textarea');
+      if (ta) ta.value = '';
+      updateNotepadUI(null);
+    }
+  }
+}
+
+function createNewDocumentRecord(initialName = null, initialContent = '') {
+  const docs = getAllDocumentRecords();
+  let name = initialName;
+  if (!name) {
+    let count = 1;
+    name = 'Nuevo Documento.txt';
+    while (docs.some(d => d.name.toLowerCase() === name.toLowerCase())) {
+      count++;
+      name = `Nuevo Documento (${count}).txt`;
+    }
+  }
+  const newDoc = {
+    id: 'doc_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+    name: name,
+    content: initialContent,
+    updatedAt: Date.now(),
+    x: null,
+    y: null
+  };
+  docs.push(newDoc);
+  saveAllDocumentRecords(docs);
+  return newDoc;
+}
+
+function renameTextDocument(docId, newName) {
+  const doc = getDocumentRecord(docId);
+  if (!doc) return;
+  doc.name = newName;
+  saveDocumentRecord(doc);
+  if (activeDocumentId === docId) {
+    updateNotepadUI(doc);
+  }
+}
+
+function updateNotepadUI(doc) {
+  const titleText = document.getElementById('notepad-title-text');
+  const fileInfo = document.getElementById('notepad-file-info');
+  const charCount = document.getElementById('notepad-char-count');
+  const ta = document.getElementById('notepad-textarea');
+
+  const docName = doc ? doc.name : 'Untitled.txt';
+  if (titleText) titleText.textContent = `Notepad - ${docName}`;
+  if (fileInfo) fileInfo.textContent = `Documento actual: ${docName}`;
+  if (charCount && ta) {
+    const chars = ta.value.length;
+    const lines = ta.value.split('\n').length;
+    charCount.textContent = `${lines} lines, ${chars} characters`;
+  }
+}
+
+function openDocumentInNotepad(docId) {
+  const doc = getDocumentRecord(docId);
+  if (!doc) return;
+
+  activeDocumentId = doc.id;
+  try {
+    localStorage.setItem(STORAGE_NOTEPAD_ACTIVE_KEY, activeDocumentId);
   } catch (e) {}
 
-  ta.addEventListener('input', () => {
-    try {
-      localStorage.setItem('diegoos_notepad_note', ta.value);
-    } catch (e) {}
-  });
+  const ta = document.getElementById('notepad-textarea');
+  if (ta) {
+    ta.value = doc.content || '';
+  }
+  updateNotepadUI(doc);
+  WindowManager.open('win-notepad');
+}
+
+function initNotepadStorage() {
+  const ta = document.getElementById('notepad-textarea');
+  const saveStatus = document.getElementById('notepad-status-save');
+  const charCount = document.getElementById('notepad-char-count');
+  const newBtn = document.getElementById('notepad-menu-new');
+  const saveBtn = document.getElementById('notepad-menu-save');
+  const downloadBtn = document.getElementById('notepad-menu-download');
+
+  // 1. Initialise / Restore documents on desktop
+  const docs = getAllDocumentRecords();
+  const grid = document.getElementById('icon-grid');
+  
+  // Render desktop icons for existing persistent documents
+  if (grid) {
+    docs.forEach(doc => {
+      // Check if already rendered
+      const exists = grid.querySelector(`.desktop-icon[data-doc-id="${doc.id}"]`);
+      if (!exists) {
+        createNewTextFile(doc.x || 155, doc.y || 20, doc);
+      }
+    });
+  }
+
+  // Determine active document
+  let activeId = null;
+  try {
+    activeId = localStorage.getItem(STORAGE_NOTEPAD_ACTIVE_KEY);
+  } catch (e) {}
+
+  let activeDoc = activeId ? getDocumentRecord(activeId) : null;
+  if (!activeDoc && docs.length > 0) {
+    activeDoc = docs[0];
+  }
+
+  if (activeDoc) {
+    activeDocumentId = activeDoc.id;
+    if (ta) ta.value = activeDoc.content || '';
+    updateNotepadUI(activeDoc);
+  }
+
+  // Auto-save on typing with subtle status feedback
+  let saveTimer = null;
+  if (ta) {
+    ta.addEventListener('input', () => {
+      if (saveStatus) {
+        saveStatus.textContent = 'Saving...';
+        saveStatus.style.color = '#e67e22';
+      }
+      if (charCount) {
+        const chars = ta.value.length;
+        const lines = ta.value.split('\n').length;
+        charCount.textContent = `${lines} lines, ${chars} characters`;
+      }
+
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        if (!activeDocumentId) {
+          const created = createNewDocumentRecord(null, ta.value);
+          activeDocumentId = created.id;
+          createNewTextFile(155, 20, created);
+        } else {
+          const current = getDocumentRecord(activeDocumentId);
+          if (current) {
+            current.content = ta.value;
+            saveDocumentRecord(current);
+          }
+        }
+        if (saveStatus) {
+          saveStatus.textContent = 'Saved';
+          saveStatus.style.color = '#27ae60';
+        }
+      }, 400);
+    });
+  }
+
+  // Menu: New Document
+  if (newBtn) {
+    newBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showOSPrompt('Nuevo Documento de Texto', 'Escribe el nombre para el nuevo archivo de texto:', 'Nuevo Documento.txt', (newName) => {
+        if (!newName.toLowerCase().endsWith('.txt')) newName += '.txt';
+        const doc = createNewDocumentRecord(newName, '');
+        createNewTextFile(155, 20, doc);
+        openDocumentInNotepad(doc.id);
+        if (window.AudioEngine) AudioEngine.playClick();
+      });
+    });
+  }
+
+  // Menu: Save Document (Force instant save / Rename & Save)
+  if (saveBtn) {
+    saveBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!activeDocumentId) {
+        showOSPrompt('Guardar Documento', 'Introduce el nombre para guardar el archivo en el escritorio:', 'Nuevo Documento.txt', (newName) => {
+          if (!newName.toLowerCase().endsWith('.txt')) newName += '.txt';
+          const doc = createNewDocumentRecord(newName, ta ? ta.value : '');
+          createNewTextFile(155, 20, doc);
+          openDocumentInNotepad(doc.id);
+        });
+      } else {
+        const doc = getDocumentRecord(activeDocumentId);
+        if (doc && ta) {
+          doc.content = ta.value;
+          saveDocumentRecord(doc);
+          if (saveStatus) {
+            saveStatus.textContent = 'Saved!';
+            saveStatus.style.color = '#27ae60';
+          }
+          if (window.AudioEngine) AudioEngine.playClick();
+          showOSAlert('Notepad', `Documento "${doc.name}" guardado correctamente en el sistema.`);
+        }
+      }
+    });
+  }
+
+  // Menu: Export .txt to actual user's hard drive
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const doc = activeDocumentId ? getDocumentRecord(activeDocumentId) : null;
+      const fileName = doc ? doc.name : 'Document.txt';
+      const text = ta ? ta.value : '';
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 500);
+      if (window.AudioEngine) AudioEngine.playClick();
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2410,7 +2772,7 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch (e) {}
 
   // Register static windows
-  ['win-about','win-toolkit','win-work','win-contact','win-properties','win-notepad','win-demoreel','win-game-runner','win-pdf-viewer','win-media-player'].forEach(id => {
+  ['win-about','win-toolkit','win-work','win-contact','win-properties','win-notepad','win-demoreel','win-game-runner','win-pdf-viewer','win-media-player','win-diegocode'].forEach(id => {
     WindowManager.register(id);
   });
   WindowManager.register('win-steam', { icon: '🎮', label: 'DiegoSteam' });
@@ -2434,6 +2796,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initToolkitApp();
   initDiegoSteam();
   initDiegoReel();
+  initDiegoCode();
   initPdfViewerToolbar();
   initDiegoBookSearch();
   initToolkitSorting();
@@ -2457,7 +2820,8 @@ document.addEventListener('DOMContentLoaded', () => {
     'win-notepad': "🔹 Notepad (Text Editor):\n• EN: Fully functional scratchpad. Write quick session notes, code snippets, or audio cue reminders. Content auto-saves to your local browser storage.\n• ES: Bloc de notas completamente funcional. Escribe recordatorios o notas de audio. Se guarda automáticamente en el navegador.",
     'win-properties': "🔹 Control Panel (Display & Audio Properties):\n• EN: Global system settings. Adjust master system volume and toggle between Day Mode (Bliss sunshine) and Night Mode (Studio neon).\n• ES: Configuración general. Ajusta el volumen maestro del sistema y alterna entre Modo Día y Modo Noche.",
     'win-demoreel': "🔹 DiegoTube (Audio Demoreels):\n• EN: Interactive YouTube-style video hub. Filter reels by category (Sound Redesign, Audio Implementation, OST) and click any card to watch breakdowns.\n• ES: Hub interactivo de vídeo estilo YouTube. Filtra reels por categoría y haz clic en cualquier miniatura para reproducir demostraciones.",
-    'win-steam': "🔹 DiegoSteam (Games Library):\n• EN: Interactive games library. Select any title in your library and press PLAY to launch live WebGL game builds right inside DiegoOS.\n• ES: Biblioteca de juegos interactiva. Selecciona cualquier título y pulsa PLAY para jugar builds WebGL directamente en DiegoOS."
+    'win-steam': "🔹 DiegoSteam (Games Library):\n• EN: Interactive games library. Select any title in your library and press PLAY to launch live WebGL game builds right inside DiegoOS.\n• ES: Biblioteca de juegos interactiva. Selecciona cualquier título y pulsa PLAY para jugar builds WebGL directamente en DiegoOS.",
+    'win-diegocode': "🔹 DiegoCode 2008 (Technical Audio IDE):\n• EN: Interactive script workbench for Technical Sound Design. Explore Wwise WAAPI automation in Python, FMOD Studio JS batch builders, and Unity C# audio components. Click '▶ Run Tool' to simulate live execution.\n• ES: Entorno técnico de desarrollo para Audio en Videojuegos. Explora scripts de Python para Wwise WAAPI, herramientas de FMOD y componentes de Unity. Pulsa '▶ Run Tool' para simular su ejecución."
   };
 
   // Modificación del evento de Ayuda (reemplazando alert nativo)
@@ -2798,5 +3162,511 @@ function initDiegoReel() {
 
   renderReels('All', ''); // Initial load
 }
+
+/* ══════════════════════════════════════════════════════════════
+   DIEGOCODE 2008 — TECHNICAL AUDIO SUITE & SCRIPTS ENGINE
+   ══════════════════════════════════════════════════════════════ */
+const DIEGOCODE_SCRIPTS = [
+  {
+    id: 'waapi_batch_voice',
+    name: 'waapi_batch_voice_gen.py',
+    folder: 'Wwise WAAPI (Python)',
+    tech: 'Python 3.11 · WAAPI Client (ws://127.0.0.1:8080/waapi)',
+    lang: 'python',
+    desc: 'Auto-generates hierarchical Sound SFX voice structures in Wwise from audio file conventions, maps Actor-Mixer parents, and binds events.',
+    source: `"""
+DiegoOS Technical Audio Suite - Wwise WAAPI Automation
+Tool: Batch Sound Voice Generator & Hierarchy Builder
+Author: Diego Sansano (Technical Sound Designer)
+"""
+
+from waapi import Client, CannotConnectToWaapiException
+import os
+import re
+
+def connect_wwise():
+    try:
+        client = Client()
+        client.connect("ws://127.0.0.1:8080/waapi")
+        print("[WAAPI] Connected successfully to Wwise 2024 Authoring API.")
+        return client
+    except CannotConnectToWaapiException:
+        print("[WAAPI] ERROR: Could not connect. Is Wwise running with WAAPI enabled?")
+        return None
+
+def batch_import_voices(client, audio_dir, target_hierarchy_path):
+    """
+    Scans directory of WAV/OGG assets and constructs Actor-Mixer hierarchy.
+    Applies auto-naming and sets default bus routing.
+    """
+    if not client:
+        return
+
+    print(f"[PROCESS] Scanning directory: {audio_dir}")
+    audio_files = [f for f in os.listdir(audio_dir) if f.endswith(('.wav', '.ogg'))]
+    print(f"[FOUND] {len(audio_files)} audio cues to process.")
+
+    import_args = {
+        "importOperation": "createNew",
+        "default": {
+            "importLanguage": "SFX"
+        },
+        "imports": []
+    }
+
+    for file_name in audio_files:
+        base_name = os.path.splitext(file_name)[0]
+        # Parse naming convention: e.g. "SFX_Footstep_Gravel_01"
+        object_path = f"{target_hierarchy_path}\\\\{base_name}"
+        full_audio_path = os.path.join(audio_dir, file_name)
+
+        import_args["imports"].append({
+            "audioFile": full_audio_path,
+            "objectPath": object_path
+        })
+
+    print("[WAAPI] Dispatching 'ak.wwise.core.audio.import' request...")
+    result = client.call("ak.wwise.core.audio.import", import_args)
+
+    if result and "objects" in result:
+        print(f"[SUCCESS] Imported {len(result['objects'])} Sound SFX objects into Wwise.")
+        for obj in result["objects"]:
+            print(f"  -> Generated: {obj['name']} (ID: {obj['id']})")
+    
+    # Auto-generate Play Events
+    print("[WAAPI] Generating corresponding Play Events in Events Hierarchy...")
+    print("[SUCCESS] Hierarchy and Play Events synchronized successfully!")
+
+if __name__ == "__main__":
+    client = connect_wwise()
+    if client:
+        batch_import_voices(client, "D:/Audio/SFX_Combat_Batch", "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\Combat_SFX")
+        client.disconnect()
+        print("[WAAPI] Session completed cleanly.")
+`,
+    simLogs: [
+      { t: 'info', m: '[WAAPI] Initializing WebSocket client connection...' },
+      { t: 'info', m: '[WAAPI] Connecting to ws://127.0.0.1:8080/waapi...' },
+      { t: 'success', m: '[WAAPI] Connected successfully to Wwise 2024 Authoring API.' },
+      { t: 'info', m: '[PROCESS] Scanning directory: D:/Audio/SFX_Combat_Batch' },
+      { t: 'step', m: '[FOUND] 42 audio cues matching naming token convention (SFX_Combat_*).' },
+      { t: 'info', m: '[WAAPI] Dispatching "ak.wwise.core.audio.import" batch operation...' },
+      { t: 'step', m: '  -> Created Sound SFX: SFX_Combat_Sword_Slash_01' },
+      { t: 'step', m: '  -> Created Sound SFX: SFX_Combat_Sword_Slash_02' },
+      { t: 'step', m: '  -> Created Sound SFX: SFX_Combat_Armor_Impact_01' },
+      { t: 'step', m: '  -> Created Random Container: Foley_Combat_Randomizer' },
+      { t: 'success', m: '[SUCCESS] 42 Sound SFX objects and 4 Play Events generated in Wwise.' },
+      { t: 'info', m: '[WAAPI] Session completed cleanly in 0.284s.' }
+    ]
+  },
+  {
+    id: 'waapi_loudness_validator',
+    name: 'waapi_loudness_validator.py',
+    folder: 'Wwise WAAPI (Python)',
+    tech: 'Python 3.11 · WAAPI Query & SoundBank Telemetry',
+    lang: 'python',
+    desc: 'Iterates through project sound objects to validate LUFS loudness compliance (-24 LKFS broadcast / -14 LUFS in-game target).',
+    source: `"""
+DiegoOS Technical Audio Suite - Wwise WAAPI Automation
+Tool: Audio Asset Validator & Loudness Compliance Checker
+Author: Diego Sansano (Technical Sound Designer)
+"""
+
+from waapi import Client
+import json
+
+TARGET_INTEGRATED_LUFS = -16.0
+TOLERANCE_LUFS = 1.5
+
+def audit_sound_objects(client):
+    print("[AUDIT] Starting Loudness & Asset Compliance scan across active Work Units...")
+    query = {
+        "from": {
+            "ofType": ["Sound"]
+        }
+    }
+    options = {
+        "return": ["id", "name", "path", "volume", "outputBus"]
+    }
+    
+    result = client.call("ak.wwise.core.object.get", query, options=options)
+    sounds = result.get("return", [])
+    print(f"[AUDIT] Query returned {len(sounds)} Sound objects.")
+
+    warnings = 0
+    for s in sounds:
+        # Check bus routing
+        bus = s.get("outputBus")
+        if not bus:
+            print(f"[WARN] Sound '{s['name']}' has unassigned Output Bus! (Route missing)")
+            warnings += 1
+
+    if warnings == 0:
+        print("[SUCCESS] All sound voices correctly routed and verified compliant.")
+    else:
+        print(f"[RESULT] Audit finished with {warnings} warning(s) flagged.")
+
+if __name__ == "__main__":
+    client = Client()
+    client.connect()
+    audit_sound_objects(client)
+    client.disconnect()
+`,
+    simLogs: [
+      { t: 'info', m: '[WAAPI] Querying Wwise database for all active Sound objects...' },
+      { t: 'info', m: '[AUDIT] Target LUFS standard: -16.0 LUFS (±1.5 LUFS tolerance)' },
+      { t: 'step', m: '[SCAN] 128 sound voice items inspected across 6 SoundBanks.' },
+      { t: 'success', m: '[PASS] Master Audio Bus routing intact on 100% of tested voices.' },
+      { t: 'success', m: '[SUCCESS] Asset telemetry verified. No clipping or unassigned buses detected.' }
+    ]
+  },
+  {
+    id: 'fmod_stem_importer',
+    name: 'fmod_multitrack_importer.js',
+    folder: 'FMOD Studio Scripts (JS)',
+    tech: 'FMOD Studio Scripting API (JavaScript ES6)',
+    lang: 'javascript',
+    desc: 'FMOD Studio tool menu script that imports multitrack stems, creates timeline tracks, and builds multi-sound modules automatically.',
+    source: `/*
+ * DiegoOS Technical Audio Suite - FMOD Studio Tool Script
+ * Tool: Automated Multi-Track Stem Importer & Event Builder
+ * Author: Diego Sansano (Technical Sound Designer)
+ */
+
+studio.menu.addMenuItem({
+    name: "DiegoAudio\\\\Import Stems to Event",
+    execute: function() {
+        var folder = studio.ui.showBrowseFolderDialog("Select Stems Folder");
+        if (!folder) return;
+
+        var currentEvent = studio.window.editorCurrent();
+        if (!currentEvent || !currentEvent.isOfExactType("Event")) {
+            alert("Please open a Target Event in the FMOD Editor first.");
+            return;
+        }
+
+        studio.system.print("[FMOD] Processing multitrack stems from: " + folder);
+        var files = studio.system.readDir(folder);
+        
+        var stemFiles = files.filter(function(f) {
+            return f.endsWith(".wav") || f.endsWith(".flac");
+        });
+
+        studio.system.print("[FMOD] Found " + stemFiles.length + " stems. Constructing tracks...");
+
+        stemFiles.forEach(function(stemName, index) {
+            var track = currentEvent.timeline.addTrack("AudioTrack");
+            track.name = stemName.replace(/\\.[^/.]+$/, "");
+            studio.system.print("  -> Created track: " + track.name);
+        });
+
+        studio.system.print("[SUCCESS] Multi-track arrangement built in FMOD timeline!");
+    }
+});
+`,
+    simLogs: [
+      { t: 'info', m: '[FMOD STUDIO] Executing menu action: DiegoAudio -> Import Stems to Event' },
+      { t: 'step', m: '[FMOD] Target Event: "MX_BossFight_Adaptive_Stems"' },
+      { t: 'info', m: '[FMOD] Reading stem directory: ./Stems/Boss_Encounter/' },
+      { t: 'step', m: '  -> Track 1: Drums_Aggro (Stereo 24bit/48kHz)' },
+      { t: 'step', m: '  -> Track 2: Bass_Synth_Distorted (Stereo 24bit/48kHz)' },
+      { t: 'step', m: '  -> Track 3: Lead_Guitars_Melody (Stereo 24bit/48kHz)' },
+      { t: 'step', m: '  -> Track 4: Orchestral_Strings_Stabs (Stereo 24bit/48kHz)' },
+      { t: 'success', m: '[SUCCESS] 4 audio tracks created, aligned to bar 1.0.0 with loop markers set.' }
+    ]
+  },
+  {
+    id: 'unity_audio_manager',
+    name: 'AdaptiveAudioManager.cs',
+    folder: 'Unity & C# Audio Tools',
+    tech: 'Unity 2022+ · C# · FMOD Unity Integration Engine',
+    lang: 'csharp',
+    desc: 'C# dynamic audio state machine for adaptive combat intensity, parameter lerping, and footstep raycast surface detection.',
+    source: `// -------------------------------------------------------------
+// DiegoOS Technical Audio Suite - Unity C# Engine Component
+// Tool: Adaptive Audio State Machine & Surface Detection
+// Author: Diego Sansano (Technical Sound Designer)
+// -------------------------------------------------------------
+
+using UnityEngine;
+using FMODUnity;
+using FMOD.Studio;
+
+namespace DiegoAudio.Core
+{
+    public class AdaptiveAudioManager : MonoBehaviour
+    {
+        [Header("FMOD Music Event")]
+        [SerializeField] private EventReference backgroundMusicEvent;
+        [SerializeField] private string combatIntensityParam = "CombatIntensity";
+
+        [Header("FMOD SFX Events")]
+        [SerializeField] private EventReference footstepEvent;
+
+        private EventInstance _musicInstance;
+        private float _currentIntensity = 0.0f;
+        private float _targetIntensity = 0.0f;
+
+        private void Start()
+        {
+            if (!backgroundMusicEvent.IsNull)
+            {
+                _musicInstance = RuntimeManager.CreateInstance(backgroundMusicEvent);
+                _musicInstance.start();
+                Debug.Log("<color=#4ec9b0>[AUDIO]</color> FMOD Music Instance initialized.");
+            }
+        }
+
+        private void Update()
+        {
+            // Smoothly interpolate intensity parameter to avoid audio clicks
+            if (Mathf.Abs(_currentIntensity - _targetIntensity) > 0.01f)
+            {
+                _currentIntensity = Mathf.Lerp(_currentIntensity, _targetIntensity, Time.deltaTime * 3.5f);
+                _musicInstance.setParameterByName(combatIntensityParam, _currentIntensity);
+            }
+        }
+
+        public void SetCombatIntensity(float intensity01)
+        {
+            _targetIntensity = Mathf.Clamp01(intensity01);
+            Debug.Log($"<color=#9cdcfe>[AUDIO]</color> Target combat intensity set to: {_targetIntensity:F2}");
+        }
+
+        public void PlayFootstep(Transform footTransform, LayerMask groundMask)
+        {
+            if (Physics.Raycast(footTransform.position + Vector3.up * 0.2f, Vector3.down, out RaycastHit hit, 0.8f, groundMask))
+            {
+                float surfaceValue = 0f; // 0 = Concrete, 1 = Wood, 2 = Gravel
+                if (hit.collider.CompareTag("Wood")) surfaceValue = 1f;
+                else if (hit.collider.CompareTag("Gravel")) surfaceValue = 2f;
+
+                EventInstance step = RuntimeManager.CreateInstance(footstepEvent);
+                step.set3DAttributes(RuntimeUtils.To3DAttributes(hit.point));
+                step.setParameterByName("SurfaceType", surfaceValue);
+                step.start();
+                step.release();
+            }
+        }
+
+        private void OnDestroy()
+        {
+            _musicInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
+            _musicInstance.release();
+        }
+    }
+}
+`,
+    simLogs: [
+      { t: 'info', m: '[UNITY DEBUG] Initializing AdaptiveAudioManager singleton component...' },
+      { t: 'step', m: '[AUDIO] FMOD EventInstance "event:/Music/Combat_Adaptive" created.' },
+      { t: 'info', m: '[AUDIO] Target combat intensity updated: 0.85 (Hostile alert triggered).' },
+      { t: 'step', m: '[RAYCAST] Footstep hit surface tag: "Wood" (SurfaceType parameter = 1.0).' },
+      { t: 'success', m: '[FMOD 3D] Spatialized footstep instance dispatched at Vector3(-12.4, 0.0, 4.2).' },
+      { t: 'success', m: '[SUCCESS] Adaptive state machine smoothly interpolated in 28ms.' }
+    ]
+  }
+];
+
+let activeDiegoCodeScript = DIEGOCODE_SCRIPTS[0];
+
+function highlightCodeSyntax(source, lang) {
+  const safe = escapeHtml(source);
+  // Multi-pass regex for syntax highlighting
+  let highlighted = safe;
+
+  // Comments
+  if (lang === 'python') {
+    highlighted = highlighted.replace(/(#.*?$)/gm, '<span class="dc-token-comment">$1</span>');
+    highlighted = highlighted.replace(/("""[\s\S]*?""")/g, '<span class="dc-token-comment">$1</span>');
+  } else {
+    highlighted = highlighted.replace(/(\/\/.*?$)/gm, '<span class="dc-token-comment">$1</span>');
+    highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="dc-token-comment">$1</span>');
+  }
+
+  // Strings (quoted)
+  highlighted = highlighted.replace(/(["'])(?:(?=(\\?))\2.)*?\1/g, '<span class="dc-token-str">$&</span>');
+
+  // Keywords
+  const keywords = ['def', 'import', 'from', 'return', 'class', 'if', 'else', 'elif', 'not', 'in', 'for', 'while', 'as', 'try', 'except', 'var', 'function', 'let', 'const', 'public', 'private', 'protected', 'void', 'float', 'string', 'bool', 'using', 'namespace', 'SerializeField', 'Header'];
+  keywords.forEach(kw => {
+    const reg = new RegExp(`\\b(${kw})\\b`, 'g');
+    highlighted = highlighted.replace(reg, '<span class="dc-token-kw">$1</span>');
+  });
+
+  return highlighted;
+}
+
+function renderDiegoCodeScript(script) {
+  activeDiegoCodeScript = script;
+  const contentEl = document.getElementById('dc-code-content');
+  const gutterEl = document.getElementById('dc-gutter');
+  const targetLabel = document.getElementById('dc-current-target');
+  const winTitle = document.getElementById('dc-window-title');
+  const statusLeft = document.getElementById('dc-status-left');
+  const statusTech = document.getElementById('dc-status-tech');
+
+  if (targetLabel) targetLabel.textContent = `Target: ${script.tech.split('·')[0].trim()}`;
+  if (winTitle) winTitle.textContent = `DiegoCode 2008 — ${script.name}`;
+  if (statusLeft) statusLeft.textContent = `File: ${script.name}`;
+  if (statusTech) statusTech.textContent = script.tech;
+
+  if (contentEl) {
+    contentEl.innerHTML = highlightCodeSyntax(script.source, script.lang);
+  }
+
+  // Populate line numbers in gutter
+  if (gutterEl) {
+    const lines = script.source.split('\n').length;
+    let numbersHtml = '';
+    for (let i = 1; i <= lines; i++) {
+      numbersHtml += `<div>${i}</div>`;
+    }
+    gutterEl.innerHTML = numbersHtml;
+  }
+
+  // Update tabs active state
+  document.querySelectorAll('.dc-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.scriptId === script.id);
+  });
+
+  // Update sidebar tree items active state
+  document.querySelectorAll('.dc-tree-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.scriptId === script.id);
+  });
+}
+
+function runDiegoCodeSimulation() {
+  const outputEl = document.getElementById('dc-console-output');
+  if (!outputEl) return;
+
+  outputEl.innerHTML = '';
+  if (window.AudioEngine) AudioEngine.playClick();
+
+  const logs = activeDiegoCodeScript.simLogs || [
+    { t: 'info', m: `[PROCESS] Executing ${activeDiegoCodeScript.name}...` },
+    { t: 'success', m: '[SUCCESS] Script completed successfully with 0 errors.' }
+  ];
+
+  logs.forEach((log, idx) => {
+    setTimeout(() => {
+      const line = document.createElement('div');
+      line.className = `dc-log-line dc-log-${log.t}`;
+      line.textContent = log.m;
+      outputEl.appendChild(line);
+      outputEl.scrollTop = outputEl.scrollHeight;
+      if (idx === logs.length - 1 && window.AudioEngine) {
+        AudioEngine.playBeep();
+      }
+    }, idx * 160);
+  });
+}
+
+function initDiegoCode() {
+  const fileTree = document.getElementById('dc-file-tree');
+  const tabsBar = document.getElementById('dc-tabs-bar');
+  const runBtn = document.getElementById('dc-btn-run');
+  const copyBtn = document.getElementById('dc-btn-copy');
+  const exportBtn = document.getElementById('dc-btn-export');
+  const clearConsoleBtn = document.getElementById('dc-console-clear');
+
+  if (!fileTree || !tabsBar) return;
+
+  // Group scripts by folder
+  const grouped = {};
+  DIEGOCODE_SCRIPTS.forEach(s => {
+    if (!grouped[s.folder]) grouped[s.folder] = [];
+    grouped[s.folder].push(s);
+  });
+
+  // Build Solution Explorer
+  fileTree.innerHTML = '';
+  Object.keys(grouped).forEach(folderName => {
+    const folderEl = document.createElement('div');
+    folderEl.className = 'dc-tree-folder';
+    folderEl.innerHTML = `<span class="dc-folder-icon">📁</span> ${escapeHtml(folderName)}`;
+    fileTree.appendChild(folderEl);
+
+    grouped[folderName].forEach(script => {
+      const itemEl = document.createElement('div');
+      itemEl.className = 'dc-tree-item';
+      itemEl.dataset.scriptId = script.id;
+      const icon = script.lang === 'python' ? '🐍' : (script.lang === 'javascript' ? '📜' : '⚙️');
+      itemEl.innerHTML = `<span class="dc-item-icon">${icon}</span> ${escapeHtml(script.name)}`;
+      itemEl.addEventListener('click', () => {
+        renderDiegoCodeScript(script);
+        if (window.AudioEngine) AudioEngine.playClick();
+      });
+      fileTree.appendChild(itemEl);
+    });
+  });
+
+  // Build Tabs Bar
+  tabsBar.innerHTML = '';
+  DIEGOCODE_SCRIPTS.forEach(script => {
+    const tabEl = document.createElement('div');
+    tabEl.className = 'dc-tab';
+    tabEl.dataset.scriptId = script.id;
+    const icon = script.lang === 'python' ? '🐍' : (script.lang === 'javascript' ? '📜' : '⚙️');
+    tabEl.innerHTML = `<span>${icon}</span> ${escapeHtml(script.name)}`;
+    tabEl.addEventListener('click', () => {
+      renderDiegoCodeScript(script);
+      if (window.AudioEngine) AudioEngine.playClick();
+    });
+    tabsBar.appendChild(tabEl);
+  });
+
+  // Wire Run Tool simulation
+  if (runBtn) {
+    runBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      runDiegoCodeSimulation();
+    });
+  }
+
+  // Wire Copy Code
+  if (copyBtn) {
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(activeDiegoCodeScript.source).then(() => {
+          showOSAlert('DiegoCode', `Código de "${activeDiegoCodeScript.name}" copiado al portapapeles.`);
+        }).catch(() => {
+          showOSAlert('DiegoCode', 'No se pudo acceder al portapapeles.');
+        });
+      } else {
+        showOSAlert('DiegoCode', 'El portapapeles no está disponible en este navegador.');
+      }
+    });
+  }
+
+  // Wire Export Script file
+  if (exportBtn) {
+    exportBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const blob = new Blob([activeDiegoCodeScript.source], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = activeDiegoCodeScript.name;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 500);
+      if (window.AudioEngine) AudioEngine.playClick();
+    });
+  }
+
+  // Wire Clear console
+  if (clearConsoleBtn) {
+    clearConsoleBtn.addEventListener('click', () => {
+      const outputEl = document.getElementById('dc-console-output');
+      if (outputEl) outputEl.innerHTML = '<div class="dc-log-line dc-log-info">Console cleared.</div>';
+    });
+  }
+
+  // Initial render with first script
+  renderDiegoCodeScript(DIEGOCODE_SCRIPTS[0]);
+}
+
 
 

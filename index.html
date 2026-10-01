@@ -130,6 +130,25 @@
         <span class="icon-label">DiegoSteam</span>
       </div>
 
+      <div class="desktop-icon" id="icon-diegocode" data-window="win-diegocode" tabindex="0" role="button"
+        aria-label="DiegoCode — Open Audio Tools & Scripts IDE">
+        <div class="icon-img">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="8" width="52" height="48" rx="8" fill="#1e1e24" stroke="#5c2d91" stroke-width="2"/>
+            <path d="M6 18H58" stroke="#33333d" stroke-width="1.5"/>
+            <circle cx="12" cy="13" r="2" fill="#e81123"/>
+            <circle cx="18" cy="13" r="2" fill="#ffb900"/>
+            <circle cx="24" cy="13" r="2" fill="#107c41"/>
+            <!-- Visual Studio style infinity ribbon / code brackets -->
+            <path d="M21 26 L13 34 L21 42" stroke="#007acc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M43 26 L51 34 L43 42" stroke="#68217a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M36 24 L28 44" stroke="#4ec9b0" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="32" cy="34" r="3" fill="#ce9178"/>
+          </svg>
+        </div>
+        <span class="icon-label">DiegoCode</span>
+      </div>
+
       <div class="desktop-icon" id="icon-itch" data-url="https://dsansano7.itch.io/" tabindex="0" role="button"
         aria-label="Itch.io — Open games page in new tab">
         <div class="icon-img" style="position:relative;">
@@ -658,7 +677,7 @@
       <div class="win-titlebar" data-win="win-notepad">
         <div class="win-title-left">
           <span class="win-title-icon">📝</span>
-          <span class="win-title-text">Notepad - Nuevo Documento</span>
+          <span class="win-title-text" id="notepad-title-text">Notepad - Nuevo Documento</span>
         </div>
         <div class="win-caption-btns">
           <button class="cap-btn min-btn" data-action="minimize" data-win="win-notepad">_</button>
@@ -666,14 +685,24 @@
           <button class="cap-btn cls-btn" data-action="close" data-win="win-notepad">✕</button>
         </div>
       </div>
-      <div class="win-menubar">
-        <span class="menu-item">File</span>
-        <span class="menu-item">Edit</span>
-        <span class="menu-item">Help</span>
+      <div class="win-menubar notepad-menubar" style="display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:2px;">
+          <span class="menu-item" id="notepad-menu-new" title="Create New Document">New</span>
+          <span class="menu-item" id="notepad-menu-save" title="Save Document to Desktop">Save</span>
+          <span class="menu-item" id="notepad-menu-download" title="Download .txt file to your computer">Export .txt</span>
+          <span class="menu-item">Help</span>
+        </div>
+        <div class="notepad-status-save" id="notepad-status-save" style="font-size:11px; color:#666; padding-right:10px; font-family:var(--f-ui);">
+          Saved
+        </div>
       </div>
       <div class="win-body notepad-body" style="padding:0;">
         <textarea class="notepad-textarea" id="notepad-textarea" placeholder="Type your notes here..."
           aria-label="Notepad text area"></textarea>
+      </div>
+      <div class="notepad-statusbar" style="background:var(--menubar-bg); border-top:1px solid var(--menubar-bdr); padding:3px 12px; font-size:11px; color:var(--txt); display:flex; justify-content:space-between; font-family:var(--f-ui);">
+        <span id="notepad-file-info">Documento actual: Nuevo Documento.txt</span>
+        <span id="notepad-char-count">0 characters</span>
       </div>
     </div><!-- /win-notepad -->
 
@@ -786,6 +815,84 @@
       </div>
     </div>
 
+    <!-- ── DIEGOCODE IDE (Audio Tools & Scripts Studio) ── -->
+    <div class="os-window diegocode-window" id="win-diegocode"
+      style="display:none; top:35px; left:90px; width:980px; height:680px; max-width:96vw; max-height:92vh;">
+      <div class="win-titlebar" data-win="win-diegocode" style="background:#5c2d91; border-bottom:1px solid #4a2475;">
+        <div class="win-title-left">
+          <span class="win-title-icon">💻</span>
+          <span class="win-title-text" id="dc-window-title" style="color:#ffffff;">DiegoCode 2008 — Technical Audio Suite</span>
+        </div>
+        <div class="win-caption-btns">
+          <button class="cap-btn min-btn" data-action="minimize" data-win="win-diegocode">_</button>
+          <button class="cap-btn max-btn" data-action="maximize" data-win="win-diegocode">□</button>
+          <button class="cap-btn cls-btn" data-action="close" data-win="win-diegocode">✕</button>
+        </div>
+      </div>
+      <div class="win-menubar dc-menubar">
+        <span class="menu-item">File</span>
+        <span class="menu-item">Edit</span>
+        <span class="menu-item">View</span>
+        <span class="menu-item">Tools</span>
+        <span class="menu-item">Help</span>
+      </div>
+      <!-- IDE Toolbar -->
+      <div class="dc-toolbar">
+        <button class="dc-tool-btn dc-btn-run" id="dc-btn-run" title="Execute Script Simulation">
+          <span class="dc-btn-run-icon">▶</span> Run Tool
+        </button>
+        <button class="dc-tool-btn" id="dc-btn-copy" title="Copy code to clipboard">
+          📋 Copy Code
+        </button>
+        <button class="dc-tool-btn" id="dc-btn-export" title="Download script source file">
+          💾 Export Script
+        </button>
+        <div class="dc-toolbar-sep"></div>
+        <span class="dc-current-target" id="dc-current-target">Target: Wwise WAAPI (v2024.1)</span>
+      </div>
+      <!-- IDE Main Workspace -->
+      <div class="win-body dc-body" style="padding:0;">
+        <!-- Left: Solution Explorer -->
+        <aside class="dc-sidebar">
+          <div class="dc-sidebar-hdr">
+            <span>Solution Explorer</span>
+            <small>Audio Scripts</small>
+          </div>
+          <div class="dc-file-tree" id="dc-file-tree">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </aside>
+        <!-- Center-Right: Code Editor & Bottom Console Output -->
+        <main class="dc-editor-area">
+          <!-- Editor Tabs -->
+          <div class="dc-tabs-bar" id="dc-tabs-bar">
+            <!-- Active tabs populated dynamically -->
+          </div>
+          <!-- Code View Area -->
+          <div class="dc-code-container">
+            <div class="dc-gutter" id="dc-gutter">
+              <!-- Line numbers -->
+            </div>
+            <pre class="dc-code-pre"><code class="dc-code-content" id="dc-code-content"></code></pre>
+          </div>
+          <!-- Bottom Simulator Console -->
+          <div class="dc-console-panel">
+            <div class="dc-console-hdr">
+              <span class="dc-console-title">Output — Execution Simulator</span>
+              <button class="dc-console-clear" id="dc-console-clear" title="Clear console">Clear</button>
+            </div>
+            <div class="dc-console-output" id="dc-console-output">
+              <div class="dc-log-line dc-log-info">Ready. Select a script from the Solution Explorer and press "▶ Run Tool" to simulate execution.</div>
+            </div>
+          </div>
+        </main>
+      </div>
+      <div class="dc-statusbar">
+        <span id="dc-status-left">Ready</span>
+        <span id="dc-status-tech">Python 3.11 · WAAPI Client · UTF-8</span>
+      </div>
+    </div>
+
     <!-- ════════════════════════════════════
          START MENU
     ════════════════════════ -->
@@ -834,27 +941,12 @@
           <div class="sm-item" data-window="win-steam">
             <div class="sm-item-text"><strong>DiegoSteam</strong><small>Games Library</small></div>
           </div>
+          <div class="sm-item" data-window="win-diegocode">
+            <div class="sm-item-text"><strong>DiegoCode</strong><small>Audio Tools &amp; Scripts Studio</small></div>
+          </div>
         </div>
         <div class="sm-col sm-right">
           <div class="sm-col-label">System &amp; Workspace</div>
-          <div class="sm-item" data-window="win-work" title="Open My Work (File Explorer)">
-            <span class="sm-item-icon">
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 5.5C2 4.67 2.67 4 3.5 4H8L9.5 6H16.5C17.33 6 18 6.67 18 7.5V14.5C18 15.33 17.33 16 16.5 16H3.5C2.67 16 2 15.33 2 14.5V5.5Z" fill="#e8a838" stroke="#a06010" stroke-width="1.2"/>
-                <path d="M2 8H18V14.5C18 15.33 17.33 16 16.5 16H3.5C2.67 16 2 15.33 2 14.5V8Z" fill="#f5c858"/>
-              </svg>
-            </span>
-            <div class="sm-item-text"><strong>My Work</strong><small>Audio Projects &amp; Demos</small></div>
-          </div>
-          <div class="sm-item" data-window="win-pdf-viewer" title="Open Technical Specs (Adobe Reader)">
-            <span class="sm-item-icon">
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="2" width="14" height="16" rx="2" fill="#e83838" stroke="#aa1010" stroke-width="1.2"/>
-                <path d="M6 7H14M6 10H14M6 13H11" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/>
-              </svg>
-            </span>
-            <div class="sm-item-text"><strong>Tech Specs</strong><small>Workflow &amp; Implementation</small></div>
-          </div>
           <div class="sm-item" data-window="win-properties" title="Open Display &amp; Audio Settings">
             <span class="sm-item-icon">
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
