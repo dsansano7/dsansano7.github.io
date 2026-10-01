@@ -3702,8 +3702,25 @@ body.dark-mode .dt-related-author {
   background: #1e1e1e;
   font-family: var(--f-mono);
   font-size: 12.5px;
-  line-height: 1.6;
+  line-height: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: #5c2d91 #1e1e1e;
 }
+.dc-code-container::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.dc-code-container::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+.dc-code-container::-webkit-scrollbar-thumb {
+  background: #3e3e42;
+  border-radius: 4px;
+}
+.dc-code-container::-webkit-scrollbar-thumb:hover {
+  background: #5c2d91;
+}
+
 .dc-gutter {
   width: 44px;
   background: #1e1e1e;
@@ -3713,6 +3730,9 @@ body.dark-mode .dt-related-author {
   padding: 12px 8px 12px 0;
   user-select: none;
   flex-shrink: 0;
+  position: sticky;
+  left: 0;
+  z-index: 2;
 }
 .dc-gutter div {
   font-size: 12px;
@@ -3725,11 +3745,14 @@ body.dark-mode .dt-related-author {
   flex: 1;
   background: transparent;
   color: #d4d4d4;
-  overflow-x: auto;
+  overflow: visible;
+  line-height: 20px;
 }
 .dc-code-content {
   font-family: var(--f-mono);
   white-space: pre;
+  line-height: 20px;
+  display: block;
 }
 
 /* Syntax Token Colors (VS Code Dark Modern / Visual Studio) */

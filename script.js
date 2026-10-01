@@ -3485,27 +3485,47 @@ let activeDiegoCodeScript = DIEGOCODE_SCRIPTS[0];
 
 function highlightCodeSyntax(source, lang) {
   const safe = escapeHtml(source);
-  // Multi-pass regex for syntax highlighting
+  const placeholders = [];
+  const stash = (html) => {
+    placeholders.push(html);
+    return `\u0000DC_TOKEN_${placeholders.length - 1}\u0000`;
+  };
+
   let highlighted = safe;
 
-  // Comments
+  // 1. Comments (stashed first so comments containing quotes or keywords aren't touched)
   if (lang === 'python') {
-    highlighted = highlighted.replace(/(#.*?$)/gm, '<span class="dc-token-comment">$1</span>');
-    highlighted = highlighted.replace(/("""[\s\S]*?""")/g, '<span class="dc-token-comment">$1</span>');
+    highlighted = highlighted.replace(/(&quot;&quot;&quot;[\s\S]*?&quot;&quot;&quot;|&#039;&#039;&#039;[\s\S]*?&#039;&#039;&#039;)/g, m => stash(`<span class="dc-token-comment">${m}</span>`));
+    highlighted = highlighted.replace(/(#.*?$)/gm, m => stash(`<span class="dc-token-comment">${m}</span>`));
   } else {
-    highlighted = highlighted.replace(/(\/\/.*?$)/gm, '<span class="dc-token-comment">$1</span>');
-    highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="dc-token-comment">$1</span>');
+    highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, m => stash(`<span class="dc-token-comment">${m}</span>`));
+    highlighted = highlighted.replace(/(\/\/.*?$)/gm, m => stash(`<span class="dc-token-comment">${m}</span>`));
   }
 
-  // Strings (quoted)
-  highlighted = highlighted.replace(/(["'])(?:(?=(\\?))\2.)*?\1/g, '<span class="dc-token-str">$&</span>');
+  // 2. Strings (single and double quoted entities)
+  highlighted = highlighted.replace(/(&quot;.*?&quot;|&#039;.*?&#039;)/g, m => stash(`<span class="dc-token-str">${m}</span>`));
 
-  // Keywords
-  const keywords = ['def', 'import', 'from', 'return', 'class', 'if', 'else', 'elif', 'not', 'in', 'for', 'while', 'as', 'try', 'except', 'var', 'function', 'let', 'const', 'public', 'private', 'protected', 'void', 'float', 'string', 'bool', 'using', 'namespace', 'SerializeField', 'Header'];
+  // 3. Numbers
+  highlighted = highlighted.replace(/\b(\d+(?:\.\d+)?f?)\b/g, m => stash(`<span class="dc-token-num">${m}</span>`));
+
+  // 4. Function invocations / definitions
+  highlighted = highlighted.replace(/\b([a-zA-Z_]\w*)(?=\s*\()/g, m => stash(`<span class="dc-token-fn">${m}</span>`));
+
+  // 5. Language Keywords
+  const keywords = [
+    'def', 'import', 'from', 'return', 'class', 'if', 'else', 'elif', 'not', 'in', 'for', 'while', 'as', 'try', 'except',
+    'var', 'function', 'let', 'const', 'public', 'private', 'protected', 'void', 'float', 'string', 'bool', 'using',
+    'namespace', 'SerializeField', 'Header', 'new', 'null', 'true', 'false', 'True', 'False', 'None'
+  ];
   keywords.forEach(kw => {
     const reg = new RegExp(`\\b(${kw})\\b`, 'g');
     highlighted = highlighted.replace(reg, '<span class="dc-token-kw">$1</span>');
   });
+
+  // 6. Restore stashed tokens in reverse order
+  for (let i = placeholders.length - 1; i >= 0; i--) {
+    highlighted = highlighted.split(`\u0000DC_TOKEN_${i}\u0000`).join(placeholders[i]);
+  }
 
   return highlighted;
 }
