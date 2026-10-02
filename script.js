@@ -3183,10 +3183,11 @@ const DIEGOCODE_SCRIPTS = [
   {
     id: 'waapi_batch_voice',
     name: 'waapi_batch_voice_gen.py',
-    folder: 'Wwise WAAPI (Python)',
+    folder: 'Wwise WAAPI Tools (Python)',
     tech: 'Python 3.11 · WAAPI Client (ws://127.0.0.1:8080/waapi)',
     lang: 'python',
     desc: 'Auto-generates hierarchical Sound SFX voice structures in Wwise from audio file conventions, maps Actor-Mixer parents, and binds events.',
+    videoUrl: 'videos/waapi_batch_voice_demo.mp4',
     source: `"""
 DiegoOS Technical Audio Suite - Wwise WAAPI Automation
 Tool: Batch Sound Voice Generator & Hierarchy Builder
@@ -3273,12 +3274,87 @@ if __name__ == "__main__":
     ]
   },
   {
+    id: 'waapi_event_autobind',
+    name: 'waapi_event_autobind.py',
+    folder: 'Wwise WAAPI Tools (Python)',
+    tech: 'Python 3.11 · WAAPI Event Orchestration & Action Binding',
+    lang: 'python',
+    desc: 'Automatically parses Actor-Mixer hierarchy and binds custom Play Events with calibrated action targets and randomizer fallbacks.',
+    videoUrl: 'videos/waapi_event_autobind_demo.mp4',
+    source: `"""
+DiegoOS Technical Audio Suite - Wwise WAAPI Automation
+Tool: Play Event Auto-Generator & Target Binder
+Author: Diego Sansano (Technical Sound Designer)
+"""
+
+from waapi import Client
+import sys
+
+def auto_bind_events(client, root_path):
+    print(f"[WAAPI] Traversing target sound container: {root_path}")
+    
+    # Query all direct children
+    query = {
+        "from": {
+            "path": [root_path]
+        },
+        "transform": [
+            {"select": ["children"]}
+        ]
+    }
+    
+    res = client.call("ak.wwise.core.object.get", query, options={"return": ["id", "name", "type"]})
+    children = res.get("return", [])
+    print(f"[WAAPI] Discovered {len(children)} audio containers to bind.")
+    
+    for child in children:
+        c_name = child["name"]
+        event_name = f"Play_{c_name}"
+        print(f"[BIND] Generating Event '{event_name}' targeting '{c_name}'...")
+        
+        create_args = {
+            "parent": "\\\\Events\\\\Default Work Unit\\\\Gameplay_SFX",
+            "type": "Event",
+            "name": event_name,
+            "onNameConflict": "replace"
+        }
+        ev_obj = client.call("ak.wwise.core.object.create", create_args)
+        
+        # Add Play Action
+        action_args = {
+            "parent": ev_obj["id"],
+            "type": "Action",
+            "name": "",
+            "value": 1, # Action type 1: Play
+            "@Target": child["id"]
+        }
+        client.call("ak.wwise.core.object.create", action_args)
+        print(f"  -> Bound Target Action: {child['id']} (Play)")
+        
+    print("[SUCCESS] Event generation & action binding completed without errors.")
+
+if __name__ == "__main__":
+    with Client() as client:
+        auto_bind_events(client, "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\Weapons")
+`,
+    simLogs: [
+      { t: 'info', m: '[WAAPI] Connected to Wwise Authoring instance.' },
+      { t: 'step', m: '[WAAPI] Traversing \\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\Weapons' },
+      { t: 'step', m: '  -> Found Container: Weapon_Shotgun_Fire (Random Container)' },
+      { t: 'step', m: '  -> Found Container: Weapon_Shotgun_Pump (Blend Container)' },
+      { t: 'info', m: '[BIND] Generating Play_Weapon_Shotgun_Fire -> Action: Play' },
+      { t: 'info', m: '[BIND] Generating Play_Weapon_Shotgun_Pump -> Action: Play' },
+      { t: 'success', m: '[SUCCESS] 2 Play Events created and verified in Events Work Unit.' }
+    ]
+  },
+  {
     id: 'waapi_loudness_validator',
     name: 'waapi_loudness_validator.py',
-    folder: 'Wwise WAAPI (Python)',
+    folder: 'Wwise WAAPI Tools (Python)',
     tech: 'Python 3.11 · WAAPI Query & SoundBank Telemetry',
     lang: 'python',
-    desc: 'Iterates through project sound objects to validate LUFS loudness compliance (-24 LKFS broadcast / -14 LUFS in-game target).',
+    desc: 'Iterates through project sound objects to validate LUFS loudness compliance (-24 LKFS broadcast / -16 LUFS in-game target).',
+    videoUrl: 'videos/waapi_loudness_demo.mp4',
     source: `"""
 DiegoOS Technical Audio Suite - Wwise WAAPI Automation
 Tool: Audio Asset Validator & Loudness Compliance Checker
@@ -3332,152 +3408,6 @@ if __name__ == "__main__":
       { t: 'success', m: '[PASS] Master Audio Bus routing intact on 100% of tested voices.' },
       { t: 'success', m: '[SUCCESS] Asset telemetry verified. No clipping or unassigned buses detected.' }
     ]
-  },
-  {
-    id: 'fmod_stem_importer',
-    name: 'fmod_multitrack_importer.js',
-    folder: 'FMOD Studio Scripts (JS)',
-    tech: 'FMOD Studio Scripting API (JavaScript ES6)',
-    lang: 'javascript',
-    desc: 'FMOD Studio tool menu script that imports multitrack stems, creates timeline tracks, and builds multi-sound modules automatically.',
-    source: `/*
- * DiegoOS Technical Audio Suite - FMOD Studio Tool Script
- * Tool: Automated Multi-Track Stem Importer & Event Builder
- * Author: Diego Sansano (Technical Sound Designer)
- */
-
-studio.menu.addMenuItem({
-    name: "DiegoAudio\\\\Import Stems to Event",
-    execute: function() {
-        var folder = studio.ui.showBrowseFolderDialog("Select Stems Folder");
-        if (!folder) return;
-
-        var currentEvent = studio.window.editorCurrent();
-        if (!currentEvent || !currentEvent.isOfExactType("Event")) {
-            alert("Please open a Target Event in the FMOD Editor first.");
-            return;
-        }
-
-        studio.system.print("[FMOD] Processing multitrack stems from: " + folder);
-        var files = studio.system.readDir(folder);
-        
-        var stemFiles = files.filter(function(f) {
-            return f.endsWith(".wav") || f.endsWith(".flac");
-        });
-
-        studio.system.print("[FMOD] Found " + stemFiles.length + " stems. Constructing tracks...");
-
-        stemFiles.forEach(function(stemName, index) {
-            var track = currentEvent.timeline.addTrack("AudioTrack");
-            track.name = stemName.replace(/\\.[^/.]+$/, "");
-            studio.system.print("  -> Created track: " + track.name);
-        });
-
-        studio.system.print("[SUCCESS] Multi-track arrangement built in FMOD timeline!");
-    }
-});
-`,
-    simLogs: [
-      { t: 'info', m: '[FMOD STUDIO] Executing menu action: DiegoAudio -> Import Stems to Event' },
-      { t: 'step', m: '[FMOD] Target Event: "MX_BossFight_Adaptive_Stems"' },
-      { t: 'info', m: '[FMOD] Reading stem directory: ./Stems/Boss_Encounter/' },
-      { t: 'step', m: '  -> Track 1: Drums_Aggro (Stereo 24bit/48kHz)' },
-      { t: 'step', m: '  -> Track 2: Bass_Synth_Distorted (Stereo 24bit/48kHz)' },
-      { t: 'step', m: '  -> Track 3: Lead_Guitars_Melody (Stereo 24bit/48kHz)' },
-      { t: 'step', m: '  -> Track 4: Orchestral_Strings_Stabs (Stereo 24bit/48kHz)' },
-      { t: 'success', m: '[SUCCESS] 4 audio tracks created, aligned to bar 1.0.0 with loop markers set.' }
-    ]
-  },
-  {
-    id: 'unity_audio_manager',
-    name: 'AdaptiveAudioManager.cs',
-    folder: 'Unity & C# Audio Tools',
-    tech: 'Unity 2022+ · C# · FMOD Unity Integration Engine',
-    lang: 'csharp',
-    desc: 'C# dynamic audio state machine for adaptive combat intensity, parameter lerping, and footstep raycast surface detection.',
-    source: `// -------------------------------------------------------------
-// DiegoOS Technical Audio Suite - Unity C# Engine Component
-// Tool: Adaptive Audio State Machine & Surface Detection
-// Author: Diego Sansano (Technical Sound Designer)
-// -------------------------------------------------------------
-
-using UnityEngine;
-using FMODUnity;
-using FMOD.Studio;
-
-namespace DiegoAudio.Core
-{
-    public class AdaptiveAudioManager : MonoBehaviour
-    {
-        [Header("FMOD Music Event")]
-        [SerializeField] private EventReference backgroundMusicEvent;
-        [SerializeField] private string combatIntensityParam = "CombatIntensity";
-
-        [Header("FMOD SFX Events")]
-        [SerializeField] private EventReference footstepEvent;
-
-        private EventInstance _musicInstance;
-        private float _currentIntensity = 0.0f;
-        private float _targetIntensity = 0.0f;
-
-        private void Start()
-        {
-            if (!backgroundMusicEvent.IsNull)
-            {
-                _musicInstance = RuntimeManager.CreateInstance(backgroundMusicEvent);
-                _musicInstance.start();
-                Debug.Log("<color=#4ec9b0>[AUDIO]</color> FMOD Music Instance initialized.");
-            }
-        }
-
-        private void Update()
-        {
-            // Smoothly interpolate intensity parameter to avoid audio clicks
-            if (Mathf.Abs(_currentIntensity - _targetIntensity) > 0.01f)
-            {
-                _currentIntensity = Mathf.Lerp(_currentIntensity, _targetIntensity, Time.deltaTime * 3.5f);
-                _musicInstance.setParameterByName(combatIntensityParam, _currentIntensity);
-            }
-        }
-
-        public void SetCombatIntensity(float intensity01)
-        {
-            _targetIntensity = Mathf.Clamp01(intensity01);
-            Debug.Log($"<color=#9cdcfe>[AUDIO]</color> Target combat intensity set to: {_targetIntensity:F2}");
-        }
-
-        public void PlayFootstep(Transform footTransform, LayerMask groundMask)
-        {
-            if (Physics.Raycast(footTransform.position + Vector3.up * 0.2f, Vector3.down, out RaycastHit hit, 0.8f, groundMask))
-            {
-                float surfaceValue = 0f; // 0 = Concrete, 1 = Wood, 2 = Gravel
-                if (hit.collider.CompareTag("Wood")) surfaceValue = 1f;
-                else if (hit.collider.CompareTag("Gravel")) surfaceValue = 2f;
-
-                EventInstance step = RuntimeManager.CreateInstance(footstepEvent);
-                step.set3DAttributes(RuntimeUtils.To3DAttributes(hit.point));
-                step.setParameterByName("SurfaceType", surfaceValue);
-                step.start();
-                step.release();
-            }
-        }
-
-        private void OnDestroy()
-        {
-            _musicInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
-            _musicInstance.release();
-        }
-    }
-}
-`,
-    simLogs: [
-      { t: 'info', m: '[UNITY DEBUG] Initializing AdaptiveAudioManager singleton component...' },
-      { t: 'step', m: '[AUDIO] FMOD EventInstance "event:/Music/Combat_Adaptive" created.' },
-      { t: 'info', m: '[AUDIO] Target combat intensity updated: 0.85 (Hostile alert triggered).' },
-      { t: 'step', m: '[RAYCAST] Footstep hit surface tag: "Wood" (SurfaceType parameter = 1.0).' },
-      { t: 'success', m: '[FMOD 3D] Spatialized footstep instance dispatched at Vector3(-12.4, 0.0, 4.2).' },
-      { t: 'success', m: '[SUCCESS] Adaptive state machine smoothly interpolated in 28ms.' }
-    ]
   }
 ];
 
@@ -3530,6 +3460,72 @@ function highlightCodeSyntax(source, lang) {
   return highlighted;
 }
 
+function renderDiegoCodeDemo(script, autoPlay = false) {
+  const container = document.getElementById('dc-demo-container');
+  if (!container) return;
+
+  if (script.videoUrl) {
+    container.innerHTML = `
+      <div class="dc-demo-video-wrap">
+        <video class="dc-demo-video" id="dc-demo-video-el" controls playsinline preload="metadata">
+          <source src="${escapeHtml(script.videoUrl)}" type="video/mp4">
+          Tu navegador no soporta reproducción de vídeo HTML5.
+        </video>
+        <div class="dc-demo-ph-hint">Wwise Real-Time Execution Capture · ${escapeHtml(script.name)}</div>
+      </div>
+    `;
+    const vid = document.getElementById('dc-demo-video-el');
+    if (vid) {
+      vid.addEventListener('error', () => {
+        // Fallback gracefully if the user hasn't added the .mp4 file to /videos/ yet
+        container.innerHTML = `
+          <div class="dc-demo-placeholder">
+            <div class="dc-demo-ph-icon">🎬</div>
+            <div>
+              <div class="dc-demo-ph-title">Wwise Live Demo Ready (${escapeHtml(script.name)})</div>
+              <div class="dc-demo-ph-desc">El reproductor se activará automáticamente al colocar tu archivo de vídeo en:</div>
+              <div class="dc-demo-ph-hint"><code>${escapeHtml(script.videoUrl)}</code></div>
+            </div>
+          </div>
+        `;
+      });
+      if (autoPlay) {
+        vid.currentTime = 0;
+        vid.play().catch(() => {});
+      }
+    }
+  } else {
+    container.innerHTML = `
+      <div class="dc-demo-placeholder">
+        <div class="dc-demo-ph-icon">📹</div>
+        <div>
+          <div class="dc-demo-ph-title">Demostración en Vídeo de Wwise</div>
+          <div class="dc-demo-ph-desc">Ejecuta el script con "▶ Run Tool" para ver la simulación en consola o añade tu clip de Wwise en <code>videos/</code>.</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function switchDiegoCodeConsoleTab(tabKey) {
+  const tabOutput = document.getElementById('dc-tab-output');
+  const tabDemo = document.getElementById('dc-tab-demo');
+  const viewOutput = document.getElementById('dc-view-output');
+  const viewDemo = document.getElementById('dc-view-demo');
+
+  if (tabKey === 'demo') {
+    if (tabOutput) tabOutput.classList.remove('active');
+    if (tabDemo) tabDemo.classList.add('active');
+    if (viewOutput) viewOutput.style.display = 'none';
+    if (viewDemo) viewDemo.style.display = 'flex';
+  } else {
+    if (tabDemo) tabDemo.classList.remove('active');
+    if (tabOutput) tabOutput.classList.add('active');
+    if (viewDemo) viewDemo.style.display = 'none';
+    if (viewOutput) viewOutput.style.display = 'flex';
+  }
+}
+
 function renderDiegoCodeScript(script) {
   activeDiegoCodeScript = script;
   const contentEl = document.getElementById('dc-code-content');
@@ -3567,11 +3563,17 @@ function renderDiegoCodeScript(script) {
   document.querySelectorAll('.dc-tree-item').forEach(item => {
     item.classList.toggle('active', item.dataset.scriptId === script.id);
   });
+
+  // Render demo viewport for current script
+  renderDiegoCodeDemo(script, false);
 }
 
 function runDiegoCodeSimulation() {
   const outputEl = document.getElementById('dc-console-output');
   if (!outputEl) return;
+
+  // Ensure output tab is visible
+  switchDiegoCodeConsoleTab('output');
 
   outputEl.innerHTML = '';
   if (window.AudioEngine) AudioEngine.playClick();
@@ -3588,8 +3590,12 @@ function runDiegoCodeSimulation() {
       line.textContent = log.m;
       outputEl.appendChild(line);
       outputEl.scrollTop = outputEl.scrollHeight;
-      if (idx === logs.length - 1 && window.AudioEngine) {
-        AudioEngine.playBeep();
+      if (idx === logs.length - 1) {
+        if (window.AudioEngine) AudioEngine.playBeep();
+        // Once output finishes, auto-trigger live demo video preview if available
+        if (activeDiegoCodeScript.videoUrl) {
+          renderDiegoCodeDemo(activeDiegoCodeScript, true);
+        }
       }
     }, idx * 160);
   });
@@ -3599,9 +3605,12 @@ function initDiegoCode() {
   const fileTree = document.getElementById('dc-file-tree');
   const tabsBar = document.getElementById('dc-tabs-bar');
   const runBtn = document.getElementById('dc-btn-run');
+  const videoBtn = document.getElementById('dc-btn-video');
   const copyBtn = document.getElementById('dc-btn-copy');
   const exportBtn = document.getElementById('dc-btn-export');
   const clearConsoleBtn = document.getElementById('dc-console-clear');
+  const tabOutput = document.getElementById('dc-tab-output');
+  const tabDemo = document.getElementById('dc-tab-demo');
 
   if (!fileTree || !tabsBar) return;
 
@@ -3654,6 +3663,37 @@ function initDiegoCode() {
     runBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       runDiegoCodeSimulation();
+    });
+  }
+
+  // Wire Live Demo toggle button in toolbar
+  if (videoBtn) {
+    videoBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const viewDemo = document.getElementById('dc-view-demo');
+      const isDemoActive = viewDemo && viewDemo.style.display !== 'none';
+      if (isDemoActive) {
+        switchDiegoCodeConsoleTab('output');
+      } else {
+        switchDiegoCodeConsoleTab('demo');
+        renderDiegoCodeDemo(activeDiegoCodeScript, true);
+      }
+      if (window.AudioEngine) AudioEngine.playClick();
+    });
+  }
+
+  // Wire Console header tab buttons
+  if (tabOutput) {
+    tabOutput.addEventListener('click', () => {
+      switchDiegoCodeConsoleTab('output');
+      if (window.AudioEngine) AudioEngine.playClick();
+    });
+  }
+  if (tabDemo) {
+    tabDemo.addEventListener('click', () => {
+      switchDiegoCodeConsoleTab('demo');
+      renderDiegoCodeDemo(activeDiegoCodeScript, true);
+      if (window.AudioEngine) AudioEngine.playClick();
     });
   }
 

@@ -3764,29 +3764,60 @@ body.dark-mode .dt-related-author {
 .dc-token-dec { color: #c586c0; }                  /* Decorators / Annotations */
 .dc-token-type { color: #4ec9b0; }                 /* Types / Classes */
 
-/* Console Panel Bottom */
+/* Console Panel Bottom with Tab Switcher & Video Demo */
 .dc-console-panel {
-  height: 140px;
+  height: 185px;
   background: #181818;
   border-top: 1px solid #333337;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  transition: height 0.2s ease;
 }
 .dc-console-hdr {
   background: #252526;
   border-bottom: 1px solid #2e2e32;
-  padding: 4px 10px;
+  padding: 0 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 11px;
+  height: 28px;
+  flex-shrink: 0;
 }
-.dc-console-title {
-  color: #cccccc;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.dc-console-tabs {
+  display: flex;
+  height: 100%;
+  gap: 2px;
+}
+.dc-c-tab {
+  background: transparent;
+  border: none;
+  color: #999999;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 12px;
+  height: 100%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s ease;
+}
+.dc-c-tab:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+.dc-c-tab.active {
+  color: #ffffff;
+  border-bottom: 2px solid #5c2d91;
+  background: #181818;
+}
+.dc-console-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .dc-console-clear {
   background: none;
@@ -3794,12 +3825,19 @@ body.dark-mode .dt-related-author {
   color: #858585;
   font-size: 10.5px;
   cursor: pointer;
-  padding: 1px 6px;
+  padding: 2px 6px;
   border-radius: 2px;
 }
 .dc-console-clear:hover {
   background: #333337;
   color: #fff;
+}
+.dc-console-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
 }
 .dc-console-output {
   flex: 1;
@@ -3818,6 +3856,68 @@ body.dark-mode .dt-related-author {
 .dc-log-success { color: #4ec9b0; font-weight: 600; }
 .dc-log-warn { color: #ce9178; }
 .dc-log-step { color: #c586c0; }
+
+/* Live Video Demo Player & Placeholder */
+.dc-demo-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d0d10;
+  padding: 8px 14px;
+  position: relative;
+  overflow: hidden;
+}
+.dc-demo-video-wrap {
+  width: 100%;
+  height: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.dc-demo-video {
+  max-width: 100%;
+  max-height: 140px;
+  border-radius: 4px;
+  border: 1px solid #33333d;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  background: #000;
+}
+.dc-demo-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #16161c;
+  border: 1px dashed #5c2d91;
+  border-radius: 6px;
+  padding: 12px 20px;
+  max-width: 640px;
+  color: #cccccc;
+}
+.dc-demo-ph-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.dc-demo-ph-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 3px;
+}
+.dc-demo-ph-desc {
+  font-size: 11px;
+  color: #9cdcfe;
+  line-height: 1.4;
+}
+.dc-demo-ph-hint {
+  font-size: 10px;
+  color: #888888;
+  margin-top: 4px;
+  font-family: var(--f-mono);
+}
 
 /* Statusbar */
 .dc-statusbar {

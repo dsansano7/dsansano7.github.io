@@ -841,6 +841,9 @@
         <button class="dc-tool-btn dc-btn-run" id="dc-btn-run" title="Execute Script Simulation">
           <span class="dc-btn-run-icon">▶</span> Run Tool
         </button>
+        <button class="dc-tool-btn" id="dc-btn-video" title="Toggle Wwise Video Demo Preview">
+          🎬 Live Demo
+        </button>
         <button class="dc-tool-btn" id="dc-btn-copy" title="Copy code to clipboard">
           📋 Copy Code
         </button>
@@ -875,14 +878,32 @@
             </div>
             <pre class="dc-code-pre"><code class="dc-code-content" id="dc-code-content"></code></pre>
           </div>
-          <!-- Bottom Simulator Console -->
-          <div class="dc-console-panel">
+          <!-- Bottom Simulator Console & Live Wwise Demo Panel -->
+          <div class="dc-console-panel" id="dc-console-panel">
             <div class="dc-console-hdr">
-              <span class="dc-console-title">Output — Execution Simulator</span>
-              <button class="dc-console-clear" id="dc-console-clear" title="Clear console">Clear</button>
+              <div class="dc-console-tabs">
+                <button class="dc-c-tab active" id="dc-tab-output" data-target="dc-view-output">
+                  💻 Output Console
+                </button>
+                <button class="dc-c-tab" id="dc-tab-demo" data-target="dc-view-demo">
+                  🎬 Wwise Live Demo
+                </button>
+              </div>
+              <div class="dc-console-actions">
+                <button class="dc-console-clear" id="dc-console-clear" title="Clear console">Clear</button>
+              </div>
             </div>
-            <div class="dc-console-output" id="dc-console-output">
-              <div class="dc-log-line dc-log-info">Ready. Select a script from the Solution Explorer and press "▶ Run Tool" to simulate execution.</div>
+            <!-- Output Console View -->
+            <div class="dc-console-view dc-view-active" id="dc-view-output">
+              <div class="dc-console-output" id="dc-console-output">
+                <div class="dc-log-line dc-log-info">Ready. Select a script from the Solution Explorer and press "▶ Run Tool" to simulate execution.</div>
+              </div>
+            </div>
+            <!-- Live Demo Video View -->
+            <div class="dc-console-view" id="dc-view-demo" style="display:none;">
+              <div class="dc-demo-container" id="dc-demo-container">
+                <!-- Video or Placeholder populated dynamically -->
+              </div>
             </div>
           </div>
         </main>
