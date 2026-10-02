@@ -3181,171 +3181,398 @@ function initDiegoReel() {
    ══════════════════════════════════════════════════════════════ */
 const DIEGOCODE_SCRIPTS = [
   {
-    id: 'wwise_surface_importer',
-    name: 'wwise_surface_importer.py',
-    folder: 'Wwise WAAPI Tools (Python)',
+    id: 'wwise_batch_importer',
+    name: 'wwise Generic Batch Audio Importer.py',
+    folder: '1. Ingestion Pipeline (Generic Batch Audio Importer)',
     tech: 'Python 3.11 · WAAPI Client (ws://127.0.0.1:8080/waapi)',
     lang: 'python',
-    desc: 'Escanea subcarpetas de superficies de pasos (Footsteps), detecta o crea la carpeta contenedora en la jerarquía de Actor-Mixer, genera Random Sequence Containers por superficie, importa archivos WAV vinculados y crea automáticamente los Play Events en Wwise.',
-    videoUrl: 'Python/wwise_surface_importer_video.mp4',
-    source: `from pathlib import Path
-from waapi import WaapiClient, CannotConnectToWaapiException
-import os
-
-"""
-Wwise Surface Footstep Importer
+    desc: 'Fase 1 (Ingesta Automática Universal): Permite especificar cualquier directorio (por argumento CLI, prompt interactivo o fallback local), escanea subcarpetas (Dirt, Grass, Stone, Wood), crea Random Sequence Containers en la jerarquía Actor-Mixer, importa las variaciones WAV y enlaza eventos Play en Wwise.',
+    videoUrl: null,
+    source: `"""
+Wwise Generic Batch Audio Importer
 Author: Diego Sansano
-\tDESCRIPTION:
-\t\tUtility script designed to automate the repetitive setup of footstep audio structures.
-\t\tIt scans surface subfolders, creates Random Sequence Containers in Wwise via WAAPI,
-\t\timports all WAV variations, and generates corresponding Play events.
-\t\t
-\tHOW TO USE:
-\t\t1. Open your Wwise project (ensure WAAPI is enabled under Project > User Settings).
-\t\t2. Place this script in a directory alongside folders containing your audio files
-\t\t(e.g., ./Grass/step1.wav, ./Wood/step1.wav).
-\t\t3. Run: python wwise_surface_importer.py
-\t\t
+    DESCRIPTION:
+        Universal asset pipeline script designed to automate audio ingestion into Wwise.
+        It scans local subfolders, creates corresponding Random Sequence Containers 
+        under a master category matching the parent directory name, imports all WAV 
+        variations, and generates linked Play events automatically.
+        
+    HOW TO USE:
+        1. Open your Wwise project (ensure WAAPI is enabled under Project > User Settings).
+        2. Run the script:
+           - Via CLI: python wwise_batch_audio_importer.py -p "C:/Path/To/AudioFolder"
+           - Or run directly and enter/drag the folder path when prompted (press Enter to use the script's directory).
 """
+
+import argparse
+import sys
+from pathlib import Path
+from waapi import WaapiClient, CannotConnectToWaapiException
+
+
+def resolve_target_directory() -> Path:
+    """Resolves the target audio folder from CLI arguments, user input, or local fallback."""
+    parser = argparse.ArgumentParser(description="Wwise Generic Batch Audio Importer")
+    parser.add_argument(
+        "-p", "--path",
+        type=str,
+        help="Path to the directory containing audio subfolders"
+    )
+    args = parser.parse_args()
+
+    if args.path:
+        target = Path(args.path).resolve()
+        if target.is_dir():
+            return target
+        print(f"[ERROR] Specified path does not exist or is not a directory: {target}")
+        sys.exit(1)
+
+    user_input = input("Enter path to audio directory (Press Enter to use current script location): ").strip()
+    if user_input:
+        target = Path(user_input.strip('"\\'')).resolve()
+        if target.is_dir():
+            return target
+        print(f"[ERROR] Entered path does not exist or is not a directory: {target}")
+        sys.exit(1)
+
+    # 3. Fallback: la carpeta donde reside el script
+    return Path(__file__).parent.resolve()
+
 
 def get_audio_root(client) -> str:
-\tcandidates = [r"\\Containers\\Default Work Unit",
+    candidates = [
+        r"\\Containers\\Default Work Unit",
         r"\\Actor-Mixer Hierarchy\\Default Work Unit",
-\t]
+    ]
+    for candidate in candidates:
+        res = client.call(
+            "ak.wwise.core.object.get",
+            {"from": {"path": [candidate]}},
+            options={"return": ["id", "path"]},
+        )
+        if res.get("return"):
+            return candidate
+    raise RuntimeError("Default Work Unit not found.")
 
-\tfor candidate in candidates:
-\t\tres = client.call(
-\t\t\t"ak.wwise.core.object.get",
-\t\t\t{"from": {"path": [candidate]}},
-\t\t\toptions = {"return":["id", "path"]},
-\t\t)
-\t\tif res.get("return"):
-\t\t\treturn candidate
-\traise RuntimeError("Default Work Unit not found.")
 
 def main():
+    target_dir = resolve_target_directory()
+    category_name = target_dir.name
 
-\tscript_dir = Path(__file__).parent.resolve()
-\tsurface_folders = []
+    asset_folders = [item for item in target_dir.iterdir() if item.is_dir()]
 
-\tfor item in script_dir.iterdir():
-\t\tif item.is_dir():
-\t\t\tsurface_folders.append(item)
+    if not asset_folders:
+        print(f"[WARNING] No subfolders found in: {target_dir}")
+        return
 
-\tif not surface_folders:
-\t\tprint(f"[WARNING] No subfolders found in: {script_dir}")
-\t\treturn
+    print(f"\\n[INFO] Target Directory: {target_dir}")
+    print(f"[INFO] Target Category: '{category_name}'")
+    print(f"[INFO] {len(asset_folders)} subfolder(s) detected:")
+    for folder in asset_folders:
+        print(f"  - {folder.name}")
 
-\tprint(f"{len(surface_folders)} surfaces detected:")
+    try:
+        with WaapiClient() as client:
+            print("\\n[OK] Connected successfully to Wwise Authoring.")
+            audio_root = get_audio_root(client)
+            print(f"[INFO] Root Path Detected: {audio_root}")
 
-\tfor folder in surface_folders:
-\t\tprint (f"- {folder.name}")
+            master_folder_args = {
+                "parent": audio_root,
+                "type": "Folder",
+                "name": category_name,
+                "onNameConflict": "merge"
+            }
+            client.call("ak.wwise.core.object.create", master_folder_args)
+            category_root = f"{audio_root}\\\\{category_name}"
+            print(f"[OK] Category folder verified: {category_root}")
 
-\ttry:
-\t\twith WaapiClient() as client:
-\t\t\tprint("\\n[OK] Connected successfully to Wwise Authoring")
-\t\t\taudio_root = get_audio_root(client)
-\t\t\tprint(f"[INFO] Root Path Detected: {audio_root}")
-\t\t\tmaster_folder_args = {
-\t\t\t\t"parent": audio_root,
-\t\t\t\t"type": "Folder",
-\t\t\t\t"name": "Footsteps",
-\t\t\t\t"onNameConflict": "merge"
-\t\t\t}
-\t\t\tclient.call("ak.wwise.core.object.create", master_folder_args)
-\t\t\tfootsteps_root = f"{audio_root}\\\\Footsteps"
-\t\t\tprint (f"[OK] Folder created/verified in Wwise: {footsteps_root}")
+            for folder in asset_folders:
+                container_name = folder.name
+                wav_files = list(folder.glob("*.wav"))
 
-\t\t\tfor folder in surface_folders:
-\t\t\t\tsurface_name = folder.name
-\t\t\t\twav_files=list(folder.glob("*.wav"))
+                if not wav_files:
+                    print(f"\\n[SKIP] '{container_name}' contains no .wav files.")
+                    continue
 
-\t\t\t\tif not wav_files:
-\t\t\t\t\tprint (f"\\n [SKIP] {surface_name} doesn't contain any .wav file")
-\t\t\t\t\tcontinue
-\t\t\t\tprint (f"\\n Processing: {surface_name} ({len(wav_files)} files)")
-\t\t\t\tcontainer_name = f"FS_{surface_name}"
-\t\t\t\tcontainer_path = f"{footsteps_root}\\\\{container_name}"
+                print(f"\\nProcessing: '{container_name}' ({len(wav_files)} audio files)")
+                container_path = f"{category_root}\\\\{container_name}"
 
-\t\t\t\tcontainer_args={
-\t\t\t\t\t"parent": footsteps_root,
-\t\t\t\t\t"type": "RandomSequenceContainer",
-\t\t\t\t\t"name": container_name,
-\t\t\t\t\t"onNameConflict": "merge"
+                container_args = {
+                    "parent": category_root,
+                    "type": "RandomSequenceContainer",
+                    "name": container_name,
+                    "onNameConflict": "merge"
                 }
-\t\t\t\tcontainer_res=client.call("ak.wwise.core.object.create", container_args)
-\t\t\t\tcontainer_id=container_res.get("id")
-\t\t\t\tprint (f"[OK] Container created/verified: {container_name} (ID:{container_id})")
+                container_res = client.call("ak.wwise.core.object.create", container_args)
+                container_id = container_res.get("id")
+                print(f"[OK] Container verified: {container_name} (ID: {container_id})")
 
-\t\t\t\timport_entries=[]
-\t\t\t\tfor wav in wav_files:
-\t\t\t\t\timport_entries.append({
-\t\t\t\t\t\t"audioFile": str(wav.resolve()),
-\t\t\t\t\t\t"objectPath": f"{container_path}\\\\<Sound>{wav.stem}"					
-\t\t\t\t\t\t})
-\t\t\t\timport_args={
-\t\t\t\t\t"importOperation": "createNew",
-\t\t\t\t\t"default": {
-\t\t\t\t\t\t"importLanguage": "SFX"},
-\t\t\t\t\t\t"imports": import_entries
-\t\t\t\t}
-\t\t\t\timport_res = client.call("ak.wwise.core.audio.import", import_args)
-\t\t\t\timported_count = len(import_res.get("objects", []))
-\t\t\t\tprint(f"[OK] {imported_count} files created in {container_name}")
+                import_entries = []
+                for wav in wav_files:
+                    import_entries.append({
+                        "audioFile": str(wav.resolve()),
+                        "objectPath": f"{container_path}\\\\<Sound>{wav.stem}"
+                    })
 
-\t\t\t\tevent_name= f"Play_{container_name}"
-\t\t\t\tevent_args={
-\t\t\t\t\t"parent": r"\\Events\\Default Work Unit",
-\t\t\t\t\t"type": "Event",
-\t\t\t\t\t"name": event_name,
-\t\t\t\t\t"onNameConflict": "replace",
-\t\t\t\t\t"children": [
-\t\t\t\t\t\t{
-\t\t\t\t\t\t\t"name" : "",
-\t\t\t\t\t\t\t"type": "Action",
-\t\t\t\t\t\t\t"@ActionType": 1,
-\t\t\t\t\t\t\t"@Target": container_id
-\t\t\t\t\t\t}
-\t\t\t\t\t]
-\t\t\t\t}
-\t\t\t\tclient.call("ak.wwise.core.object.create", event_args)
-\t\t\t\tprint (f"[OK] Event created/verified: {event_name}")
+                import_args = {
+                    "importOperation": "createNew",
+                    "default": {"importLanguage": "SFX"},
+                    "imports": import_entries
+                }
+                import_res = client.call("ak.wwise.core.audio.import", import_args)
+                imported_count = len(import_res.get("objects", []))
+                print(f"[OK] {imported_count} Sound SFX imported into '{container_name}'")
 
-\texcept CannotConnectToWaapiException:
-\t\tprint("\\n[ERROR] Unable to connect to Wwise. Is Wwise Authoring open with Wamp/WAAPI enabled?")
-\texcept Exception as e:
-\t\tprint(f"\\n[ERROR] Unexpected error: {e}")
-\t\t
-if __name__ == "__main__": 
-\tmain()
+                event_name = f"Play_{container_name}"
+                event_args = {
+                    "parent": r"\\Events\\Default Work Unit",
+                    "type": "Event",
+                    "name": event_name,
+                    "onNameConflict": "merge",
+                    "children": [
+                        {
+                            "name": "",
+                            "type": "Action",
+                            "@ActionType": 1,
+                            "@Target": container_id
+                        }
+                    ]
+                }
+                client.call("ak.wwise.core.object.create", event_args)
+                print(f"[OK] Event linked: {event_name}")
+
+            print(f"\\n[SUCCESS] Ingestion completed for category '{category_name}'.")
+
+    except CannotConnectToWaapiException:
+        print("\\n[ERROR] Unable to connect to Wwise.")
+        print("Ensure Wwise Authoring is open with WAAPI enabled under User Preferences.")
+    except Exception as e:
+        print(f"\\n[ERROR] An unexpected error occurred: {e}")
+
+
+if __name__ == "__main__":
+    main()
 `,
     simLogs: [
-      { t: 'info', m: '[PROCESS] Scanning root script directory for surface folders...' },
-      { t: 'step', m: '4 surfaces detected:' },
-      { t: 'step', m: '- Concrete' },
-      { t: 'step', m: '- Grass' },
-      { t: 'step', m: '- Metal' },
-      { t: 'step', m: '- Wood' },
-      { t: 'success', m: '[OK] Connected successfully to Wwise Authoring' },
+      { t: 'info', m: "Enter path to audio directory: (Press Enter to use current script location)" },
+      { t: 'info', m: "[INFO] Target Directory: D:\\AudioProjects\\Generic Batch Audio Importer" },
+      { t: 'info', m: "[INFO] Target Category: 'Generic Batch Audio Importer'" },
+      { t: 'info', m: '4 subfolder(s) detected:' },
+      { t: 'step', m: '  - Dirt' },
+      { t: 'step', m: '  - Grass' },
+      { t: 'step', m: '  - Stone' },
+      { t: 'step', m: '  - Wood' },
+      { t: 'success', m: '[OK] Connected successfully to Wwise Authoring.' },
       { t: 'info', m: '[INFO] Root Path Detected: \\Actor-Mixer Hierarchy\\Default Work Unit' },
-      { t: 'success', m: '[OK] Folder created/verified in Wwise: \\Actor-Mixer Hierarchy\\Default Work Unit\\Footsteps' },
-      { t: 'info', m: 'Processing: Concrete (6 files)' },
-      { t: 'step', m: '[OK] Container created/verified: FS_Concrete (ID:{8F2A1C3B-4D5E-6F7A-8B9C-0D1E2F3A4B5C})' },
-      { t: 'step', m: '[OK] 6 files created in FS_Concrete' },
-      { t: 'success', m: '[OK] Event created/verified: Play_FS_Concrete' },
-      { t: 'info', m: 'Processing: Grass (6 files)' },
-      { t: 'step', m: '[OK] Container created/verified: FS_Grass (ID:{1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D})' },
-      { t: 'step', m: '[OK] 6 files created in FS_Grass' },
-      { t: 'success', m: '[OK] Event created/verified: Play_FS_Grass' },
-      { t: 'info', m: 'Processing: Metal (5 files)' },
-      { t: 'step', m: '[OK] Container created/verified: FS_Metal (ID:{3B4C5D6E-7F8A-9B0C-1D2E-3F4A5B6C7D8E})' },
-      { t: 'step', m: '[OK] 5 files created in FS_Metal' },
-      { t: 'success', m: '[OK] Event created/verified: Play_FS_Metal' },
-      { t: 'info', m: 'Processing: Wood (8 files)' },
-      { t: 'step', m: '[OK] Container created/verified: FS_Wood (ID:{5D6E7F8A-9B0C-1D2E-3F4A-5B6C7D8E9F0A})' },
-      { t: 'step', m: '[OK] 8 files created in FS_Wood' },
-      { t: 'success', m: '[OK] Event created/verified: Play_FS_Wood' },
-      { t: 'success', m: '[SUCCESS] Footstep surface hierarchy and Play Events generated in Wwise.' }
+      { t: 'success', m: '[OK] Category folder verified: \\Actor-Mixer Hierarchy\\Default Work Unit\\Generic Batch Audio Importer' },
+      { t: 'info', m: "Processing: 'Dirt' (5 audio files)" },
+      { t: 'step', m: '[OK] Container verified: Dirt (ID: {28F3D1A0-7A5E-4B1C-8D9E-12A34B5C6D7E})' },
+      { t: 'step', m: "[OK] 5 Sound SFX imported into 'Dirt'" },
+      { t: 'success', m: '[OK] Event linked: Play_Dirt' },
+      { t: 'info', m: "Processing: 'Grass' (6 audio files)" },
+      { t: 'step', m: '[OK] Container verified: Grass (ID: {5C9E12A3-4B5C-6D7E-8F9A-0B1C2D3E4F5A})' },
+      { t: 'step', m: "[OK] 6 Sound SFX imported into 'Grass'" },
+      { t: 'success', m: '[OK] Event linked: Play_Grass' },
+      { t: 'info', m: "Processing: 'Stone' (6 audio files)" },
+      { t: 'step', m: '[OK] Container verified: Stone (ID: {7E8F9A0B-1C2D-3E4F-5A6B-7C8D9E0F1A2B})' },
+      { t: 'step', m: "[OK] 6 Sound SFX imported into 'Stone'" },
+      { t: 'success', m: '[OK] Event linked: Play_Stone' },
+      { t: 'info', m: "Processing: 'Wood' (8 audio files)" },
+      { t: 'step', m: '[OK] Container verified: Wood (ID: {9A0B1C2D-3E4F-5A6B-7C8D-9E0F1A2B3C4D})' },
+      { t: 'step', m: "[OK] 8 Sound SFX imported into 'Wood'" },
+      { t: 'success', m: '[OK] Event linked: Play_Wood' },
+      { t: 'success', m: "[SUCCESS] Ingestion completed for category 'Generic Batch Audio Importer'." }
+    ]
+  },
+  {
+    id: 'wwise_batch_randomizer',
+    name: 'batch_randomizer.py',
+    folder: '2. Humanization Pipeline (Batch_randomizer)',
+    tech: 'Python 3.11 · WAAPI Client (ws://127.0.0.1:8080/waapi)',
+    lang: 'python',
+    desc: 'Fase 2 (Humanización & Prevención de Fatiga): Aplica en masa variaciones estandarizadas de Pitch (+/- 50 cents) y Volumen (-1.2 dB a +0.8 dB) en los contenedores seleccionados de Wwise vía WAAPI.',
+    videoUrl: null,
+    source: `"""
+Wwise Batch Audio Randomizer
+Author: Diego Sansano
+    DESCRIPTION:
+        Workflow utility designed to prevent auditory fatigue across game audio assets.
+        It scans selected containers in Wwise and automatically configures pitch and volume 
+        randomizers within humanized, production-standard thresholds via WAAPI.
+
+    HOW TO USE:
+        1. Open your Wwise project (ensure WAAPI is enabled under Project > User Settings).
+        2. In Wwise, select one or more containers (Random/Sequence, Blend, etc.) in the Actor-Mixer.
+        3. Run: python wwise_batch_randomizer.py
+"""
+
+from waapi import WaapiClient, CannotConnectToWaapiException
+
+
+def set_property_randomizer(client, object_id: str, property_name: str, min_val: float, max_val: float):
+    """Enables and assigns min/max variation bounds to a specific property."""
+    client.call("ak.wwise.core.object.setRandomizer", {
+        "object": object_id,
+        "property": property_name,
+        "enabled": True,
+        "min": min_val,
+        "max": max_val
+    })
+
+
+def main():
+    PITCH_MIN, PITCH_MAX = -50.0, 50.0
+    VOLUME_MIN, VOLUME_MAX = -1.2, 0.8
+
+    try:
+        with WaapiClient() as client:
+            print("[OK] Connected successfully to Wwise Authoring.")
+
+            selected_res = client.call(
+                "ak.wwise.ui.getSelectedObjects",
+                options={"return": ["id", "name", "type"]}
+            )
+            selected_objects = selected_res.get("objects", [])
+
+            if not selected_objects:
+                print("[WARNING] No objects selected. Select containers in Wwise and run again.")
+                return
+
+            print(f"[INFO] Processing {len(selected_objects)} selected object(s)...")
+
+            updated_count = 0
+            for obj in selected_objects:
+                obj_id = obj["id"]
+                obj_name = obj["name"]
+
+                set_property_randomizer(client, obj_id, "Pitch", PITCH_MIN, PITCH_MAX)
+                set_property_randomizer(client, obj_id, "Volume", VOLUME_MIN, VOLUME_MAX)
+
+                print(f"  [OK] Randomizers applied to -> {obj_name}")
+                updated_count += 1
+
+            print(f"\\n[SUCCESS] Successfully randomized parameters on {updated_count} object(s).")
+
+    except CannotConnectToWaapiException:
+        print("\\n[ERROR] Unable to connect to Wwise.")
+        print("Ensure Wwise Authoring is open with WAAPI enabled under User Preferences.")
+    except Exception as e:
+        print(f"\\n[ERROR] An unexpected error occurred: {e}")
+
+
+if __name__ == "__main__":
+    main()
+`,
+    simLogs: [
+      { t: 'success', m: '[OK] Connected successfully to Wwise Authoring.' },
+      { t: 'info', m: 'Processing 4 selected object(s)...' },
+      { t: 'step', m: '  [OK] Randomizers applied to -> FS_Dirt (Pitch: +/-50 cents, Vol: -1.2/+0.8 dB)' },
+      { t: 'step', m: '  [OK] Randomizers applied to -> FS_Grass (Pitch: +/-50 cents, Vol: -1.2/+0.8 dB)' },
+      { t: 'step', m: '  [OK] Randomizers applied to -> FS_Stone (Pitch: +/-50 cents, Vol: -1.2/+0.8 dB)' },
+      { t: 'step', m: '  [OK] Randomizers applied to -> FS_Wood (Pitch: +/-50 cents, Vol: -1.2/+0.8 dB)' },
+      { t: 'success', m: '[SUCCESS] Successfully randomized parameters on 4 object(s).' }
+    ]
+  },
+  {
+    id: 'wwise_project_linter',
+    name: 'wwise_project_linter.py',
+    folder: '3. QA & Validation Pipeline (Project_linter)',
+    tech: 'Python 3.11 · WAAPI Client (ws://127.0.0.1:8080/waapi)',
+    lang: 'python',
+    desc: 'Fase 3 (Control de Calidad & Estabilidad): Audita objetos seleccionados en Wwise vía WAAPI para verificar que no existen enrutamientos no permitidos al Master Audio Bus y que el audio 3D tiene curvas de atenuación asignadas antes de compilar SoundBanks.',
+    videoUrl: null,
+    source: `"""
+Wwise Project QA Linter & Validator
+Author: Diego Sansano
+    DESCRIPTION:
+        Quality assurance utility that scans selected audio objects in Wwise
+        to catch common human errors before SoundBank generation or Git commits.
+        Checks for invalid Master Bus routing and unassigned 3D attenuation curves.
+
+    HOW TO USE:
+        1. Open your Wwise project (ensure WAAPI is enabled under Project > User Settings).
+        2. In Wwise, select one or more objects in the Actor-Mixer Hierarchy.
+        3. Run: python wwise_project_linter.py
+"""
+
+from waapi import WaapiClient, CannotConnectToWaapiException
+
+
+def main():
+    try:
+        with WaapiClient() as client:
+            print("[OK] Connected successfully to Wwise Authoring.")
+
+            selected_res = client.call(
+                "ak.wwise.ui.getSelectedObjects",
+                options={
+                    "return": [
+                        "id",
+                        "name",
+                        "type",
+                        "path",
+                        "outputBus",
+                        "positioning:3D:attenuation"
+                    ]
+                }
+            )
+            selected_objects = selected_res.get("objects", [])
+
+            if not selected_objects:
+                print("[WARNING] No objects selected. Select audio objects in Wwise and run again.")
+                return
+
+            print(f"[INFO] Auditing {len(selected_objects)} object(s)...\\n" + "-" * 50)
+
+            issues_found = 0
+
+            for obj in selected_objects:
+                obj_name = obj.get("name")
+                obj_type = obj.get("type")
+                bus_info = obj.get("outputBus")
+                attenuation_info = obj.get("positioning:3D:attenuation")
+
+                if bus_info:
+                    bus_name = bus_info.get("name", "")
+                    if bus_name in ["Master Audio Bus", ""]:
+                        print(f"[FAIL] Routing Issue: '{obj_name}' ({obj_type})")
+                        print(f"       -> Routed directly to '{bus_name or 'None'}'. Assign a proper Sub-Bus.")
+                        issues_found += 1
+
+                if attenuation_info is not None and not attenuation_info.get("id"):
+                    print(f"[FAIL] Spatial Audio Issue: '{obj_name}' ({obj_type})")
+                    print("       -> 3D positioning enabled without an Attenuation curve assigned.")
+                    issues_found += 1
+
+            print("-" * 50)
+            if issues_found == 0:
+                print("[PASS] All selected objects comply with project standards.")
+            else:
+                print(f"[WARNING] Audit complete: {issues_found} issue(s) detected. Fix before committing.")
+
+    except CannotConnectToWaapiException:
+        print("\\n[ERROR] Unable to connect to Wwise.")
+        print("Ensure Wwise Authoring is open with WAAPI enabled under User Preferences.")
+    except Exception as e:
+        print(f"\\n[ERROR] An unexpected error occurred: {e}")
+
+
+if __name__ == "__main__":
+    main()
+`,
+    simLogs: [
+      { t: 'success', m: '[OK] Connected successfully to Wwise Authoring.' },
+      { t: 'info', m: '[INFO] Auditing 4 object(s)...' },
+      { t: 'step', m: '--------------------------------------------------' },
+      { t: 'step', m: "[FAIL] Routing Issue: 'Wpn_Pistol_Fire_01' (Sound)" },
+      { t: 'step', m: "       -> Routed directly to 'Master Audio Bus'. Assign a proper Sub-Bus." },
+      { t: 'step', m: "[FAIL] Spatial Audio Issue: 'Amb_Campfire_LP' (Sound)" },
+      { t: 'step', m: '       -> 3D positioning enabled without an Attenuation curve assigned.' },
+      { t: 'step', m: "[PASS] 'FS_Dirt_Walk_01' (Sound) -> Routed to 'Sub_Footsteps' [Valid]" },
+      { t: 'step', m: "[PASS] 'UI_Menu_Confirm' (Sound) -> Routed to 'Sub_UI' [Valid]" },
+      { t: 'step', m: '--------------------------------------------------' },
+      { t: 'step', m: '[WARNING] Audit complete: 2 issue(s) detected. Fix before committing.' }
     ]
   }
 ];
