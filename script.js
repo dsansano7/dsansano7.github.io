@@ -3187,10 +3187,26 @@ const DIEGOCODE_SCRIPTS = [
     tech: 'Python 3.11 · WAAPI Client (ws://127.0.0.1:8080/waapi)',
     lang: 'python',
     desc: 'Escanea subcarpetas de superficies de pasos (Footsteps), detecta o crea la carpeta contenedora en la jerarquía de Actor-Mixer, genera Random Sequence Containers por superficie, importa archivos WAV vinculados y crea automáticamente los Play Events en Wwise.',
-    videoUrl: 'videos/wwise_surface_importer_demo.mp4',
+    videoUrl: 'Python/wwise_surface_importer_video.mp4',
     source: `from pathlib import Path
 from waapi import WaapiClient, CannotConnectToWaapiException
 import os
+
+"""
+Wwise Surface Footstep Importer
+Author: Diego Sansano
+\tDESCRIPTION:
+\t\tUtility script designed to automate the repetitive setup of footstep audio structures.
+\t\tIt scans surface subfolders, creates Random Sequence Containers in Wwise via WAAPI,
+\t\timports all WAV variations, and generates corresponding Play events.
+\t\t
+\tHOW TO USE:
+\t\t1. Open your Wwise project (ensure WAAPI is enabled under Project > User Settings).
+\t\t2. Place this script in a directory alongside folders containing your audio files
+\t\t(e.g., ./Grass/step1.wav, ./Wood/step1.wav).
+\t\t3. Run: python wwise_surface_importer.py
+\t\t
+"""
 
 def get_audio_root(client) -> str:
 \tcandidates = [r"\\Containers\\Default Work Unit",
@@ -3217,7 +3233,7 @@ def main():
 \t\t\tsurface_folders.append(item)
 
 \tif not surface_folders:
-\t\tprint(f"[WARNING] NO SUBFOLDERS FOUNDED IN; {script_dir}")
+\t\tprint(f"[WARNING] No subfolders found in: {script_dir}")
 \t\treturn
 
 \tprint(f"{len(surface_folders)} surfaces detected:")
@@ -3227,7 +3243,7 @@ def main():
 
 \ttry:
 \t\twith WaapiClient() as client:
-\t\t\tprint("\\nConnected with exit Wwise Authoring.")
+\t\t\tprint("\\n[OK] Connected successfully to Wwise Authoring")
 \t\t\taudio_root = get_audio_root(client)
 \t\t\tprint(f"[INFO] Root Path Detected: {audio_root}")
 \t\t\tmaster_folder_args = {
@@ -3296,9 +3312,9 @@ def main():
 \t\t\t\tprint (f"[OK] Event created/verified: {event_name}")
 
 \texcept CannotConnectToWaapiException:
-\t\tprint("\\n[ERROR] Unable to conncet to Wwise")
+\t\tprint("\\n[ERROR] Unable to connect to Wwise. Is Wwise Authoring open with Wamp/WAAPI enabled?")
 \texcept Exception as e:
-\t\tprint(f"\\n[ERROR]Something strange happened: {e}")
+\t\tprint(f"\\n[ERROR] Unexpected error: {e}")
 \t\t
 if __name__ == "__main__": 
 \tmain()
@@ -3310,7 +3326,7 @@ if __name__ == "__main__":
       { t: 'step', m: '- Grass' },
       { t: 'step', m: '- Metal' },
       { t: 'step', m: '- Wood' },
-      { t: 'info', m: 'Connected with exit Wwise Authoring.' },
+      { t: 'success', m: '[OK] Connected successfully to Wwise Authoring' },
       { t: 'info', m: '[INFO] Root Path Detected: \\Actor-Mixer Hierarchy\\Default Work Unit' },
       { t: 'success', m: '[OK] Folder created/verified in Wwise: \\Actor-Mixer Hierarchy\\Default Work Unit\\Footsteps' },
       { t: 'info', m: 'Processing: Concrete (6 files)' },

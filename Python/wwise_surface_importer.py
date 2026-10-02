@@ -2,6 +2,22 @@ from pathlib import Path
 from waapi import WaapiClient, CannotConnectToWaapiException
 import os
 
+"""
+Wwise Surface Footstep Importer
+Author: Diego Sansano
+	DESCRIPTION:
+		Utility script designed to automate the repetitive setup of footstep audio structures.
+		It scans surface subfolders, creates Random Sequence Containers in Wwise via WAAPI,
+		imports all WAV variations, and generates corresponding Play events.
+		
+	HOW TO USE:
+		1. Open your Wwise project (ensure WAAPI is enabled under Project > User Settings).
+		2. Place this script in a directory alongside folders containing your audio files
+		(e.g., ./Grass/step1.wav, ./Wood/step1.wav).
+		3. Run: python wwise_surface_importer.py
+		
+"""
+
 def get_audio_root(client) -> str:
 	candidates = [r"\Containers\Default Work Unit",
         r"\Actor-Mixer Hierarchy\Default Work Unit",
@@ -27,7 +43,7 @@ def main():
 			surface_folders.append(item)
 
 	if not surface_folders:
-		print(f"[WARNING] NO SUBFOLDERS FOUNDED IN; {script_dir}")
+		print(f"[WARNING] No subfolders found in: {script_dir}")
 		return
 
 	print(f"{len(surface_folders)} surfaces detected:")
@@ -37,7 +53,7 @@ def main():
 
 	try:
 		with WaapiClient() as client:
-			print("\nConnected with exit Wwise Authoring.")
+			print("\n[OK] Connected successfully to Wwise Authoring")
 			audio_root = get_audio_root(client)
 			print(f"[INFO] Root Path Detected: {audio_root}")
 			master_folder_args = {
@@ -106,9 +122,9 @@ def main():
 				print (f"[OK] Event created/verified: {event_name}")
 
 	except CannotConnectToWaapiException:
-		print("\n[ERROR] Unable to conncet to Wwise")
+		print("\n[ERROR] Unable to connect to Wwise. Is Wwise Authoring open with Wamp/WAAPI enabled?")
 	except Exception as e:
-		print(f"\n[ERROR]Something strange happened: {e}")
+		print(f"\n[ERROR] Unexpected error: {e}")
 		
 if __name__ == "__main__": 
 	main()
