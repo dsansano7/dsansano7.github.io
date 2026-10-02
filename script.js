@@ -3364,7 +3364,7 @@ function highlightCodeSyntax(source, lang) {
   // 4. Function invocations / definitions
   highlighted = highlighted.replace(/\b([a-zA-Z_]\w*)(?=\s*\()/g, m => stash(`<span class="dc-token-fn">${m}</span>`));
 
-  // 5. Language Keywords
+  // 5. Language Keywords (stashed immediately so subsequent keywords like 'class' don't match <span class="...">)
   const keywords = [
     'def', 'import', 'from', 'return', 'class', 'if', 'else', 'elif', 'not', 'in', 'for', 'while', 'as', 'try', 'except',
     'var', 'function', 'let', 'const', 'public', 'private', 'protected', 'void', 'float', 'string', 'bool', 'using',
@@ -3372,7 +3372,7 @@ function highlightCodeSyntax(source, lang) {
   ];
   keywords.forEach(kw => {
     const reg = new RegExp(`\\b(${kw})\\b`, 'g');
-    highlighted = highlighted.replace(reg, '<span class="dc-token-kw">$1</span>');
+    highlighted = highlighted.replace(reg, m => stash(`<span class="dc-token-kw">${m}</span>`));
   });
 
   // 6. Restore stashed tokens in reverse order
@@ -3382,6 +3382,7 @@ function highlightCodeSyntax(source, lang) {
 
   return highlighted;
 }
+
 
 function renderDiegoCodeDemo(script, autoPlay = false) {
   const container = document.getElementById('dc-demo-container');
